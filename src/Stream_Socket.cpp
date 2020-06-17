@@ -340,7 +340,7 @@ void Stream_to_Client::InitConnection() {
 	int result = setsockopt(new_sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int));
 	if (result < 0) throw SERVER_OPTIONREFUSED;
 
-	// resue address of server
+	// reuse address of server
 	int enable = 1;
 	result = setsockopt(new_sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int));
 	if (result < 0) throw SERVER_OPTIONREFUSED;
