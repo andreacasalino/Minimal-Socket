@@ -3,9 +3,9 @@
 int main() {
 
    Launcher lnc("launcher");
-   lnc.addProcessLaunch("Sample04_Client.exe");
-   lnc.addProcessLaunch("Sample04_Repeater.exe");
-   lnc.addProcessLaunch("Sample04_Server.exe");
+   lnc.addProcessLaunch("Sample04_Client");
+   lnc.addProcessLaunch("Sample04_Repeater");
+   lnc.addProcessLaunch("Sample04_Server");
    lnc();
 
    return 0;

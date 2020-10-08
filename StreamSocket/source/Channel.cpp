@@ -4,22 +4,6 @@
 #include <Exceptions.h>
 using namespace std;
 
-#ifdef _WIN32
-#elif  __linux__
-#include <strings.h> //only for bzero
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/tcp.h>
-#include <netinet/in.h>
-#include <netdb.h> 
-#include <unistd.h>
-#include <iostream>
-#include <malloc.h>
-#include <arpa/inet.h>
-#else
-#error Os not supported: only Windows and Linux are supported
-#endif
-
 namespace ssk {
 
 	Channel::Channel(const std::string& server_address, const int& port) 
@@ -65,15 +49,15 @@ namespace ssk {
 	void Channel::Recv(char* buffer, const std::size_t& bufferSize) {
 		if (bufferSize <= 0)  throw RECV_ZEROBYTEBUFFER;
 
-		int bufferSize = recv(this->channelData->sockfd, &buffer[0], bufferSize, 0);
-		if (bufferSize < 0) throw RECV_ERROR;
+		int bytesReceived = recv(this->channelData->sockfd, &buffer[0], bufferSize, 0);
+		if (bytesReceived < 0) throw RECV_ERROR;
 	}
 
 	void Channel::Send(const char* buffer, const std::size_t& bufferSize) {
 		if (bufferSize <= 0)  throw SEND_ZEROBYTEBUFFER;
 
-		int bufferSize = send(this->channelData->sockfd, &buffer[0], bufferSize, 0);
-		if (bufferSize < 0) throw SEND_ERROR;
+		int bytesSent = send(this->channelData->sockfd, &buffer[0], bufferSize, 0);
+		if (bytesSent < 0) throw SEND_ERROR;
 	}
 #endif
 

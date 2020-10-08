@@ -3,9 +3,9 @@
 int main() {
 
    Launcher lnc("launcher");
-   lnc.addProcessLaunch("Sample02_Client_A.exe");
-   lnc.addProcessLaunch("Sample02_Client_B.exe");
-   lnc.addProcessLaunch("Sample02_Server.exe");
+   lnc.addProcessLaunch("Sample02_Client_A");
+   lnc.addProcessLaunch("Sample02_Client_B");
+   lnc.addProcessLaunch("Sample02_Server");
    lnc();
 
    return 0;

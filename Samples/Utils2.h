@@ -11,6 +11,7 @@
 #include <fstream>
 #include <string>
 #include <list>
+#include <utility>
 
 class Launcher {
 public:
@@ -21,13 +22,7 @@ public:
       std::list<std::string> parsed;
       this->parseArgs(parsed, args ...);
 
-      this->lines.push_back(procName + "\"");
-      for (auto it = parsed.begin(); it != parsed.end(); ++it) {
-         this->lines.back() += " \"";
-         this->lines.back() += *it;
-         this->lines.back() += "\"";
-      }
-
+      this->commands.emplace_back(std::make_pair(procName, parsed));
    };
 
    void  operator()() const {
@@ -39,18 +34,26 @@ public:
 #endif
 
       std::ofstream f(name);
-      auto it = this->lines.begin();
-      auto itEnd = this->lines.end();
+      auto it = this->commands.begin();
+      auto itEnd = this->commands.end();
       --itEnd;
       for (it; it != itEnd; ++it) {
 #ifdef _WIN32
-         f << std::endl << "start \"\" ";
+         f << std::endl << "start \"\" \"" << it->first << "\"";
+         for(auto a : it->second) f << " \"" << a << "\"";
 #elif  __linux__
-         f << std::endl << "gnome-terminal -x sh -c ";
+         f << std::endl << "gnome-terminal -x sh -c \"./" << it->first;
+         for(auto a : it->second) f << " " << a;
+         f << "; bash\"";
 #endif
-         f << *it;
       }
-      f << std::endl << *it;
+#ifdef _WIN32
+      f << std::endl << "\"" << this->commands.back().first << "\""; 
+      for(auto a : this->commands.back().second) f << " \"" << a << "\"";
+#elif  __linux__
+      f << std::endl << "./" << this->commands.back().first;
+      for(auto a : this->commands.back().second) f << " " << a;
+#endif
 
       f.close();
 
@@ -79,7 +82,7 @@ private:
    };
 
    std::string nameFile;
-   std::list<std::string> lines;
+   std::list<std::pair<std::string, std::list<std::string>>> commands;
 };
 
 #endif
