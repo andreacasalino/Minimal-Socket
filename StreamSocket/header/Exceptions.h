@@ -1,0 +1,24 @@
+#ifndef _SSK_EXCEPTIOND_
+#define _SSK_EXCEPTIOND_
+
+#define ALREADY_INITIALIZED 			0
+
+#define RECV_ZEROBYTEBUFFER 			1
+#define RECV_ERROR 						2
+
+#define SEND_ZEROBYTEBUFFER 			3
+#define SEND_ERROR 						4
+
+#define DANGEROUS_PORT 					5
+
+#define CLIENT_NOTOPENED 				6
+#define CLIENT_SERVERNOTFOUND 		7
+#define CLIENT_FAILEDCONNECTION 		8
+
+#define SERVER_NOTOPENED 				6
+#define SERVER_NOTBINDED 			   7
+#define SERVER_NOTACCEPTED 			8
+#define SERVER_OPTIONREFUSED 			9
+#define SERVER_LISTENFAIL 			   10
+
+#endif

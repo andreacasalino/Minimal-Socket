@@ -1,0 +1,8 @@
+function(debug msg line)
+    if(DEBUG)
+      message(STATUS "[ ${CMAKE_CURRENT_LIST_FILE}:${line} ] " ${msg})
+    endif()
+endfunction(debug)
+function(log msg line)
+    message(STATUS "[ ${CMAKE_CURRENT_LIST_FILE}:${line} ] " ${msg})
+endfunction(log)
