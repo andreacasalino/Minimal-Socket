@@ -6,7 +6,7 @@
 	)
 	target_link_libraries( Sample02_Client_A
 		PUBLIC
-			SSK::Stream-Socket
+			SCK::Cross-Socket
 	)	
 
 	add_executable(
@@ -15,7 +15,7 @@
 	)
 	target_link_libraries( Sample02_Client_B
 		PUBLIC
-			SSK::Stream-Socket
+			SCK::Cross-Socket
 	)	
 	
 	add_executable(
@@ -24,7 +24,7 @@
 	)
 	target_link_libraries( Sample02_Server
 		PUBLIC
-			SSK::Stream-Socket
+			SCK::Cross-Socket
 	)		
 
 	add_executable(

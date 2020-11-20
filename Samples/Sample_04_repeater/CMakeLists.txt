@@ -6,7 +6,7 @@
 	)
 	target_link_libraries( Sample04_Client
 		PUBLIC
-			SSK::Stream-Socket
+			SCK::Cross-Socket
 	)	
 
 	add_executable(
@@ -15,7 +15,7 @@
 	)
 	target_link_libraries( Sample04_Repeater
 		PUBLIC
-			SSK::Stream-Socket
+			SCK::Cross-Socket
 	)	
 	
 	add_executable(
@@ -25,7 +25,7 @@
 	find_package( Threads )
 	target_link_libraries( Sample04_Server
 		PUBLIC
-			SSK::Stream-Socket
+			SCK::Cross-Socket
 	)	
 
 	add_executable(

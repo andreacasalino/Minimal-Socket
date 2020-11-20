@@ -1,4 +1,4 @@
-set(PROJECT_SHORTNAME "Stream-Socket")
+set(PROJECT_SHORTNAME "Cross-Socket")
 project(${PROJECT_SHORTNAME} VERSION ${VERSION} LANGUAGES CXX)
 string(REPLACE - _ COMPONENT_NAME ${PROJECT_NAME})
 
@@ -11,7 +11,7 @@ if(LIB_OPT)
 else()
 	add_library(${PROJECT_NAME} STATIC ${SOURCES})
 endif()
-add_library(SSK::${PROJECT_SHORTNAME} ALIAS ${PROJECT_NAME})
+add_library(SCK::${PROJECT_SHORTNAME} ALIAS ${PROJECT_NAME})
 
 target_compile_features(${PROJECT_NAME}
     PUBLIC cxx_auto_type
@@ -29,8 +29,6 @@ if(WIN32)
       PRIVATE
         wsock32 ws2_32
   )
-elseif(UNIX)
-# TODO
 endif()
 
 set(INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
@@ -62,8 +60,6 @@ install(DIRECTORY Header/
 install(EXPORT ${PROJECT_NAME}-targets
   FILE
     ${PROJECT_NAME}Targets.cmake
-  NAMESPACE
-    EFG::
   DESTINATION
     ${INSTALL_CONFIGDIR}
 )
@@ -91,7 +87,6 @@ install(FILES
 
 export(EXPORT ${PROJECT_NAME}-targets
     FILE ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake
-    NAMESPACE EFG::
 )
 
 #Register package in user's package registry
