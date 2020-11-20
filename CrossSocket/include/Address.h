@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace sck {
-   enum Family {IP_V4 = 0, IP_V6 = 1}; 
+   enum Family {IP_V4, IP_V6}; 
 
    /**
     * @class Address Address.h <wb/connect/Address.h>

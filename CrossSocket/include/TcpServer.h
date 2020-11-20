@@ -20,7 +20,7 @@ namespace sck {
        * @param[in] the port to reserve
        * @param[in] the expected protocol family of the client to accept
        */
-      TcpServer(const std::uint16_t& port, const Family& family = Family::IP_V4);
+      explicit TcpServer(const std::uint16_t& port, const Family& family = Family::IP_V4);
 
       ~TcpServer() override = default;
 

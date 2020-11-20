@@ -20,6 +20,10 @@ namespace sck {
       }
    };
 
+   TcpServer::TcpServer(const std::uint16_t& port, const Family& family) 
+      : SocketServer(port, family) {
+   }
+
    std::unique_ptr<SocketClient> TcpServer::acceptNewClient() {
       SocketAddress_t acceptedClientAddress;
       std::unique_ptr<SocketHandler> acceptedClientHandler  = std::make_unique<SocketHandler>();
