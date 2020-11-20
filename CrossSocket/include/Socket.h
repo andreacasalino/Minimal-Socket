@@ -20,11 +20,16 @@ namespace sck {
     */
    class Socket {
    public:
+      Socket(const Socket&) = delete;
+      Socket& operator=(const Socket&) = delete;
+
       virtual ~Socket();
       
       void open();
 
       void close();
+
+      inline bool isConnected() const { return this->connected; }
    protected:
       /**
        * @param[in] the name to use for building Loggable

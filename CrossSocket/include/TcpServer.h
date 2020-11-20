@@ -20,17 +20,15 @@ namespace sck {
        * @param[in] the port to reserve
        * @param[in] the expected protocol family of the client to accept
        */
-      explicit TcpServer(const std::uint16_t& port, const Family& family = Family::IP_V4);
+      TcpServer(const std::uint16_t& port, const Family& family = Family::IP_V4);
 
       ~TcpServer() override = default;
 
       std::unique_ptr<SocketClient> acceptNewClient();
    protected:
-
       void initHandle() final;
 
       void openConnection() override;
-      void closeConnection() override;
 
       /**
        * @brief doListen allows the server to be ready to accept any client connection request.

@@ -56,4 +56,9 @@ namespace sck {
       }
    }
 
+   void TcpServer::openConnection() {
+      this->bindToPort(this->getPort());
+      this->doListen();
+   }
+
 }

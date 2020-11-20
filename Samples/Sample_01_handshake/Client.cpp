@@ -5,7 +5,8 @@
 * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <Client.h>
+#include <TcpClient.h>
+#include <StringClient.h>
 #include <iostream>
 using namespace std;
 
@@ -19,18 +20,17 @@ int main(int argc, char **argv){
     }
 
     //build and initialize a connection to the server on port 2000
-    ssk::Client Connection(server_address , 2000);
-    Connection.initialize();
+    sck::StringClient client( std::make_unique<sck::TcpClient>(sck::Address::Localhost(2000)) );
+    client.open();
 
-    string message;
+    string message = "Hi there!";
 
     //hit the server with a message
-    message = "Hi there!";
     cout << "sending to the server: " << message << endl;
-    Connection.Send(message);
+    client.send(message);
     
     //get the server response
-    message = Connection.RecvStr();
+    message = *client.receive(500).get();
     cout << "got from the server:   " << message << endl;
 
     //just to keep the prompt active 

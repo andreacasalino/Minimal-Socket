@@ -36,7 +36,7 @@ namespace sck {
        * @param[in] the buffer capacity
        * @param[in] the timeout to consider
        */
-      std::size_t receive(char* buffer, const std::size_t& length, const std::chrono::milliseconds& timeout);
+      std::size_t receive(char* buffer, const std::size_t& length, const std::chrono::milliseconds& timeout = std::chrono::milliseconds(0));
    protected:
       /**
        * @param[in] the address of the server to hit

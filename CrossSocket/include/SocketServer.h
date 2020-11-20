@@ -23,7 +23,7 @@ namespace sck {
        * @param[in] the port this server shoudl reserve
        * @param[in] the protocol family of the client to accept
        */
-      explicit SocketServer(const std::uint16_t& port, const sck::Family& family);
+      SocketServer(const std::uint16_t& port, const sck::Family& family);
 
       sck::Family getFamily() final;
 
