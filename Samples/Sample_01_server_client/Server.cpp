@@ -14,8 +14,8 @@ int main(){
 
     cout << "-----------------------  Server  -----------------------" << endl;
 
-    // build and initialize a connection from a client on port 3000
-    sck::TcpServer server(3000);
+    // build and initialize a connection from a client on port 2000
+    sck::TcpServer server(2000);
     server.open();
 
     //accept the client and create the service

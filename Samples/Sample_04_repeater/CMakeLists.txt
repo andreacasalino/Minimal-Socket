@@ -6,7 +6,7 @@
 	)
 	target_link_libraries( Sample04_Client
 		PUBLIC
-			SCK::Cross-Socket
+			Utils
 	)	
 
 	add_executable(
@@ -15,7 +15,7 @@
 	)
 	target_link_libraries( Sample04_Repeater
 		PUBLIC
-			SCK::Cross-Socket
+			Utils
 	)	
 	
 	add_executable(
@@ -25,11 +25,15 @@
 	find_package( Threads )
 	target_link_libraries( Sample04_Server
 		PUBLIC
-			SCK::Cross-Socket
+			Utils
 	)	
 
 	add_executable(
 		Sample04__Launcher
 		Launcher.cpp
+	)	
+	target_link_libraries( Sample04__Launcher
+		PUBLIC
+			Utils
 	)	
 	add_dependencies(Sample04__Launcher Sample04_Client Sample04_Repeater Sample04_Server)

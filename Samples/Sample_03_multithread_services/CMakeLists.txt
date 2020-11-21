@@ -1,21 +1,12 @@
 ##### sample 03 #####
 
 	add_executable(
-		Sample03_Client_A
-		Client_A_slow.cpp
+		Sample03_Client
+		Client.cpp
 	)
-	target_link_libraries( Sample03_Client_A
+	target_link_libraries( Sample03_Client
 		PUBLIC
-			SCK::Cross-Socket
-	)	
-
-	add_executable(
-		Sample03_Client_B
-		Client_B_fast.cpp
-	)
-	target_link_libraries( Sample03_Client_B
-		PUBLIC
-			SCK::Cross-Socket
+			Utils
 	)	
 	
 	add_executable(
@@ -25,7 +16,7 @@
 	find_package( Threads )
 	target_link_libraries( Sample03_Server
 		PUBLIC
-			SCK::Cross-Socket
+			Utils
 			${CMAKE_THREAD_LIBS_INIT}
 	)	
 	
@@ -33,4 +24,8 @@
 		Sample03__Launcher
 		Launcher.cpp
 	)
-	add_dependencies(Sample03__Launcher Sample03_Client_A Sample03_Client_B Sample03_Server)
+	target_link_libraries( Sample03__Launcher
+		PUBLIC
+			Utils
+	)	
+	add_dependencies(Sample03__Launcher Sample03_Client Sample03_Server)

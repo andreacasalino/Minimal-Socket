@@ -1,11 +1,11 @@
-#include "../Utils2.h"
+#include <ProcessLauncher.h>
 
 int main() {
 
    Launcher lnc("launcher");
-   lnc.addProcessLaunch("Sample04_Client");
-   lnc.addProcessLaunch("Sample04_Repeater");
-   lnc.addProcessLaunch("Sample04_Server");
+   lnc.addProcess("Sample04_Client");
+   lnc.addProcess("Sample04_Repeater");
+   lnc.addProcess("Sample04_Server");
    lnc();
 
    return 0;

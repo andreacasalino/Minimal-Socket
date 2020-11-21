@@ -21,7 +21,10 @@ namespace sck {
       // incoming message might be corrucpted and a nullptr is returned
       std::unique_ptr<IncomingMessage> receive(const std::size_t& expectedMaxSize, const std::chrono::milliseconds& timeout = std::chrono::milliseconds(0)){
           this->buffer.resize(expectedMaxSize);
-          this->client->receive(this->buffer.data(), expectedMaxSize);
+          std::size_t recvBytes = this->client->receive(this->buffer.data(), expectedMaxSize);
+          if(recvBytes != this->buffer.size()){
+            this->buffer.resize(recvBytes);
+          }
           std::unique_ptr<IncomingMessage> mex = std::make_unique<IncomingMessage>();
           if(!this->decode(*mex.get())){
               mex.reset();
