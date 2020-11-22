@@ -2,6 +2,7 @@
 #define _CROSS_SOCKET_TYPEDCLIENT_H_
 
 #include "SocketClient.h"
+#include <stdexcept>
 
 namespace sck {
    template<typename IncomingMessage, typename OutgoingMessage>

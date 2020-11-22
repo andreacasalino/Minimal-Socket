@@ -3,6 +3,7 @@
 
 #include "../include/Address.h"
 #include <memory>
+#include <stdexcept>
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
