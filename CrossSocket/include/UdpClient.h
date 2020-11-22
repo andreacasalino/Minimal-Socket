@@ -5,23 +5,19 @@
 
 namespace sck {
    /**
-    * @class UdpClient UdpClient.h <wb/connect/UdpClient.h>
-    * @brief interface for a standard synchronous udp connection.
-    * @anchor UdpClient
+    * @brief interface for a standard udp connection.
+    * A udp may or not reserve a port, in order to be reached by another udp client.
     */
    class UdpClient
       : public SocketClient {
    public:
       /**
-       @brief constructor of a upd client, also enables to set the local port for example if it is neccessary 
-              to determine it
-       @param[in] Address of host
+       @param[in] Address of the remote host to hit
        @param[in] port to reserve (passing 0 no port is reserved)
        */
       UdpClient(const sck::Address& remoteAddress, const std::uint16_t& localPort = 0);
 
       ~UdpClient() override = default;
-
    protected:
       void initHandle() final;
 

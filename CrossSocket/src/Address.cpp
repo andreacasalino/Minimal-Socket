@@ -3,6 +3,9 @@
 #include "SocketHandler.h"
 
 namespace sck {
+   static const inline std::string LOCALHOST = "localhost";
+   static const inline std::string LOCALHOST_IPv4 = "127.0.0.1";
+   static const inline std::string LOCALHOST_IPv6 = "::1";
 
    Address::Address(const std::string& host, const std::uint16_t& port, const Family& family)
       : host(host)

@@ -5,6 +5,9 @@
 #include <string>
 
 namespace sck {
+   /**
+    * @brief A typed client exchanging as messages strings.
+    */
    class StringClient : public TypedClient<std::string, std::string> {
    public:
       explicit StringClient(std::unique_ptr<SocketClient> client) 

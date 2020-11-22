@@ -5,34 +5,25 @@
 #include <vector>
 
 namespace sck {
+   // refer to https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_73/rzab6/address.htm
    enum Family {IP_V4, IP_V6}; 
 
    /**
-    * @class Address Address.h <wb/connect/Address.h>
     * @brief representation of a network address
-    * @anchor Address
     */
    class Address {
    public:
-      // Static definition of localhosts
-      static const inline std::string LOCALHOST = "localhost";
-      static const inline std::string LOCALHOST_IPv4 = "127.0.0.1";
-      static const inline std::string LOCALHOST_IPv6 = "::1";
-
       Address(const Address&) = default;
       Address& operator=(const Address&) = default;
 
       /**
-       * @brief static builder function to create an address with localhost as host
-       * @param port for the created @ref Address
-       * @return an ipv4 or ipv6 address with localhost as host (127.0.0.1) and port (default 0)
+       * @brief returns an ipv4 or ipv6 address with localhost as host and the passed port
        */
       static Address Localhost(const std::uint16_t& port = 0, const Family& protocolType = Family::IP_V4);
 
       /**
-       * @brief static builder function to create an address.
-       * Internally the protocol type is deduced according to the host content.
-       * If the address can not be resolved as an ipv4 or an ipv6, PROTOCOL_TYPE_UNKNOWN is assumed
+       * @brief Internally the protocol Family is deduced according to the host content.
+       * An exception is thrown if the Ip is invalid
        */
       static Address FromIp(const std::string& host, const std::uint16_t& port);
 
@@ -42,22 +33,10 @@ namespace sck {
        */
       bool isValid() const;
 
-      /**
-       * @brief access the underlying host string
-       * @return the host name or ip address in string representation
-       */
       const std::string& getHost() const;
 
-      /**
-       * @brief access the underlying port
-       * @return the port of the address object
-       */
       const std::uint16_t& getPort() const;
 
-      /**
-       * @brief ip version of the address object
-       * @return IPv4 or IPv6
-       */
       const Family& getFamily() const;
    private:
       Address(const std::string& host, const std::uint16_t& port, const Family& family);

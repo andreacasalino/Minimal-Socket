@@ -6,9 +6,7 @@
 
 namespace sck {
    /**
-    * @class SocketClient SocketClient.h <wb/connect/SocketClient.h>
     * @brief this is the abstract base class for every implementation of a concrete socket client (tcp or udp)
-    * @anchor SocketClient
     */
    class SocketClient 
       : public Socket {
@@ -21,8 +19,7 @@ namespace sck {
       const sck::Address& getRemoteAddress() const;
 
       /**
-       * @brief returns the number of bytes actually sent
-       * this function never throws, but in case the send operation is not successfull 0 is returned
+       * @brief returns the number of bytes actually sent.
        * @param[in] the buffer storing the bytes to send
        * @param[in] the buffer size
        */
@@ -30,8 +27,8 @@ namespace sck {
 
       /**
        * @brief returns the number of bytes actually received until the timeout fires.
-       * When passing a timeout equal to 0, a blocking receive is started
-       * this function never throws, but in case the receive operation is not successfull 0 is returned
+       * When passing a timeout equal to 0, a blocking receive is started,
+       * otherwise the baytes to receive are waited till timeout
        * @param[in] the buffer storing the bytes to receive
        * @param[in] the buffer capacity
        * @param[in] the timeout to consider
@@ -61,13 +58,8 @@ namespace sck {
        * @brief address of the server to hit
        */
       sck::Address remoteAddress;
-
    private:
-      /**
-       * @brief the timeout considered when doing receive operations
-       */
       std::chrono::milliseconds actualTimeOut;  // setsockopt in windows is not reliable under milliseconds
-
    };
 }
 

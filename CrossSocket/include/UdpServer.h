@@ -6,12 +6,10 @@
 
 namespace sck {
    /**
-    * @class UdpServer UdpServer.h <wb/connect/UdpServer.h>
     * @brief interface for a udp server. 
-    * A UdpServer is a udp connection, with the possibility to deduce the remoteAddress,
-    * by setting as target the first udp connection that hits this socket (i.e. send 
-    * at least 1 byte of data)
-    * @anchor UdpServer
+    * A UdpServer is an UdpClient, with the possibility to deduce the remoteAddress,
+    * by setting as target the first UdpClient that hits this socket, sending 
+    * at least 1 byte of data.
     */
    class UdpServer
       : public UdpClient {
@@ -25,8 +23,6 @@ namespace sck {
       ~UdpServer() override = default;
    protected:
       void openConnection() final;
-
-   private:
    };
 }
 

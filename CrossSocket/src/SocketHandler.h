@@ -82,7 +82,7 @@ namespace sck {
    int castFamily(const sck::Family& family);
 
    /**
-    * @brief Convert a SocketAddress_t into a wb::connect::Address
+    * @brief Convert a SocketAddress_t into an Address
     */
    sck::Address convert(SocketAddress_t& address);
 
