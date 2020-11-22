@@ -1,7 +1,5 @@
-add_subdirectory(Sample_01_handshake)
+add_subdirectory(Utils)
 
-add_subdirectory(Sample_02_monothread_services)
+add_subdirectory(Tcp)
 
-add_subdirectory(Sample_03_multithread_services)
-
-add_subdirectory(Sample_04_repeater)
+add_subdirectory(Udp)
