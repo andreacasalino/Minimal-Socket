@@ -71,13 +71,13 @@ include(AutoCollect)
 include(Log)
 include(SetInstallRPath)
 
-add_subdirectory(StreamSocket)
+add_subdirectory(CrossSocket)
 if(BUILD_SAMPLES)
     add_subdirectory(Samples)
 endif()
 
 # write a config file with version information for complete framework
-set(FRAMEWORK_NAME "StreamSocket")
+set(FRAMEWORK_NAME "CrossSocket")
 write_basic_package_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/${FRAMEWORK_NAME}ConfigVersion.cmake
     VERSION ${PROJECT_VERSION}
