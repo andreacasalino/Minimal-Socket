@@ -8,7 +8,7 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    sodipodi:docname="README.svg"
-   inkscape:version="1.0 (1.0+r73+1)"
+   inkscape:version="1.0.1 (1.0.1+r75)"
    id="svg8"
    version="1.1"
    viewBox="0 0 318.05981 76.312303"
@@ -169,9 +169,9 @@
      inkscape:document-rotation="0"
      inkscape:current-layer="layer1"
      inkscape:document-units="mm"
-     inkscape:cy="200.05913"
-     inkscape:cx="992.39155"
-     inkscape:zoom="0.9899495"
+     inkscape:cy="217.87135"
+     inkscape:cx="737.80228"
+     inkscape:zoom="0.7"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      borderopacity="1.0"
@@ -324,7 +324,7 @@
          id="tspan1004"
          x="-4.0782461"
          y="116.97647"
-         style="stroke-width:0.264583">port 2000</tspan></text>
+         style="stroke-width:0.264583">port 3000</tspan></text>
     <path
        sodipodi:nodetypes="csc"
        style="fill:none;stroke:#000000;stroke-width:0.499999;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1443-3)"
@@ -345,7 +345,7 @@
          y="116.97648"
          x="126.61665"
          id="tspan1004-0"
-         sodipodi:role="line">port 3000</tspan></text>
+         sodipodi:role="line">port 4000</tspan></text>
     <path
        id="path1439-5-9"
        d="m 99.852204,125.55516 c 0,0 19.088216,20.78407 53.365666,20.43272 23.11106,-0.23688 49.52264,-18.14393 49.52264,-18.14393"
