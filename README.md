@@ -13,4 +13,4 @@ Use [CMake](https://cmake.org) to configure and compile the library and the exam
 
 **Run the examples**
 
-You can run the Launcher processes to automatically launch all the process of a certain example.
+You can run the Launchers to automatically launch in the right sequence all the processes pertaining to an example.
