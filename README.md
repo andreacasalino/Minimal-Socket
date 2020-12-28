@@ -1,8 +1,16 @@
-The classes contained in ./CrossSocket allows to create tcp or udp connections from C++ code.
-The library is cross platform: let CMake handle the dependencies.
-Check the examples provided in ./Samples for the details.
-Check also the README.svg (use your favourite browser to open it) contained in the samples folders.
+This repository contains the minimal functionalities to create and use from **C++** both **tcp** and **udp** sockets in a
+completely platform independent way.
 
-----------------------------------------------------------------------------------
+**Content**
 
-to run each example, compile and run the corresponding Launcher.
+  * The libarary is contained in the ./CrossSocket folder
+  * Samples showing the library usage are contained in the ./Samples folder
+    * Refer also to the README.svg files contained in the sample folders (use your favourite browser to open it)
+ 
+**Build and Install**
+
+Use [CMake](https://cmake.org) to configure and compile the library and the examples.
+
+**Run the examples**
+
+You can run the Launcher processes to automatically launch all the process of a certain example.
