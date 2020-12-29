@@ -1,4 +1,4 @@
-This repository contains the minimal functionalities to create and use from **C++** both **tcp** and **udp** sockets in a
+This repository contains the minimal functionalities to create and use from **C++** both **tcp** and **udp** socket in a
 completely platform independent way.
 
 **Content**
