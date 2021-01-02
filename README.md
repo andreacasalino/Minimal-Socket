@@ -14,3 +14,5 @@ Use [CMake](https://cmake.org) to configure and compile the library and the exam
 **Run the examples**
 
 You can run the Launchers to automatically launch in the right sequence all the processes pertaining to an example.
+
+**IMPORTANT!!** If you are using **Visual Studio** do not launch the Launcher applications from inside VS, but go the folder where the exe are created and launch them from there
