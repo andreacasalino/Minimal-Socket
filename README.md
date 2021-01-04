@@ -7,7 +7,7 @@ completely platform independent way.
   * Samples showing the library usage are contained in the ./Samples folder
     * Refer also to the README.svg files contained in the sample folders (use your favourite browser to open it)
  
-**Build and Install**
+**Build**
 
 Use [CMake](https://cmake.org) to configure and compile the library and the examples.
 
