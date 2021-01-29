@@ -8,19 +8,6 @@
 #include <async/Service.h>
 
 namespace sck::async {
-    class Service::Barrier {
-    public:
-        Barrier() { this->stopWait = false; };
-
-        void wait();
-
-    private:
-        std::uint8_t queue = 0;
-        std::mutex queueMtx;
-        std::condition_variable notification;
-        std::atomic_bool stopWait;
-    };
-
     void Service::Barrier::wait() {
         std::unique_lock<std::mutex> lk(this->queueMtx);
         ++this->queue;
@@ -37,7 +24,7 @@ namespace sck::async {
         : listener(nullptr) 
         , loop([this, &iterativeAction](){
             std::function<void()> iter(iterativeAction);
-            this->barrier->wait();
+            this->barrier.wait();
             while (this->loopLife) {
                 try {
                     iter();
@@ -59,7 +46,7 @@ namespace sck::async {
             }
         }) {
         this->loopLife = true;
-        this->barrier->wait();
+        this->barrier.wait();
     }
 
     Service::~Service() {

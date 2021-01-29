@@ -18,9 +18,7 @@ namespace sck::async {
     class AsyncDecorator {
     public:
         virtual ~AsyncDecorator() { 
-            if(this->wrapped->isOpen()) {
-                this->close();
-            }
+            this->close();
         };
 
         inline void resetListener(Listener* listener) {
@@ -29,17 +27,21 @@ namespace sck::async {
         };
 
         inline void resetErrorListener(ErrorListener* listener) {
-            this->wrapped->resetErrorListener(Listener);
+            this->wrapped->resetErrorListener(listener);
         };
 
         inline void open(const std::chrono::milliseconds& timeout = std::chrono::milliseconds(0)) {
-            this->wrapped->open(timeout);
-            this->service = this->make_service();
+            if(!this->wrapped->isOpen()){
+                this->wrapped->open(timeout);
+                this->service = this->make_service();
+            }
         };
 
         inline void close() { 
-            this->wrapped->close();
-            this->service.reset();
+            if(this->wrapped->isOpen()){
+                this->wrapped->close();
+                this->service.reset();
+            }
         };
 
         inline bool isOpen() const { return this->wrapped->isOpen(); }

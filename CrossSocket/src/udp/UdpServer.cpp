@@ -7,14 +7,15 @@
 
 #include <udp/UdpServer.h>
 #include "../SocketHandler.h"
+#include <Error.h>
 
 namespace sck::udp {
 
    sck::Address getInitialAddress(const sck::Family& protocol) {
       if (sck::Family::IP_V6 == protocol) {
-         return sck::Address::Localhost(0, sck::Family::IP_V6);
+         return *sck::Address::createLocalHost(0, sck::Family::IP_V6);
       }
-      return sck::Address::Localhost(0, sck::Family::IP_V4);
+      return *sck::Address::createLocalHost(0, sck::Family::IP_V4);
    }
 
    UdpServer::UdpServer(const std::uint16_t& localPort, const sck::Family& protocol)
@@ -36,10 +37,11 @@ namespace sck::udp {
       if (::recvfrom(this->channel->handle, &bf, MAX_UDP_RECV_MESSAGE, 0, &remoteAddr, &remoteAddrLen) == SCK_SOCKET_ERROR) {
          throwWithCode("recvfrom failed while identifying the target");
       }
-      this->remoteAddress = convert(remoteAddr);
-      if (!this->remoteAddress.isValid()) {
-         throw std::runtime_error(this->remoteAddress.getHost() + ":" + std::to_string(this->remoteAddress.getPort()) + " is an invalid address parsed for the target");
+      AddressPtr remoteConverted = convert(remoteAddr);
+      if(nullptr == remoteConverted) {
+         throw Error(remoteAddr.sa_data, " is an invalid data for udp serer remote address");
       }
+      this->remoteAddress = *remoteConverted;
       this->SocketClient::openConnection();
    }
 }

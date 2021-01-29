@@ -40,7 +40,7 @@ namespace sck {
          this->channel = std::make_unique<SocketHandler>();
       }
 
-      std::atomic_bool stopWait = false;
+      std::atomic_bool stopWait(false);
       auto openSteps = [this, &stopWait]() {
          try {
             this->initHandle();
@@ -100,7 +100,7 @@ namespace sck {
          SocketAddressIn_t addr;
          ::memset(&addr, 0, sizeof(SocketAddressIn_t));
          addr.sin_family = AF_INET;
-         addr.sin_port = ::htons(port);
+         addr.sin_port = htons(port);
 #ifdef _WIN32
          addr.sin_addr.s_addr = ADDR_ANY;
 #else
@@ -117,7 +117,7 @@ namespace sck {
          addr.sin6_family = AF_INET6;
          addr.sin6_flowinfo = 0;
          addr.sin6_addr = IN6ADDR_ANY_INIT;  // apparently, there is no such a cross-system define for ipv4 addresses
-         addr.sin6_port = ::htons(port);
+         addr.sin6_port = htons(port);
          if (::bind(this->channel->handle, reinterpret_cast<SocketAddress_t*>(&addr), sizeof(SocketAddressIn6_t)) == SCK_SOCKET_ERROR) {
             throwWithCode("can't bind localhost on port: " + std::to_string(port));
          }

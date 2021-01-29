@@ -49,9 +49,9 @@ namespace sck {
    private:
       Address(const std::string& host, const std::uint16_t& port, const Family& family);
 
-      const std::string host;
-      const std::uint16_t port;
-      const Family family;
+      std::string host;
+      std::uint16_t port;
+      Family family;
    };
 
    bool operator==(const Address& lhs, const Address& rhs);
