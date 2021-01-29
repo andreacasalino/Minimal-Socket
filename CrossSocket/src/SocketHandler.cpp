@@ -1,4 +1,6 @@
 #include "SocketHandler.h"
+#include <sstream>
+#include <Error.h>
 
 #ifdef _WIN32
 #include <ws2tcpip.h>
@@ -65,19 +67,19 @@ namespace sck {
       return true;
    };
 
-   std::unique_ptr<SocketAddressIn_t> resolveIPv4(const sck::Address& address) {
+   std::unique_ptr<SocketAddressIn_t> convertIpv4(const sck::Address& address) {
       if (sck::Family::IP_V4 == address.getFamily()) {
-         SocketAddressIn_t resolved;
+         std::unique_ptr<SocketAddressIn_t> resolved = std::make_unique<SocketAddressIn_t>();
          // set everything to 0 first
-         ::memset(&resolved, 0, sizeof(SocketAddressIn_t));
-         resolved.sin_family = AF_INET;
-         if (!tryConversion(resolved, address)) {
-            return std::make_unique<SocketAddressIn_t>();
+         ::memset(&(*resolved), 0, sizeof(SocketAddressIn_t));
+         resolved->sin_family = AF_INET;
+         if (!tryConversion(*resolved, address)) {
+            return nullptr;
          }
-         resolved.sin_port = ::htons(address.getPort());
-         return std::make_unique<SocketAddressIn_t>(resolved);
+         resolved->sin_port = ::htons(address.getPort());
+         return resolved;
       }
-      return std::make_unique<SocketAddressIn_t>();
+      return nullptr;
    }
 
    /**
@@ -115,20 +117,42 @@ namespace sck {
       return true;
    };
 
-   std::unique_ptr<SocketAddressIn6_t> resolveIPv6(const sck::Address& address) {
+   std::unique_ptr<SocketAddressIn6_t> convertIpv6(const sck::Address& address) {
       if (sck::Family::IP_V6 == address.getFamily()) {
-         SocketAddressIn6_t resolved;
+         std::unique_ptr<SocketAddressIn6_t> resolved = std::make_unique<SocketAddressIn6_t>();
          // set everything to 0 first
-         ::memset(&resolved, 0, sizeof(SocketAddressIn6_t));
-         resolved.sin6_family = AF_INET6;
-         resolved.sin6_flowinfo = 0;
-         if (!tryConversion(resolved, address)) {
-            return std::make_unique<SocketAddressIn6_t>();
+         ::memset(&(*resolved), 0, sizeof(SocketAddressIn6_t));
+         resolved->sin6_family = AF_INET6;
+         resolved->sin6_flowinfo = 0;
+         if (!tryConversion(*resolved, address)) {
+            return nullptr;
          }
-         resolved.sin6_port = ::htons(address.getPort());
-         return std::make_unique<SocketAddressIn6_t>(resolved);
+         resolved->sin6_port = ::htons(address.getPort());
+         return resolved;
       }
-      return std::make_unique<SocketAddressIn6_t>();
+      return nullptr;
+   }
+
+   AddressPtr convert(SocketAddress_t& address) {
+      // refer to https://stackoverflow.com/questions/11684008/how-do-you-cast-sockaddr-structure-to-a-sockaddr-in-c-networking-sockets-ubu
+      std::string ip;      
+      std::uint16_t port;
+      if (AF_INET == address.sa_family) {
+         // ipv4 address
+         // inet_ntoa is deprecated, but using inet_ntop for ipv4 address, leads to an ip that has no sense
+         ip = std::string(::inet_ntoa(reinterpret_cast<const SocketAddressIn_t*>(&address)->sin_addr));
+         port = ::ntohs(reinterpret_cast<const SocketAddressIn_t*>(&address)->sin_port);
+      }
+      else {
+         // ipv6 address
+         char temp[INET6_ADDRSTRLEN]; //this is the longest one
+         // refer to https://www.gnu.org/software/libc/manual/html_node/Host-Address-Functions.html
+         ::memset(temp, 0, INET6_ADDRSTRLEN);
+         ::inet_ntop(address.sa_family, &address, temp, INET6_ADDRSTRLEN);
+         ip = std::string(temp, INET6_ADDRSTRLEN);
+         port = ::ntohs(reinterpret_cast<const SocketAddressIn6_t*>(&address)->sin6_port);
+      }
+      return sck::Address::create(ip, port);
    }
 
    int castFamily(const sck::Family& family) {
@@ -187,31 +211,13 @@ namespace sck {
       this->handle = SCK_INVALID_SOCKET;
    }
 
-   sck::Address convert(SocketAddress_t& address) {
-      // refer to https://stackoverflow.com/questions/11684008/how-do-you-cast-sockaddr-structure-to-a-sockaddr-in-c-networking-sockets-ubu
-      std::uint16_t remotePort;
-      if (address.sa_family == AF_INET) {
-         // ipv4 address
-         SocketAddressIn_t* addressParsed = reinterpret_cast<SocketAddressIn_t*>(&address);
-         remotePort = addressParsed->sin_port;
-      }
-      else {
-         // ipv6 address
-         SocketAddressIn6_t* addressParsed = reinterpret_cast<SocketAddressIn6_t*>(&address);
-         remotePort = addressParsed->sin6_port;
-      }
-      // refer to https://www.gnu.org/software/libc/manual/html_node/Host-Address-Functions.html
-      char temp[INET6_ADDRSTRLEN]; //this is the longest one
-      ::memset(temp, 0, INET6_ADDRSTRLEN);
-      ::inet_ntop(address.sa_family, address.sa_data, temp, INET6_ADDRSTRLEN);
-      return sck::Address::FromIp(std::string(temp), remotePort);
-   }
-
    bool SocketHandler::isActive() const {
       return this->active;
    }
 
    void throwWithCode(const std::string& what){
-      throw std::runtime_error(what + " , error code: " + std::to_string(getLastError()));
+      std::stringstream s;
+      s << what << " , error code: " << getLastError();
+      throw Error(s.str());
    }
 }

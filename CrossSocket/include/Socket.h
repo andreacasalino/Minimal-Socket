@@ -1,8 +1,16 @@
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
 #ifndef _CROSS_SOCKET_SOCKET_H_
 #define _CROSS_SOCKET_SOCKET_H_
 
-#include "Address.h"
-#include <memory>
+#include <Address.h>
+#include <atomic>
+#include <chrono>
 
 namespace sck {
    /**
@@ -20,11 +28,12 @@ namespace sck {
 
       virtual ~Socket();
       
-      void open();
+      void open(const std::chrono::milliseconds& timeout = std::chrono::milliseconds(0));
 
       void close();
 
-      inline bool isConnected() const { return this->connected; }
+      inline bool isOpen() const { return this->opened; }
+      
    protected:
       Socket();
       /**
@@ -47,7 +56,7 @@ namespace sck {
 
       void bindToPort(const std::uint16_t& port);
 
-      bool connected;
+      std::atomic_bool opened;
    };
 }
 

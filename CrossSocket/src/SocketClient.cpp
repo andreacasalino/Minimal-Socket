@@ -1,4 +1,11 @@
-#include "../include/SocketClient.h"
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
+#include <SocketClient.h>
 #include "SocketHandler.h"
 
 namespace sck {
@@ -31,21 +38,7 @@ namespace sck {
       return static_cast<std::size_t>(sentBytes);
    }
 
-   std::size_t SocketClient::receive(char* buffer, const std::size_t & bufferMaxSize, const std::chrono::milliseconds& timeout) {
-      this->resetTimeOut(timeout);
-      int recvBytes = ::recv(this->channel->handle, buffer, static_cast<int>(bufferMaxSize), 0);
-      if (recvBytes == SCK_SOCKET_ERROR) {
-         recvBytes = 0;
-         throwWithCode("receive failed");
-      }
-      if (recvBytes > bufferMaxSize) {
-         // if here, the message received is probably corrupted
-         recvBytes = 0;
-      }
-      return static_cast<std::size_t>(recvBytes);
-   }
-
-   void SocketClient::resetTimeOut(const std::chrono::milliseconds& timeout) {
+   std::size_t SocketClient::receive(char* buffer, const std::size_t & bufferMaxSize, const std::chrono::milliseconds& timeout) {      
       if (timeout.count() != this->actualTimeOut.count()) {
          //set new timeout
          this->actualTimeOut = timeout;
@@ -65,15 +58,23 @@ namespace sck {
             throwWithCode("can't set timeout");
          }
       }
+
+      int recvBytes = ::recv(this->channel->handle, buffer, static_cast<int>(bufferMaxSize), 0);
+      if (recvBytes == SCK_SOCKET_ERROR) {
+         recvBytes = 0;
+         throwWithCode("receive failed");
+      }
+      if (recvBytes > bufferMaxSize) {
+         // if here, the message received is probably corrupted
+         recvBytes = 0;
+      }
+      return static_cast<std::size_t>(recvBytes);
    }
 
    void SocketClient::openConnection() {
-      if (!this->remoteAddress.isValid()) {
-         throw std::runtime_error(this->remoteAddress.getHost() + ":" + std::to_string(this->remoteAddress.getPort()) + " is an invalid server address");
-      }
       if (sck::Family::IP_V4 == this->getFamily()) {
          //v4 family
-         auto addr = resolveIPv4(this->remoteAddress);
+         auto addr = convertIpv4(this->remoteAddress);
          if (!addr) {
             throw std::runtime_error(this->remoteAddress.getHost() + ":" + std::to_string(this->remoteAddress.getPort()) + " is an invalid server address");
          }
@@ -83,7 +84,7 @@ namespace sck {
       }
       else {
          //v6 family
-         auto addr = resolveIPv6(this->remoteAddress);
+         auto addr = convertIpv6(this->remoteAddress);
          if (!addr) {
             throw std::runtime_error(this->remoteAddress.getHost() + ":" + std::to_string(this->remoteAddress.getPort()) + " is an invalid server address");
          }

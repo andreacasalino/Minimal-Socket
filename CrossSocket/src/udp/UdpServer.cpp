@@ -1,7 +1,14 @@
-#include "../include/UdpServer.h"
-#include "SocketHandler.h"
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-namespace sck {
+#include <udp/UdpServer.h>
+#include "../SocketHandler.h"
+
+namespace sck::udp {
 
    sck::Address getInitialAddress(const sck::Family& protocol) {
       if (sck::Family::IP_V6 == protocol) {
@@ -17,8 +24,8 @@ namespace sck {
    void UdpServer::openConnection() {
       this->bindToPort(this->port);
 
-      //listen for a client, launching a receive of 1 byte (no filter will be applied since the socket is opening when arriving here and establishConnection was not already called)
-      char bf;
+      // receive a message from the client, that from now on will beccome the recognized one.
+      char bf[MAX_UDP_RECV_MESSAGE];
       SocketAddress_t remoteAddr;
 #ifdef _WIN32
       int
@@ -26,7 +33,7 @@ namespace sck {
       unsigned int
 #endif
       remoteAddrLen = sizeof(SocketAddress_t);
-      if (::recvfrom(this->channel->handle, &bf, 1, 0, &remoteAddr, &remoteAddrLen) == SCK_SOCKET_ERROR) {
+      if (::recvfrom(this->channel->handle, &bf, MAX_UDP_RECV_MESSAGE, 0, &remoteAddr, &remoteAddrLen) == SCK_SOCKET_ERROR) {
          throwWithCode("recvfrom failed while identifying the target");
       }
       this->remoteAddress = convert(remoteAddr);

@@ -1,10 +1,17 @@
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
 #ifndef _CROSS_SOCKET_TCPSERVER_H_
 #define _CROSS_SOCKET_TCPSERVER_H_
 
-#include "SocketServer.h"
+#include <SocketServer.h>
 #include "SocketClient.h"
 
-namespace sck {
+namespace sck::tcp {
    /**
     * @brief interface for a tcp server.
     * When calling open, the server binds and listen to the port, in order to be later ready to accept clients
@@ -22,16 +29,15 @@ namespace sck {
 
       /**
        * @brief Wait for a new client to ask the connection and after accepting it
-       * returns an interface to use for sending and receive data with the accepted clients.
+       * returns an interface to use for exchanging data to and from the accepted clients.
        * This is a blocking operation.
        */
-      std::unique_ptr<SocketClient> acceptNewClient();
+      std::unique_ptr<SocketClient> acceptClient();
+
    protected:
       void initHandle() final;
 
       void openConnection() override;
-
-      void doListen();
    };
 }
 

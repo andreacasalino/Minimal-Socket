@@ -1,0 +1,28 @@
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
+#ifndef _CROSS_SOCKET_ASYNCTCPSERVER_H
+#define _CROSS_SOCKET_ASYNCTCPSERVER_H
+
+#include <async/AsyncService.h>
+#include <tcp/TcpServer.h>
+#include <async/ClientListener.h>
+
+namespace sck::async {
+    class AsyncTcpServer : public AsyncDecorator<tcp::TcpServer, ClientListener> {
+    public:
+        AsyncTcpServer(std::unique_ptr<tcp::TcpServer> server)
+            : AsyncDecorator<tcp::TcpServer, ClientListener>(std::move(server)) {};
+
+    private:
+        class AcceptanceService;
+        
+        std::unique_ptr<Service> make_service() final;
+    };
+}
+
+#endif

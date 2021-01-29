@@ -1,8 +1,14 @@
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
 #ifndef _CROSS_SOCKET_SOCKETCLIENT_H_
 #define _CROSS_SOCKET_SOCKETCLIENT_H_
 
 #include "Socket.h"
-#include <chrono>
 
 namespace sck {
    /**
@@ -14,7 +20,7 @@ namespace sck {
       ~SocketClient() override = default;
 
       /**
-       * @brief returns the targeted server address
+       * @brief returns the address of the remote entity connected with this socket
        */
       const sck::Address& getRemoteAddress() const;
 
@@ -34,6 +40,7 @@ namespace sck {
        * @param[in] the timeout to consider
        */
       std::size_t receive(char* buffer, const std::size_t& length, const std::chrono::milliseconds& timeout = std::chrono::milliseconds(0));
+
    protected:
       /**
        * @param[in] the address of the server to hit
@@ -50,16 +57,12 @@ namespace sck {
       void openConnection() override;
 
       /**
-       * @brief setter for the timeout used when receiving data
-       */
-      void resetTimeOut(const std::chrono::milliseconds& timeout);
-
-      /**
-       * @brief address of the server to hit
+       * @brief address of the server connected to this socket
        */
       sck::Address remoteAddress;
+
    private:
-      std::chrono::milliseconds actualTimeOut;  // setsockopt in windows is not reliable under milliseconds
+      std::chrono::milliseconds actualTimeOut;
    };
 }
 

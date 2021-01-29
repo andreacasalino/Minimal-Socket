@@ -1,4 +1,11 @@
-#include "../include/SocketServer.h"
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
+#include <SocketServer.h>
 #include "SocketHandler.h"
 
 namespace sck {

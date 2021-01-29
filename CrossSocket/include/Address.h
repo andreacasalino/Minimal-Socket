@@ -1,12 +1,23 @@
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
 #ifndef _CROSS_SOCKET_ADDRESS_H_
 #define _CROSS_SOCKET_ADDRESS_H_
 
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace sck {
    // refer to https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_73/rzab6/address.htm
    enum Family {IP_V4, IP_V6}; 
+
+   class Address;
+   typedef std::unique_ptr<Address> AddressPtr;
 
    /**
     * @brief representation of a network address
@@ -15,35 +26,32 @@ namespace sck {
    public:
       Address(const Address&) = default;
       Address& operator=(const Address&) = default;
-
-      /**
-       * @brief returns an ipv4 or ipv6 address with localhost as host and the passed port
-       */
-      static Address Localhost(const std::uint16_t& port = 0, const Family& protocolType = Family::IP_V4);
+      Address(Address&&) = delete;
+      Address& operator=(Address&&) = delete;
 
       /**
        * @brief Internally the protocol Family is deduced according to the host content.
-       * An exception is thrown if the Ip is invalid
+       * @return nullptr if the host is invalid, otherwise a smart pointer storing a usable address
        */
-      static Address FromIp(const std::string& host, const std::uint16_t& port);
+      static AddressPtr create(const std::string& host, const std::uint16_t& port);
 
       /**
-       * @brief check if the passed address is valid and can be used
-       * by the socket APIs
+       * @return an ipv4 or ipv6 address with localhost as host and the passed port
        */
-      bool isValid() const;
+      static AddressPtr createLocalHost(const std::uint16_t& port = 0, const Family& protocolType = Family::IP_V4);
 
-      const std::string& getHost() const;
+      inline const std::string& getHost() const { return this->host; };
 
-      const std::uint16_t& getPort() const;
+      inline const std::uint16_t& getPort() const { return this->port; };
 
-      const Family& getFamily() const;
+      inline Family getFamily() const { return this->family; };
+
    private:
       Address(const std::string& host, const std::uint16_t& port, const Family& family);
 
-      std::string host;
-      std::uint16_t port;
-      Family family;
+      const std::string host;
+      const std::uint16_t port;
+      const Family family;
    };
 
    bool operator==(const Address& lhs, const Address& rhs);

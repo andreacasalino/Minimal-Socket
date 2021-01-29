@@ -1,9 +1,16 @@
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
 #ifndef _CROSS_SOCKET_TCPCLIENT_H_
 #define _CROSS_SOCKET_TCPCLIENT_H_
 
 #include "SocketClient.h"
 
-namespace sck {
+namespace sck::tcp {
    /**
     * @brief interface for a tcp client.
     * When calling open, the client ask the connection to a tcp server, which must be previously activated, i.e. 
@@ -18,6 +25,7 @@ namespace sck {
       explicit TcpClient(const sck::Address& remoteAddress);
 
       ~TcpClient() override = default;
+      
    protected:
       explicit TcpClient(const sck::Address& remoteAddress, std::unique_ptr<SocketHandler> channel);
 
