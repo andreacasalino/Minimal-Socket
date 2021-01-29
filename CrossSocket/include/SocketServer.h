@@ -1,3 +1,10 @@
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
 #ifndef _CROSS_SOCKET_SOCKETSERVER_H_
 #define _CROSS_SOCKET_SOCKETSERVER_H_
 
@@ -12,9 +19,10 @@ namespace sck {
    public:
       ~SocketServer() override = default;
       /**
-       * @brief returns the port this server is bounded to
+       * @brief returns the port this server tries to bind when opened
        */
       std::uint16_t getPort() const;
+
    protected:
       /**
        * @param[in] the port this server should reserve
@@ -23,6 +31,7 @@ namespace sck {
       SocketServer(const std::uint16_t& port, const sck::Family& family);
 
       sck::Family getFamily() final;
+      
    private:
       std::uint16_t port;
       sck::Family protocol;

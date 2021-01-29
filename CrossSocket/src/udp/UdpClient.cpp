@@ -1,7 +1,14 @@
-#include "../include/UdpClient.h"
-#include "SocketHandler.h"
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-namespace sck {
+#include <udp/UdpClient.h>
+#include "../SocketHandler.h"
+
+namespace sck::udp {
 
    UdpClient::UdpClient(const sck::Address& remoteAddress, const std::uint16_t& localPort)
       : SocketClient(remoteAddress)
@@ -16,9 +23,8 @@ namespace sck {
    }
 
    void UdpClient::openConnection() {
-      if (0 != this->port) {
-         this->bindToPort(this->port);
-      }
+      this->bindToPort(this->port);
       this->SocketClient::openConnection();
+      
    }
 }

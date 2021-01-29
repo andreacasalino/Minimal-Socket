@@ -1,8 +1,14 @@
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-#include "../include/TcpClient.h"
-#include "SocketHandler.h"
+#include <tcp/TcpClient.h>
+#include "../SocketHandler.h"
 
-namespace sck {
+namespace sck::tcp {
 
    TcpClient::TcpClient(const sck::Address& remoteAddress)
       : SocketClient(remoteAddress) {

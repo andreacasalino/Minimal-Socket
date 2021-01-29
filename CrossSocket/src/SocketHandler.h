@@ -68,23 +68,23 @@ namespace sck {
    * it's valid, creates the socket API representation
    * of the address
    */
-   std::unique_ptr<SocketAddressIn_t> resolveIPv4(const sck::Address& address);
+   std::unique_ptr<SocketAddressIn_t> convertIpv4(const sck::Address& address);
    /**
    * @brief checks the address syntax and in case
    * it's valid, creates the socket API representation
    * of the address
    */
-   std::unique_ptr<SocketAddressIn6_t> resolveIPv6(const sck::Address& address);
+   std::unique_ptr<SocketAddressIn6_t> convertIpv6(const sck::Address& address);
+
+   /**
+    * @brief Convert a SocketAddress_t into an Address
+    */
+   AddressPtr convert(SocketAddress_t& address);
 
    /**
    * @brief the integer representing a family type
    */
    int castFamily(const sck::Family& family);
-
-   /**
-    * @brief Convert a SocketAddress_t into an Address
-    */
-   sck::Address convert(SocketAddress_t& address);
 
    /**
    * contains the required things to work with the socket API

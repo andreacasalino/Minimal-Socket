@@ -1,4 +1,11 @@
-#include "../include/StringClient.h"
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
+#include <typed/StringClient.h>
 #include <cstring>
 
 namespace sck {
