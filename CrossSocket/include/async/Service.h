@@ -25,9 +25,20 @@ namespace sck::async {
 
         void resetErrorListener(ErrorListener* listener);
 
-    private:
-        class Barrier;
-        std::unique_ptr<Barrier> barrier = std::make_unique<Barrier>();
+    private:    
+        class Barrier {
+        public:
+            Barrier() { this->stopWait = false; };
+
+            void wait();
+
+        private:
+            std::uint8_t queue = 0;
+            std::mutex queueMtx;
+            std::condition_variable notification;
+            std::atomic_bool stopWait;
+        };
+        Barrier barrier = {};
 
         ErrorListener* listener;
         std::mutex listenerMtx;

@@ -1,7 +1,5 @@
-mettere autorship in header
 throw sempre di Error e non runtime generica
 make attribute const when possible
 inline getter when possible
-use #include <> in .h and .cpp files
-use ::tcp and ::udp
-creare async typed socket
+togliere cmake script inutili
+rimettere typed connections

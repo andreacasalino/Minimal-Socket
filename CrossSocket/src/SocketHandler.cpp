@@ -76,7 +76,7 @@ namespace sck {
          if (!tryConversion(*resolved, address)) {
             return nullptr;
          }
-         resolved->sin_port = ::htons(address.getPort());
+         resolved->sin_port = htons(address.getPort());
          return resolved;
       }
       return nullptr;
@@ -127,13 +127,13 @@ namespace sck {
          if (!tryConversion(*resolved, address)) {
             return nullptr;
          }
-         resolved->sin6_port = ::htons(address.getPort());
+         resolved->sin6_port = htons(address.getPort());
          return resolved;
       }
       return nullptr;
    }
 
-   AddressPtr convert(SocketAddress_t& address) {
+   AddressPtr convert(const SocketAddress_t& address) {
       // refer to https://stackoverflow.com/questions/11684008/how-do-you-cast-sockaddr-structure-to-a-sockaddr-in-c-networking-sockets-ubu
       std::string ip;      
       std::uint16_t port;
@@ -141,7 +141,7 @@ namespace sck {
          // ipv4 address
          // inet_ntoa is deprecated, but using inet_ntop for ipv4 address, leads to an ip that has no sense
          ip = std::string(::inet_ntoa(reinterpret_cast<const SocketAddressIn_t*>(&address)->sin_addr));
-         port = ::ntohs(reinterpret_cast<const SocketAddressIn_t*>(&address)->sin_port);
+         port = ntohs(reinterpret_cast<const SocketAddressIn_t*>(&address)->sin_port);
       }
       else {
          // ipv6 address
@@ -150,7 +150,7 @@ namespace sck {
          ::memset(temp, 0, INET6_ADDRSTRLEN);
          ::inet_ntop(address.sa_family, &address, temp, INET6_ADDRSTRLEN);
          ip = std::string(temp, INET6_ADDRSTRLEN);
-         port = ::ntohs(reinterpret_cast<const SocketAddressIn6_t*>(&address)->sin6_port);
+         port = ntohs(reinterpret_cast<const SocketAddressIn6_t*>(&address)->sin6_port);
       }
       return sck::Address::create(ip, port);
    }

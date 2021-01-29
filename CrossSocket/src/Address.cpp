@@ -9,8 +9,8 @@
 #include "SocketHandler.h"
 
 namespace sck {
-   static const inline std::string LOCALHOST_IPv4 = "127.0.0.1";
-   static const inline std::string LOCALHOST_IPv6 = "::1";
+   static const std::string LOCALHOST_IPv4 = "127.0.0.1";
+   static const std::string LOCALHOST_IPv6 = "::1";
 
    Address::Address(const std::string& host, const std::uint16_t& port, const Family& family)
       : host(host)
@@ -20,13 +20,14 @@ namespace sck {
 
    AddressPtr Address::create(const std::string& host, const std::uint16_t& port) {
       //try to resolve the address as an ipv4
-      AddressPtr addr = std::make_unique<Address>(host, port, sck::Family::IP_V4);
-      if (resolveIPv4(*addr)) {
+      AddressPtr addr;
+      addr.reset(new Address(host, port, sck::Family::IP_V4));
+      if (nullptr == convertIpv4(*addr)) {
          return addr;
       }
       //try to resolve the address as an ipv6
-      addr = std::make_unique<Address>(host, port, sck::Family::IP_V6);
-      if (resolveIPv6(*addr)) {
+      addr.reset(new Address(host, port, sck::Family::IP_V6));
+      if (nullptr == convertIpv6(*addr)) {
          return addr;
       }
       return nullptr;
@@ -35,9 +36,9 @@ namespace sck {
    AddressPtr Address::createLocalHost(const std::uint16_t& port, const Family& protocolType) {
       switch (protocolType) {
       case Family::IP_V4:
-         return std::make_unique<Address>(LOCALHOST_IPv4, port, sck::Family::IP_V4);
+         return std::unique_ptr<Address>(new Address(LOCALHOST_IPv4, port, sck::Family::IP_V4));
       case Family::IP_V6:
-         return std::make_unique<Address>(LOCALHOST_IPv6, port, sck::Family::IP_V6);
+         return std::unique_ptr<Address>(new Address(LOCALHOST_IPv6, port, sck::Family::IP_V6));
       default:
          return nullptr;
       }

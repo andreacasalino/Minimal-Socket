@@ -1,9 +1,7 @@
 #ifndef _CROSS_SOCKET_SOCKETHANDLER_H_
 #define _CROSS_SOCKET_SOCKETHANDLER_H_
 
-#include "../include/Address.h"
-#include <memory>
-#include <stdexcept>
+#include <Address.h>
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -79,7 +77,7 @@ namespace sck {
    /**
     * @brief Convert a SocketAddress_t into an Address
     */
-   AddressPtr convert(SocketAddress_t& address);
+   AddressPtr convert(const SocketAddress_t& address);
 
    /**
    * @brief the integer representing a family type
