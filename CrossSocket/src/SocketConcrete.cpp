@@ -5,8 +5,8 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <Socket.h>
-#include "SocketHandler.h"
+#include <SocketConcrete.h>
+#include "Handler.h"
 #include <thread>
 #include <condition_variable>
 
@@ -17,41 +17,32 @@
 #endif
 
 namespace sck {
-   Socket::Socket()
-      : channel(std::make_unique<SocketHandler>())
-      , opened(false) {
-   }
+    SocketConcrete::SocketConcrete(std::shared_ptr<Handler> channel)
+        : channel(channel) {
+    }
 
-   Socket::Socket(std::unique_ptr<SocketHandler> channel)
-      : channel(std::move(channel))
-      , opened(false) {
-   }
+    SocketConcrete::~SocketConcrete() {
+        if(this->isOpen()) {
+            this->close();
+        }
+    }
 
-   Socket::~Socket() {
-      this->close();
-   }
-
-   void Socket::open(const std::chrono::milliseconds& timeout) {
-      if (this->opened) {
-         return;
+    void SocketConcrete::open(const std::chrono::milliseconds& timeout) {
+      if (this->isOpen()) {
+        return;
       }
-      if (!this->channel->isActive()) {
-         this->channel.reset();
-         this->channel = std::make_unique<SocketHandler>();
-      }
-
+      
       std::atomic_bool stopWait(false);
       auto openSteps = [this, &stopWait]() {
          try {
-            this->initHandle();
-            this->openConnection();
+            this->channel->open(this->getProtocol(), this->getFamily());
+            this->openSpecific();
          }
          catch (...) {
             this->close();
             stopWait = true; 
             return;
          }
-         this->opened = true;
          stopWait = true;
       };
 
@@ -65,28 +56,30 @@ namespace sck {
 
          std::unique_lock<std::mutex> notificationLck(notificationMtx);
          notification.wait_for(notificationLck, timeout, [&stopWait](){ return static_cast<bool>(stopWait); });
-         if(!this->opened) {
+         if(!this->isOpen()) {
             this->close();
-            this->opened = false;
          }
       }
    }
 
-   void Socket::close() {
-      if (!this->opened) {
-         return;
-      }
-      try {
-         this->closeConnection();
-      }
-      catch (...) {
-      }
-      this->opened = false;
-   }
+    void SocketConcrete::close() {
+        if (!this->isOpen()) {
+            return;
+        }
+        try {
+            this->closeSpecific();
+        }
+        catch (...) {
+        }
+    }
 
-   void Socket::bindToPort(const std::uint16_t& port) {
+    void SocketConcrete::closeSpecific() {
+        this->channel->close();
+    }
+
+    void SocketConcrete::bindToPort(const std::uint16_t& port) {
       int reusePortOptVal = 1;
-      ::setsockopt(this->channel->handle, SOL_SOCKET, REBIND_OPTION, reinterpret_cast<const
+      ::setsockopt(this->channel->getSocketId(), SOL_SOCKET, REBIND_OPTION, reinterpret_cast<const
 #ifdef _WIN32
          char*  // not sure it would work with void* also in Windows
 #else
@@ -106,7 +99,7 @@ namespace sck {
 #else
          addr.sin_addr.s_addr = ::htonl(INADDR_ANY);
 #endif
-         if (::bind(this->channel->handle, reinterpret_cast<SocketAddress_t*>(&addr), sizeof(SocketAddressIn_t)) == SCK_SOCKET_ERROR) {
+         if (::bind(this->channel->getSocketId(), reinterpret_cast<SocketAddress_t*>(&addr), sizeof(SocketAddressIn_t)) == SCK_SOCKET_ERROR) {
             throwWithCode("can't bind localhost on port: " + std::to_string(port));
          }
       }
@@ -118,14 +111,9 @@ namespace sck {
          addr.sin6_flowinfo = 0;
          addr.sin6_addr = IN6ADDR_ANY_INIT;  // apparently, there is no such a cross-system define for ipv4 addresses
          addr.sin6_port = htons(port);
-         if (::bind(this->channel->handle, reinterpret_cast<SocketAddress_t*>(&addr), sizeof(SocketAddressIn6_t)) == SCK_SOCKET_ERROR) {
+         if (::bind(this->channel->getSocketId(), reinterpret_cast<SocketAddress_t*>(&addr), sizeof(SocketAddressIn6_t)) == SCK_SOCKET_ERROR) {
             throwWithCode("can't bind localhost on port: " + std::to_string(port));
          }
-
       }
-   }
-
-   void Socket::closeConnection() {
-      this->channel->close();
-   }
+    }
 }

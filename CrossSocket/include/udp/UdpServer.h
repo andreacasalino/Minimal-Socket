@@ -27,10 +27,8 @@ namespace sck::udp {
        */
       UdpServer(const std::uint16_t& localPort, const sck::Family& protocol = sck::Family::IP_V4);
 
-      ~UdpServer() override = default;
-
-   protected:
-      void openConnection() final;
+   private:
+      void openSpecific() final;
    };
 }
 

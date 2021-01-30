@@ -6,7 +6,7 @@
  **/
 
 #include <udp/UdpServer.h>
-#include "../SocketHandler.h"
+#include "../Handler.h"
 #include <Error.h>
 
 namespace sck::udp {
@@ -22,7 +22,7 @@ namespace sck::udp {
       : UdpClient(getInitialAddress(protocol), localPort) {
    }
 
-   void UdpServer::openConnection() {
+   void UdpServer::openSpecific() {
       this->bindToPort(this->port);
 
       // receive a message from the client, that from now on will beccome the recognized one.
@@ -34,7 +34,7 @@ namespace sck::udp {
       unsigned int
 #endif
       remoteAddrLen = sizeof(SocketAddress_t);
-      if (::recvfrom(this->channel->handle, &bf, MAX_UDP_RECV_MESSAGE, 0, &remoteAddr, &remoteAddrLen) == SCK_SOCKET_ERROR) {
+      if (::recvfrom(this->channel->getSocketId(), &bf, MAX_UDP_RECV_MESSAGE, 0, &remoteAddr, &remoteAddrLen) == SCK_SOCKET_ERROR) {
          throwWithCode("recvfrom failed while identifying the target");
       }
       AddressPtr remoteConverted = convert(remoteAddr);
@@ -42,6 +42,6 @@ namespace sck::udp {
          throw Error(remoteAddr.sa_data, " is an invalid data for udp serer remote address");
       }
       this->remoteAddress = *remoteConverted;
-      this->SocketClient::openConnection();
+      this->SocketClient::openSpecific();
    }
 }
