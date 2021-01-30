@@ -18,11 +18,13 @@ namespace sck {
     */
    class Handler;
 
-   class MessangerConcrete
-    : public Messanger<
+    typedef Messanger<
         std::pair<const char*, std::size_t>, 
         std::pair<char*, std::size_t>
-        > {
+        > MessangerConcrete_t;
+
+   class MessangerConcrete
+    : public MessangerConcrete_t {
    private:      
        bool send(const std::pair<const char*, std::size_t>& message) final;
 
