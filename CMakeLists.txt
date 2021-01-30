@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(Cross-Socket-Prj VERSION ${VERSION})
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 option(LIB_OPT "Compile shared libraries (ON) or static (OFF)" OFF)
 option(BUILD_SAMPLES "Build the samples showing how to use EFG" ON)
 
