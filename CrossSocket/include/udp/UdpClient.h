@@ -28,14 +28,13 @@ namespace sck::udp {
        */
       UdpClient(const sck::Address& remoteAddress, const std::uint16_t& localPort = 0);
 
-      ~UdpClient() override = default;
-      
    protected:
-      void initHandle() final;
-
-      void openConnection() override;
-
       std::uint16_t port;
+
+      void openSpecific() override;
+
+   private:
+      inline sck::Protocol getProtocol() const final { return Protocol::UDP; };
    };
 }
 

@@ -3,3 +3,9 @@ make attribute const when possible
 inline getter when possible
 togliere cmake script inutili
 rimettere typed connections
+virtual destroyer
+delete copy c'tor in interfacce in cima e gerarchia
+remove default d'tor
+provare in Windows
+remove Socket Server
+add explicit a c?tor single input

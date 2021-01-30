@@ -1,7 +1,16 @@
-#ifndef _CROSS_SOCKET_SOCKETHANDLER_H_
-#define _CROSS_SOCKET_SOCKETHANDLER_H_
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
+#ifndef _CROSS_SOCKET_HANDLER_H_
+#define _CROSS_SOCKET_HANDLER_H_
 
 #include <Address.h>
+#include <SocketConcrete.h>
+#include <atomic>
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -20,14 +29,6 @@
 #endif
 
 namespace sck {
-
-   /**
-    * @brief returns the last error code raised by the socket API
-    */
-   int getLastError();
-
-   void throwWithCode(const std::string& what);
-
    /**
    * socket handle
    */
@@ -62,6 +63,13 @@ namespace sck {
 #endif
 
    /**
+    * @brief returns the last error code raised by the socket API
+    */
+   int getLastError();
+
+   void throwWithCode(const std::string& what);
+
+   /**
    * @brief checks the address syntax and in case
    * it's valid, creates the socket API representation
    * of the address
@@ -73,63 +81,62 @@ namespace sck {
    * of the address
    */
    std::unique_ptr<SocketAddressIn6_t> convertIpv6(const sck::Address& address);
-
    /**
     * @brief Convert a SocketAddress_t into an Address
     */
    AddressPtr convert(const SocketAddress_t& address);
 
    /**
-   * @brief the integer representing a family type
-   */
-   int castFamily(const sck::Family& family);
-
-   /**
    * contains the required things to work with the socket API
    */
-   class SocketHandler {
+   class Handler {
    public:
+      Handler(const Handler&) = delete;
+      Handler& operator=(const Handler&) = delete;
+
       /**
-       * @brief an empty socket is actually created
-       * only after a call to SocketConnection::open this socket will be activated
+       * @brief a closed socket is created
        */
-      SocketHandler();
+      Handler();
+
       /**
-       * @brief the handle is transferred into the object to create
+       * @brief the passed socket should be already opened
        */
-      SocketHandler(SocketHandler&& o);
+      Handler(Socket_t extOpendSocket);
+
+      virtual ~Handler();
+
       /**
-       * @brief if the socket was activated, it's shut down and then closed
+       * @brief internally creates a new socket handler
        */
-      virtual ~SocketHandler();
+      void open(const Protocol& type, const Family& family);
       /**
-       * @brief When before calling the destroyer invalidates the socket.
-       * The socket cannot be used in any way after calling this method
+       * @brief close and shutdown the current socket handler
        */
       void close();
+      inline bool isOpen() const { return this->opened; };
 
-      SocketHandler(const SocketHandler&) = delete;
-      void operator=(const SocketHandler&) = delete;
+      inline const Socket_t& getSocketId() const { return this->socketId; }
 
-      Socket_t handle;
-
-      bool isActive() const;
    private:
-      bool active;
+      std::atomic_bool opened;
+      Socket_t socketId;
+
 #ifdef _WIN32
       /**
        * @brief When the manager is created WSAStartup is called,
        * when is destroyed WSACleanup is called
        */
-      class WSAManagerSingleton {
+      class WSAManager {
       public:
-         ~WSAManagerSingleton();
-         static std::shared_ptr<WSAManagerSingleton> getManager();
+         ~WSAManager();
+         static std::shared_ptr<WSAManager> getManager();
+
       private:
-         WSAManagerSingleton();
-         static std::shared_ptr<WSAManagerSingleton> managerInstance;
+         WSAManager();
+         static std::shared_ptr<WSAManager> managerInstance;
       };
-      std::shared_ptr<WSAManagerSingleton> manager;
+      std::shared_ptr<WSAManager> manager;
 #endif
    };
 

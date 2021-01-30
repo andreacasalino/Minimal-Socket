@@ -6,7 +6,7 @@
  **/
 
 #include <Address.h>
-#include "SocketHandler.h"
+#include "Handler.h"
 
 namespace sck {
    static const std::string LOCALHOST_IPv4 = "127.0.0.1";

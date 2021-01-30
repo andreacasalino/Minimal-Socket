@@ -23,13 +23,12 @@ namespace sck::tcp {
        * @param[in] the address of the server to reach
        */
       explicit TcpClient(const sck::Address& remoteAddress);
-
-      ~TcpClient() override = default;
       
    protected:
-      explicit TcpClient(const sck::Address& remoteAddress, std::unique_ptr<SocketHandler> channel);
+      TcpClient(const sck::Address& remoteAddress, std::shared_ptr<Handler> channel);
 
-      void initHandle() final;
+   private:
+      inline sck::Protocol getProtocol() const final { return Protocol::TCP; };
    };
 }
 

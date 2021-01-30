@@ -6,7 +6,7 @@
  **/
 
 #include <udp/UdpClient.h>
-#include "../SocketHandler.h"
+#include "../Handler.h"
 
 namespace sck::udp {
 
@@ -15,16 +15,8 @@ namespace sck::udp {
       , port(localPort) {
    }
 
-   void UdpClient::initHandle() {
-      this->channel->handle = ::socket(castFamily(this->getFamily()), SOCK_DGRAM, 0);
-      if (this->channel->handle == SCK_INVALID_SOCKET) {
-         throwWithCode("DataGram socket could not be created");
-      }
-   }
-
-   void UdpClient::openConnection() {
+   void UdpClient::openSpecific() {
       this->bindToPort(this->port);
-      this->SocketClient::openConnection();
-      
+      this->SocketClient::openSpecific();      
    }
 }

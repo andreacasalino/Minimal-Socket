@@ -8,8 +8,7 @@
 #ifndef _CROSS_SOCKET_TCPSERVER_H_
 #define _CROSS_SOCKET_TCPSERVER_H_
 
-#include <SocketServer.h>
-#include "SocketClient.h"
+#include <SocketClient.h>
 
 namespace sck::tcp {
    /**
@@ -17,15 +16,13 @@ namespace sck::tcp {
     * When calling open, the server binds and listen to the port, in order to be later ready to accept clients
     */
    class TcpServer
-      : public SocketServer {
+      : public SocketConcrete {
    public:
       /**
        * @param[in] the port to reserve
        * @param[in] the expected protocol family of the client to accept
        */
       explicit TcpServer(const std::uint16_t& port, const Family& family = Family::IP_V4);
-
-      ~TcpServer() override = default;
 
       /**
        * @brief Wait for a new client to ask the connection and after accepting it
@@ -34,10 +31,14 @@ namespace sck::tcp {
        */
       std::unique_ptr<SocketClient> acceptClient();
 
-   protected:
-      void initHandle() final;
+   private:
+      void openSpecific() override;
 
-      void openConnection() override;
+      inline sck::Family getFamily() const final { return this->protocol; };
+      inline sck::Protocol getProtocol() const final { return Protocol::TCP; };
+
+      std::uint16_t port;
+      sck::Family protocol;
    };
 }
 
