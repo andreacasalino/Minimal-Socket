@@ -26,7 +26,6 @@ namespace sck {
    public:
       ~SocketConcrete();
 
-   private:      
       void open(const std::chrono::milliseconds& timeout) final;
 
       void close() final;

@@ -5,17 +5,46 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <MessangerDecorator.h>
+#ifndef STRING_MESSANGER_H
+#define STRING_MESSANGER_H
+
+#include <SocketClient.h>
 #include <string.h>
+#include <map>
 
-namespace sck {
-    class StringMessanger 
-        : public MessangerDecorator<std::string, std::string> {
-    public:
-        StringMessanger(std::unique_ptr<SocketClient> wrapped, const std::size_t recvCapacity);
-
-    private:
-        void encode(const std::string& message) final;
-        void decode(std::string& message) final;
+class PersonRegister {
+public:
+    static const std::string& getSurname(const std::string& name) {
+        auto it = persons.find(name);
+        if(it == persons.end()) return unknown;
+        return it->second;
     };
-}
+
+    static const std::map<std::string, std::string> persons;
+private:
+    static const std::string unknown;
+};
+const std::string PersonRegister::unknown = "unknown";
+const std::map<std::string, std::string> PersonRegister::persons = { 
+    {"Benjamin", "Franklin"},
+    {"Leonardo", "Da Vinci"},
+    {"Napoleone", "Bonaparte"},
+    {"Nikola", "Tesla"},
+    {"Luciano", "Pavarotti"},
+};
+
+
+
+class StringMessanger {
+public:
+    StringMessanger(std::unique_ptr<sck::SocketClient> socket);
+
+    std::string sendReceive(const std::string& name);
+    void        receiveSend();
+
+private:
+    std::unique_ptr<sck::SocketClient> socket;
+    std::vector<char> receiveBuffer;
+};
+
+#endif

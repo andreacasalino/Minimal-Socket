@@ -19,11 +19,12 @@ namespace sck {
 
    class MessangerConcrete
     : public Messanger {
-   private:      
+    public:
        bool send(const std::pair<const char*, std::size_t>& message) final;
 
       std::size_t receive(std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) final;
-    
+
+   private:      
         std::chrono::milliseconds actualTimeOut = std::chrono::milliseconds(0);
 
         std::shared_ptr<Handler> messageChannel;
