@@ -21,12 +21,12 @@ namespace sck::async {
     public:
         AsyncClient(std::unique_ptr<SocketClient> client, const std::size_t& bufferCapacity);
 
-    private:
         inline bool send(const std::pair<const char*, std::size_t>& message) final {
             return dynamic_cast<Messanger*>(this->wrapped.get())->send(message);
         };
 
         std::size_t receive(std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) final;
+    private:
 
         std::mutex bufferMtx;
         std::vector<char> buffer;

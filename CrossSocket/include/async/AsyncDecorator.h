@@ -28,6 +28,22 @@ namespace sck::async {
             this->service->resetErrorListener(listener);
         };
 
+        inline void open(const std::chrono::milliseconds& timeout) final {
+            if(!this->wrapped->isOpen()){
+                this->wrapped->open(timeout);
+                if(this->wrapped->isOpen()) {
+                 this->service = this->make_service();
+                }
+            }
+        };
+
+        inline void close() final { 
+            if(this->wrapped->isOpen()){
+                this->wrapped->close();
+                this->service.reset();
+            }
+        };
+        
     protected:
         AsyncDecorator(std::unique_ptr<Socket> client) 
             : SocketDecorator(std::move(client)) {
@@ -38,21 +54,6 @@ namespace sck::async {
 
         Listener* listener = nullptr;
         std::mutex listenerMtx;
-
-    private:
-        inline void open(const std::chrono::milliseconds& timeout) final {
-            if(!this->wrapped->isOpen()){
-                this->wrapped->open(timeout);
-                this->service = this->make_service();
-            }
-        };
-
-        inline void close() final { 
-            if(this->wrapped->isOpen()){
-                this->wrapped->close();
-                this->service.reset();
-            }
-        };
     };
 }
 

@@ -16,7 +16,7 @@ namespace sck {
     * @brief The interface every socket must derive from.
     */
    class SocketDecorator : public Socket {
-   private:      
+   public:      
       inline void open(const std::chrono::milliseconds& timeout) override { this->wrapped->open(timeout); };
 
       inline void close() override { this->wrapped->close(); };
