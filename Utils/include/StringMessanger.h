@@ -14,11 +14,7 @@
 
 class PersonRegister {
 public:
-    static const std::string& getSurname(const std::string& name) {
-        auto it = persons.find(name);
-        if(it == persons.end()) return unknown;
-        return it->second;
-    };
+    static const std::string& getSurname(const std::string& name);
 
     static const std::map<std::string, std::string> persons;
 private:
