@@ -9,7 +9,6 @@
 #define _CROSS_SOCKET_MESSANGERCONCRETE_H_
 
 #include <Messanger.h>
-#include <utility>
 #include <memory>
 
 namespace sck {   
@@ -18,13 +17,8 @@ namespace sck {
     */
    class Handler;
 
-    typedef Messanger<
-        std::pair<const char*, std::size_t>, 
-        std::pair<char*, std::size_t>
-        > MessangerConcrete_t;
-
    class MessangerConcrete
-    : public MessangerConcrete_t {
+    : public Messanger {
    private:      
        bool send(const std::pair<const char*, std::size_t>& message) final;
 
