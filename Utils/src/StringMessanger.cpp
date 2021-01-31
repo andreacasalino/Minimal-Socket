@@ -7,18 +7,30 @@
 
 #include <StringMessanger.h>
 
-namespace sck {
-    StringMessanger::StringMessanger(std::unique_ptr<SocketClient> wrapped, const std::size_t recvCapacity)
-        : MessangerDecorator<std::string, std::string>(std::move(wrapped), recvCapacity) {
-    }
+const std::string& PersonRegister::getSurname(const std::string& name) {
+    auto it = persons.find(name);
+    if(it == persons.end()) return unknown;
+    return it->second;
+}
 
-    void StringMessanger::encode(const std::string& message) {
-        this->sendBuffer.resize(message.size());
-        memcpy(this->sendBuffer.data(), message.data(), message.size());
-    };
 
-    void StringMessanger::decode(std::string& message) {
-        message.reserve(this->recvBuffer.size());
-        memcpy(message.data(), this->recvBuffer.data(), this->recvBuffer.size());
-    };
+
+StringMessanger::StringMessanger(std::unique_ptr<sck::SocketClient> socket)
+    : socket(std::move(socket)) {
+    this->socket->open(std::chrono::milliseconds(0));
+    this->receiveBuffer.resize(500);
+}
+
+std::string StringMessanger::sendReceive(const std::string& name) {
+    this->socket->send({name.data(), name.size()});
+    std::pair<char*, std::size_t> p = std::make_pair<char*, std::size_t>(this->receiveBuffer.data(), this->receiveBuffer.capacity());
+    auto recvBytes = this->socket->receive(p , std::chrono::milliseconds(0));
+    return std::string(this->receiveBuffer.data(), recvBytes);
+}
+
+void StringMessanger::receiveSend() {
+    std::pair<char*, std::size_t> p = std::make_pair<char*, std::size_t>(this->receiveBuffer.data(), this->receiveBuffer.capacity());
+    auto recvBytes = this->socket->receive(p , std::chrono::milliseconds(0));
+    const std::string& surname = PersonRegister::getSurname(std::string(p.first, recvBytes));
+    this->socket->send({surname.data(), surname.size()});
 }
