@@ -24,7 +24,7 @@ namespace sck::async {
                 {
                     std::lock_guard<std::mutex> bufferLock(client.bufferMtx);
                     auto pr = std::make_pair<char*, std::size_t>(client.buffer.data(), client.buffer.capacity());
-                    auto recvBytes = dynamic_cast<MessangerConcrete_t*>(client.wrapped.get())->receive(pr, std::chrono::milliseconds(0));
+                    auto recvBytes = dynamic_cast<Messanger*>(client.wrapped.get())->receive(pr, std::chrono::milliseconds(0));
                     if(recvBytes != client.buffer.capacity()) {
                         client.buffer.resize(recvBytes);
                     }
