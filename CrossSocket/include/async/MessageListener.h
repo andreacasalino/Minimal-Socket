@@ -11,6 +11,12 @@
 #include <MessangerConcrete.h>
 
 namespace sck::async {
+    template<typename Recv_t>
+    class CryptedMessageListener {
+    public:
+        virtual void handle(const Recv_t& message) = 0;
+    };
+
     class MessageListener {
     public:
         virtual void handle(const std::pair<const char*, std::size_t>& message) = 0;
