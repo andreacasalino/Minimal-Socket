@@ -26,6 +26,7 @@ include(SetInstallRPath)
 
 add_subdirectory(CrossSocket)
 if(BUILD_SAMPLES)
+    add_subdirectory(Utils)
     add_subdirectory(Samples)
 endif()
 

@@ -97,7 +97,7 @@ namespace sck {
 #ifdef _WIN32
          addr.sin_addr.s_addr = ADDR_ANY;
 #else
-         addr.sin_addr.s_addr = ::htonl(INADDR_ANY);
+         addr.sin_addr.s_addr = htonl(INADDR_ANY);
 #endif
          if (::bind(this->channel->getSocketId(), reinterpret_cast<SocketAddress_t*>(&addr), sizeof(SocketAddressIn_t)) == SCK_SOCKET_ERROR) {
             throwWithCode("can't bind localhost on port: " + std::to_string(port));
