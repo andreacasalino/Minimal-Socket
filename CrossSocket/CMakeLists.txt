@@ -30,4 +30,9 @@ if(WIN32)
         wsock32 ws2_32
   )
 endif()
+find_package(Threads)
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+	${CMAKE_THREAD_LIBS_INIT}      
+)
 
