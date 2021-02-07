@@ -1,39 +1,44 @@
 /**
  * Author:    Andrea Casalino
  * Created:   16.05.2019
-*
-* report any bug to andrecasa91@gmail.com.
+ *
+ * report any bug to andrecasa91@gmail.com.
  **/
 
-#include "Service.h"
-#include <TcpServer.h>
+#include <Responder.h>
+#include <tcp/TcpServer.h>
 #include <iostream>
-#include <list>
 using namespace std;
 
-int main(){
+int main() {
 
     cout << "-----------------------  Server  -----------------------" << endl;
 
-    //build two services: one for client A and one for client B
-    sck::TcpServer server(31000);
-    server.open();
-    //init connection to client A
-    Service serviceA(std::make_unique<sck::StringClient>(server.acceptNewClient()));
-    cout << "client A connected" << endl;
-    //init connection to client B
-    Service serviceB(std::make_unique<sck::StringClient>(server.acceptNewClient()));
-    cout << "client B connected" << endl;
+    // build and initialize a connection from a client on port 20000
+    sck::tcp::TcpServer server(31000);
 
-    std::list<Service*> active = {&serviceA, &serviceB};
-    while (true){
-    //serve all the active clients
-        auto it = active.begin();
-        while (it!=active.end()){
-            if(!(*it)->serve()) it = active.erase(it);
-            else ++it;
-        }
+    // blocking open
+    server.open(std::chrono::milliseconds(0));
+    if (!server.isOpen()) {
+        cout << "server open failed" << endl;
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    //accept first client
+    auto clientAHandler = server.acceptClient();
+    cout << "client A connected" << endl;
+
+    //accept second client
+    auto clientBHandler = server.acceptClient();
+    cout << "client B connected" << endl;
+
+    Responder respA(std::move(clientAHandler));
+    Responder respB(std::move(clientBHandler));
+
+    while (true) {
+        respA.respond();
+        respB.respond();
+    }
+
+    return EXIT_SUCCESS;
 }

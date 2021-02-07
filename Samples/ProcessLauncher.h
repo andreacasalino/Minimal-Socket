@@ -96,11 +96,11 @@ void  Launcher::operator()() const {
 
     f.close();
 
-#ifdef _WIN32
-    system(name.c_str());
-#elif  __linux__
-    system(std::string("sh ./" + name).c_str());
-#endif
+//#ifdef _WIN32
+//    system(name.c_str());
+//#elif  __linux__
+//    system(std::string("sh ./" + name).c_str());
+//#endif
 };
 
 #endif

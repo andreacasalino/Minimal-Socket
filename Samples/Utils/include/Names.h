@@ -13,33 +13,20 @@
 
 class Names {
 public:
-    Names() {
-		this->cursor = namesSurnames.begin();
-	}
+    Names();
 
     inline const std::string& getCursorName() const { return this->cursor->first; };
     inline const std::string& getCursorSurname() const { return this->cursor->second; };
 
-    Names& operator++() {
-		++this->cursor;
-		if (this->cursor == namesSurnames.end()) {
-			this->cursor = namesSurnames.begin();
-		}
-		return *this;
-	}
+    static const std::string& getSurname(const std::string& name);
+
+    Names& operator++();
 
 private:
     static const std::map<std::string, std::string> namesSurnames;
+    static const std::string unknown;
 
     std::map<std::string, std::string>::const_iterator cursor;
-};
-
-const std::map<std::string, std::string> Names::namesSurnames = {
-    {"Luciano", "Pavarotti"},
-    {"Gengis", "Khan"},
-    {"Giulio", "Cesare"},
-    {"Theodor", "Roosvelt"},
-    {"Immanuel", "Kant"}
 };
 
 #endif

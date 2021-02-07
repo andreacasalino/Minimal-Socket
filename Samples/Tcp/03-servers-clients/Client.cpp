@@ -5,8 +5,8 @@
 * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <Service.h>
-#include <TcpClient.h>
+#include <Asker.h>
+#include <tcp/TcpClient.h>
 #include <iostream>
 using namespace std;
 
@@ -14,17 +14,24 @@ int main(int argc, char **argv){
 
     cout << "-----------------------  Client  -----------------------" << endl;
 
-    if(argc < 2) return EXIT_FAILURE;
+    if (argc < 2) {
+        cout << "sleep time not passed" << endl;
+        return EXIT_FAILURE;
+    }
     int sleepTime = atoi(std::string(argv[1]).c_str());
-    sck::Address remoteAddress = sck::Address::Localhost(27300);
-    if(argc > 2) remoteAddress = sck::Address::FromIp(argv[2], 27300);
-    cout << "Asking connection to " << remoteAddress.getHost() << ":" << remoteAddress.getPort() << endl;
 
-    //build and initialize a connection to the server
-    sck::StringClient client( std::make_unique<sck::TcpClient>(remoteAddress) );
-    client.open();
+    std::unique_ptr<sck::tcp::TcpClient> client = std::make_unique<sck::tcp::TcpClient>(*sck::Ip::createLocalHost(27300));
+    cout << "Asking connection to " << client->getRemoteAddress().getHost() << ":" << client->getRemoteAddress().getPort() << endl;
 
-    ClientLoop(client , sleepTime);
+    // blocking open
+    client->open(std::chrono::milliseconds(0));
+    if (!client->isOpen()) {
+        cout << "connection failed" << endl;
+        return EXIT_FAILURE;
+    }
+
+    Asker ask(std::move(client));
+    ask.askForever(std::chrono::milliseconds(sleepTime));
     
     return EXIT_SUCCESS;
 }
