@@ -1,27 +1,31 @@
 /**
  * Author:    Andrea Casalino
  * Created:   16.05.2019
-*
-* report any bug to andrecasa91@gmail.com.
+ *
+ * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <Service.h>
-#include <TcpClient.h>
+#include <Asker.h>
+#include <tcp/TcpClient.h>
 #include <iostream>
 using namespace std;
 
-int main(int argc, char **argv){
+int main(int argc, char** argv) {
 
     cout << "-----------------------  Client  -----------------------" << endl;
 
-    sck::Address remoteAddress = parseAddress(argc, argv, 4000);
-    cout << "Asking connection to " << remoteAddress.getHost() << ":" << remoteAddress.getPort() << endl;
+    std::unique_ptr<sck::tcp::TcpClient> client = std::make_unique<sck::tcp::TcpClient>(*sck::Ip::createLocalHost(4000));
+    cout << "Asking connection to " << client->getRemoteAddress().getHost() << ":" << client->getRemoteAddress().getPort() << endl;
 
-    //build and initialize a connection to the server
-    sck::StringClient client( std::make_unique<sck::TcpClient>(remoteAddress) );
-    client.open();
+    // blocking open
+    client->open(std::chrono::milliseconds(0));
+    if (!client->isOpen()) {
+        cout << "connection failed" << endl;
+        return EXIT_FAILURE;
+    }
 
-    ClientLoop(client , 150);
-    
+    Asker ask(std::move(client));
+    ask.askForever(std::chrono::milliseconds(150));
+
     return EXIT_SUCCESS;
 }

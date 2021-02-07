@@ -1,13 +1,12 @@
 /**
  * Author:    Andrea Casalino
  * Created:   16.05.2019
-*
-* report any bug to andrecasa91@gmail.com.
+ *
+ * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <StringClient.h>
-#include <TcpClient.h>
-#include <TcpServer.h>
+#include <tcp/TcpServer.h>
+#include <tcp/TcpClient.h>
 #include <iostream>
 using namespace std;
 
@@ -16,30 +15,33 @@ int main(int argc, char **argv){
     cout << "-----------------------  Repeater  -----------------------" << endl;
 
     // connecting to the server
-    sck::StringClient connection2Server( std::make_unique<sck::TcpClient>(sck::Address::Localhost(3000)) );
-    connection2Server.open();
-    cout << "connected to server" << endl;
+    std::unique_ptr<sck::tcp::TcpClient> connection2Server = std::make_unique<sck::tcp::TcpClient>(*sck::Ip::createLocalHost(3000));
+    cout << "Asking connection to " << connection2Server->getRemoteAddress().getHost() << ":" << connection2Server->getRemoteAddress().getPort() << endl;
 
     // accepting client
-    std::unique_ptr<sck::StringClient> connection2Client;
+    std::unique_ptr<sck::Client> connection2Client;
     {
-        sck::TcpServer server(4000);
-        server.open();
-        connection2Client = std::make_unique<sck::StringClient>(server.acceptNewClient());
+        sck::tcp::TcpServer server(3000);
+        server.open(std::chrono::milliseconds(0));
+        if (!server.isOpen()) {
+            cout << "server open failed" << endl;
+            return EXIT_FAILURE;
+        }
+        connection2Client = server.acceptClient();
+        cout << "client connected" << endl;
     }
 
+    char buffer[1000];
+    std::pair<char*, std::size_t> temp = { &buffer[0], 1000 };
+    std::size_t recvBytes;
     while (true) {
-        auto toForward = connection2Client->receive(500);
-        if(toForward->size() == 0) {
-            connection2Server.send("");
-            break;
-        }
-        cout << "forwarding to server " << *toForward.get();
-        connection2Server.send(*toForward.get());
+        recvBytes = connection2Client->receive(temp, std::chrono::milliseconds(0));
+        cout << "forwarding to server " << std::string(buffer, recvBytes);
+        connection2Server->send({&buffer[0], recvBytes});
 
-        auto reply = connection2Server.receive(500);
-        cout << " reply to client " << *reply.get() << endl;
-        connection2Client->send(*reply.get());
+        recvBytes = connection2Client->receive(temp, std::chrono::milliseconds(0));
+        cout << " reply to client " << std::string(buffer, recvBytes) << endl;
+        connection2Client->send({ &buffer[0], recvBytes });
     }
 
     return EXIT_SUCCESS;

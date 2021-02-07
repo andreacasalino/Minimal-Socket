@@ -11,3 +11,5 @@ remove Socket Server
 add explicit a c?tor single input
 indicare quando throw in doc class
 rename protocol in family everywhere
+spiegare bene come si lanciano samples
+fix readme svg con giuste porte

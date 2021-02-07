@@ -1,4 +1,4 @@
-#include <ProcessLauncher.h>
+#include "../../ProcessLauncher.h"
 
 int main() {
 
@@ -7,5 +7,5 @@ int main() {
    lnc.addProcess("Sample01_Client");
    lnc();
 
-   return 0;
+   return EXIT_SUCCESS;
 }

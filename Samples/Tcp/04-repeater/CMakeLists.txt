@@ -1,39 +1,12 @@
-##### sample 04 #####
+add_executable(Sample04_Client Client.cpp)
+target_link_libraries( Sample04_Client Sample-Utils)	
 
-	add_executable(
-		Sample04_Client
-		Client.cpp
-	)
-	target_link_libraries( Sample04_Client
-		PUBLIC
-			Utils
-	)	
+add_executable(Sample04_Server Server.cpp)
+target_link_libraries( Sample04_Server Sample-Utils)	
 
-	add_executable(
-		Sample04_Repeater
-		Repeater.cpp
-	)
-	target_link_libraries( Sample04_Repeater
-		PUBLIC
-			Utils
-	)	
-	
-	add_executable(
-		Sample04_Server
-		Server.cpp
-	)
-	find_package( Threads )
-	target_link_libraries( Sample04_Server
-		PUBLIC
-			Utils
-	)	
+add_executable(Sample04_Repeater Repeater.cpp)
+target_link_libraries( Sample04_Repeater Sample-Utils)
 
-	add_executable(
-		Sample04__Launcher
-		Launcher.cpp
-	)	
-	target_link_libraries( Sample04__Launcher
-		PUBLIC
-			Utils
-	)	
-	add_dependencies(Sample04__Launcher Sample04_Client Sample04_Repeater Sample04_Server)
+add_executable(Sample04Launcher Launcher.cpp)
+target_link_libraries(Sample04Launcher)
+add_dependencies(Sample04Launcher Sample04_Server Sample04_Client Sample04_Repeater)

@@ -5,8 +5,8 @@
 * report any bug to andrecasa91@gmail.com.
  **/
 
-#include "Service.h"
-#include <TcpServer.h>
+#include <Responder.h>
+#include <tcp/TcpServer.h>
 #include <iostream>
 #include <thread>
 using namespace std;
@@ -16,12 +16,22 @@ int main(){
     cout << "-----------------------  Server  -----------------------" << endl;
 
     //build two services: one for client A and one for client B
-    sck::TcpServer server(27300);
-    server.open();
+    sck::tcp::TcpServer server(27300);
 
-    auto srv = [&](){
-        Service service(std::make_unique<sck::StringClient>(server.acceptNewClient()));
-        service.serveForever();
+    // blocking open
+    server.open(std::chrono::milliseconds(0));
+    if (!server.isOpen()) {
+        cout << "server open failed" << endl;
+        return EXIT_FAILURE;
+    }
+
+    auto srv = [&server](){
+        //accept the client
+        auto clientHandler = server.acceptClient();
+        cout << "client connected" << endl;
+
+        Responder resp(std::move(clientHandler));
+        resp.respondForever();
     };
 
     //spawn service to client A
@@ -32,5 +42,5 @@ int main(){
     tA.join();
     tB.join();
 
-    return 0;
+    return EXIT_SUCCESS;
 }

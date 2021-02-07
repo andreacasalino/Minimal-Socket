@@ -5,8 +5,8 @@
 * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <Service.h>
-#include <TcpServer.h>
+#include <Responder.h>
+#include <tcp/TcpServer.h>
 #include <iostream>
 using namespace std;
 
@@ -14,14 +14,22 @@ int main(){
 
     cout << "-----------------------  Server  -----------------------" << endl;
 
-    // build and initialize a connection from a client on port 2000
-    sck::TcpServer server(2000);
-    server.open();
+    // build and initialize a connection from a client on port 20000
+    sck::tcp::TcpServer server(20000);
 
-    //accept the client and create the service
-    Service srv(std::make_unique<sck::StringClient>(server.acceptNewClient()));
+    // blocking open
+    server.open(std::chrono::milliseconds(0));
+    if (!server.isOpen()) {
+        cout << "server open failed" << endl;
+        return EXIT_FAILURE;
+    }
 
-    srv.serveForever();
+    //accept the client
+    auto clientHandler = server.acceptClient();
+    cout << "client connected" << endl;
+
+    Responder resp(std::move(clientHandler));
+    resp.respondForever();
 
     return EXIT_SUCCESS;
 }
