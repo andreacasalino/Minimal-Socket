@@ -1,4 +1,4 @@
-add_subdirectory(Sample_05_server_client)
+add_subdirectory(05-server-client)
 
-add_subdirectory(Sample_06_multithread_services)
+add_subdirectory(06-servers-clients)
 
