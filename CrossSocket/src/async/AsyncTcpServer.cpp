@@ -9,9 +9,9 @@
 
 namespace sck::async {
     AsyncTcpServer::AsyncTcpServer(std::unique_ptr<tcp::TcpServer> server)
-        : AsyncDecorator<TcpServerListener>(std::move(server)) {
+        : AsyncDecorator<listener::TcpServerListener>(std::move(server)) {
         if(this->wrapped->isOpen()){
-            this->service = this->make_service();
+            this->open(std::chrono::milliseconds(0));
         }
     };
 

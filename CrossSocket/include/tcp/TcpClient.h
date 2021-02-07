@@ -8,7 +8,7 @@
 #ifndef _CROSS_SOCKET_TCPCLIENT_H_
 #define _CROSS_SOCKET_TCPCLIENT_H_
 
-#include "SocketClient.h"
+#include <core/Client.h>
 
 namespace sck::tcp {
    /**
@@ -17,15 +17,15 @@ namespace sck::tcp {
     * it should be ready to listen and accept this client
     */
    class TcpClient
-      : public SocketClient {
+      : public Client {
    public:      
       /**
        * @param[in] the address of the server to reach
        */
-      explicit TcpClient(const sck::Address& remoteAddress);
+      explicit TcpClient(const sck::Ip& remoteAddress);
       
    protected:
-      TcpClient(const sck::Address& remoteAddress, std::shared_ptr<Handler> channel);
+      TcpClient(const sck::Ip& remoteAddress, std::shared_ptr<Handler> channel);
 
    private:
       inline sck::Protocol getProtocol() const final { return Protocol::TCP; };

@@ -9,7 +9,7 @@
 #define _CROSS_SOCKET_SOCKETCONCRETE_H_
 
 #include <Socket.h>
-#include <Address.h>
+#include <Ip.h>
 
 namespace sck {
    enum Protocol { UDP, TCP };

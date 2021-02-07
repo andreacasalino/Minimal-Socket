@@ -8,7 +8,7 @@
 #ifndef _CROSS_SOCKET_TCPSERVER_H_
 #define _CROSS_SOCKET_TCPSERVER_H_
 
-#include <SocketClient.h>
+#include <core/Client.h>
 
 namespace sck::tcp {
    /**
@@ -29,7 +29,7 @@ namespace sck::tcp {
        * returns an interface to use for exchanging data to and from the accepted clients.
        * This is a blocking operation.
        */
-      std::unique_ptr<SocketClient> acceptClient();
+      std::unique_ptr<Client> acceptClient();
 
    private:
       void openSpecific() override;

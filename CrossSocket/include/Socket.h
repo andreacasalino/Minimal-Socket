@@ -20,7 +20,7 @@ namespace sck {
       Socket(const Socket&) = delete;
       Socket& operator=(const Socket&) = delete;
 
-      virtual ~Socket();
+      virtual ~Socket() = default;
       
       virtual void open(const std::chrono::milliseconds& timeout) = 0;
 

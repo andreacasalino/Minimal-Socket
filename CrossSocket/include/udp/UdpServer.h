@@ -12,8 +12,7 @@
 
 namespace sck::udp {
    /**
-    * @brief interface for a udp server. 
-    * A UdpServer is an UdpClient, with the possibility to deduce the remoteAddress,
+    * @brief A UdpServer is an UdpClient, with the possibility to deduce the remoteAddress,
     * by setting as target the first UdpClient that hits this socket, sending 
     * at least 1 byte of data.
     * IMPORTANT!!! The first message sent to the server will be lost.

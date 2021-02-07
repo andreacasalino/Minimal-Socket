@@ -10,7 +10,7 @@
 
 #include <Error.h>
 
-namespace sck::async {
+namespace sck::async::listener {
     class ErrorListener {
     public:
         virtual void handle(const Error& error) = 0;

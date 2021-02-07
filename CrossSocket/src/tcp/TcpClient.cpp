@@ -6,15 +6,15 @@
  **/
 
 #include <tcp/TcpClient.h>
-#include "../Handler.h"
+#include "../core/Core.h"
 
 namespace sck::tcp {
 
-   TcpClient::TcpClient(const sck::Address& remoteAddress)
-      : SocketClient(remoteAddress) {
+   TcpClient::TcpClient(const sck::Ip& remoteAddress)
+      : Client(remoteAddress) {
    }
 
-   TcpClient::TcpClient(const sck::Address& remoteAddress, std::shared_ptr<Handler> channel)
-      : SocketClient(remoteAddress, channel) {
+   TcpClient::TcpClient(const sck::Ip& remoteAddress, std::shared_ptr<Handler> channel)
+      : Client(remoteAddress, channel) {
    }
 }

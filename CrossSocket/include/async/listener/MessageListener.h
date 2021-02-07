@@ -8,9 +8,9 @@
 #ifndef _CROSS_SOCKET_MESSAGELISTENER_H_
 #define _CROSS_SOCKET_MESSAGELISTENER_H_
 
-#include <MessangerConcrete.h>
+#include <utility>
 
-namespace sck::async {
+namespace sck::async::listener {
     class MessageListener {
     public:
         virtual void handle(const std::pair<const char*, std::size_t>& message) = 0;

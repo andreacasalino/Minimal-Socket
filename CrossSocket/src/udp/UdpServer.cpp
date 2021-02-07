@@ -6,16 +6,19 @@
  **/
 
 #include <udp/UdpServer.h>
-#include "../Handler.h"
+#include "../core/Core.h"
 #include <Error.h>
 
 namespace sck::udp {
 
-   sck::Address getInitialAddress(const sck::Family& protocol) {
-      if (sck::Family::IP_V6 == protocol) {
-         return *sck::Address::createLocalHost(0, sck::Family::IP_V6);
+   sck::Ip getInitialAddress(const sck::Family& family) {
+      if (sck::Family::IP_V4 == family) {
+          return *sck::Ip::createLocalHost(0, sck::Family::IP_V4);
       }
-      return *sck::Address::createLocalHost(0, sck::Family::IP_V4);
+      if (sck::Family::IP_V6 == family) {
+         return *sck::Ip::createLocalHost(0, sck::Family::IP_V6);
+      }
+      throw Error("unrecognized family");
    }
 
    UdpServer::UdpServer(const std::uint16_t& localPort, const sck::Family& protocol)
@@ -27,21 +30,21 @@ namespace sck::udp {
 
       // receive a message from the client, that from now on will beccome the recognized one.
       char bf[MAX_UDP_RECV_MESSAGE];
-      SocketAddress_t remoteAddr;
+      SocketIp remoteAddr;
 #ifdef _WIN32
       int
 #else
       unsigned int
 #endif
-      remoteAddrLen = sizeof(SocketAddress_t);
-      if (::recvfrom(this->channel->getSocketId(), &bf, MAX_UDP_RECV_MESSAGE, 0, &remoteAddr, &remoteAddrLen) == SCK_SOCKET_ERROR) {
+      remoteAddrLen = sizeof(SocketIp);
+      if (::recvfrom(**this->channel, &bf[0], static_cast<int>(MAX_UDP_RECV_MESSAGE), 0, &remoteAddr, &remoteAddrLen) == SCK_SOCKET_ERROR) {
          throwWithCode("recvfrom failed while identifying the target");
       }
-      AddressPtr remoteConverted = convert(remoteAddr);
+      IpPtr remoteConverted = convert(remoteAddr);
       if(nullptr == remoteConverted) {
          throw Error(remoteAddr.sa_data, " is an invalid data for udp serer remote address");
       }
       this->remoteAddress = *remoteConverted;
-      this->SocketClient::openSpecific();
+      this->Client::openSpecific();
    }
 }

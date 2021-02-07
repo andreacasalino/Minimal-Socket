@@ -8,8 +8,7 @@
 #ifndef _CROSS_SOCKET_ASYNCDECORATOR_H
 #define _CROSS_SOCKET_ASYNCDECORATOR_H
 
-#include <SocketDecorator.h>
-#include <async/ErrorListener.h>
+#include <core/SocketDecorator.h>
 #include <async/Service.h>
 
 namespace sck::async {
@@ -24,24 +23,22 @@ namespace sck::async {
             this->listener = listener;
         };
 
-        void resetErrorListener(ErrorListener* listener) {
+        inline void resetErrorListener(listener::ErrorListener* listener) {
             this->service->resetErrorListener(listener);
         };
 
         inline void open(const std::chrono::milliseconds& timeout) final {
-            if(!this->wrapped->isOpen()){
-                this->wrapped->open(timeout);
-                if(this->wrapped->isOpen()) {
-                 this->service = this->make_service();
-                }
+            if (nullptr != this->service) return;
+            this->wrapped->open(timeout);
+            if (this->wrapped->isOpen()) {
+                this->service = this->make_service();
             }
         };
 
         inline void close() final { 
-            if(this->wrapped->isOpen()){
-                this->wrapped->close();
-                this->service.reset();
-            }
+            this->wrapped->close();
+            if (nullptr != this->service) return;
+            this->service.reset();
         };
         
     protected:
@@ -52,8 +49,8 @@ namespace sck::async {
         virtual std::unique_ptr<Service> make_service() = 0;
         std::unique_ptr<Service> service;
 
-        Listener* listener = nullptr;
         std::mutex listenerMtx;
+        Listener* listener = nullptr;
     };
 }
 

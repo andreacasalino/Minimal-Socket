@@ -7,15 +7,15 @@
 
 #include <tcp/TcpServer.h>
 #include <tcp/TcpClient.h>
-#include "../Handler.h"
+#include "../core/Core.h"
+#include <Error.h>
 
 namespace sck::tcp {
-
    constexpr std::size_t LISTEN_BACKLOG = 50;
 
    class ClientHandler : public TcpClient {
    public:
-      explicit ClientHandler(const sck::Address& remoteAddress, std::shared_ptr<Handler> channel)
+      explicit ClientHandler(const sck::Ip& remoteAddress, std::shared_ptr<Handler> channel)
          : TcpClient(remoteAddress, channel) {
       };
 
@@ -33,22 +33,25 @@ namespace sck::tcp {
       , protocol(family) {
    }
 
-   std::unique_ptr<SocketClient> TcpServer::acceptClient() {
-      SocketAddress_t acceptedClientAddress;
+   std::unique_ptr<Client> TcpServer::acceptClient() {
+       if (!this->isOpen()) {
+           throw Error("a tcp server should be opened before accepting a new client");
+       }
+      SocketIp acceptedClientAddress;
 #ifdef _WIN32
       int acceptedAddressLength
 #else
       unsigned int acceptedAddressLength
 #endif
-         = sizeof(SocketAddress_t);
+         = sizeof(SocketIp);
       // accept: wait for a client to call connect and hit this server and get a pointer to this client.
-      Socket_t temp = ::accept(this->channel->getSocketId(), &acceptedClientAddress, &acceptedAddressLength);
+      SocketHandler temp = ::accept(**this->channel, &acceptedClientAddress, &acceptedAddressLength);
       if (temp == SCK_INVALID_SOCKET) {
          throwWithCode("Error: accepting new client");
       }
       std::shared_ptr<Handler> acceptedClientHandler  = std::make_shared<Handler>(temp);
       
-      AddressPtr remoteAddress = convert(acceptedClientAddress);
+      IpPtr remoteAddress = convert(acceptedClientAddress);
       if (nullptr != remoteAddress) {
          throw std::runtime_error("accepted client remote address is not resolvable");
       }
@@ -59,7 +62,7 @@ namespace sck::tcp {
    void TcpServer::openSpecific() {
       this->bindToPort(this->port);
       // listen to the port to allow all the following clients acceptance
-      if (::listen(this->channel->getSocketId(), LISTEN_BACKLOG) == SCK_SOCKET_ERROR) {
+      if (::listen(**this->channel, LISTEN_BACKLOG) == SCK_SOCKET_ERROR) {
          throwWithCode("Error: listening on port: " + std::to_string(this->port));
       }
    }

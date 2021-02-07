@@ -6,17 +6,17 @@
  **/
 
 #include <udp/UdpClient.h>
-#include "../Handler.h"
+#include "../core/Core.h"
 
 namespace sck::udp {
 
-   UdpClient::UdpClient(const sck::Address& remoteAddress, const std::uint16_t& localPort)
-      : SocketClient(remoteAddress)
+   UdpClient::UdpClient(const sck::Ip& remoteAddress, const std::uint16_t& localPort)
+      : Client(remoteAddress)
       , port(localPort) {
    }
 
    void UdpClient::openSpecific() {
       this->bindToPort(this->port);
-      this->SocketClient::openSpecific();      
+      this->Client::openSpecific();      
    }
 }

@@ -8,7 +8,7 @@
 #ifndef _CROSS_SOCKET_UDPCLIENT_H_
 #define _CROSS_SOCKET_UDPCLIENT_H_
 
-#include <SocketClient.h>
+#include <core/Client.h>
 
 namespace sck::udp {
 
@@ -20,13 +20,13 @@ namespace sck::udp {
     * A udp may or not reserve a port, in order to be reached by another udp client.
     */
    class UdpClient
-      : public SocketClient {
+      : public Client {
    public:
       /**
        @param[in] Address of the remote host to hit
-       @param[in] port to reserve (passing 0 no port is reserved)
+       @param[in] port to reserve (passing 0 a random port is reserved)
        */
-      UdpClient(const sck::Address& remoteAddress, const std::uint16_t& localPort = 0);
+      UdpClient(const sck::Ip& remoteAddress, const std::uint16_t& localPort = 0);
 
    protected:
       std::uint16_t port;
