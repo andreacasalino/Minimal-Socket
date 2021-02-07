@@ -11,6 +11,8 @@
 #include <async/AsyncDecorator.h>
 #include <core/Client.h>
 #include <async/listener/MessageListener.h>
+#include <condition_variable>
+#include <mutex>
 #include <vector>
 
 namespace sck::async {
