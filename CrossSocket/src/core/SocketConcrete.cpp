@@ -5,8 +5,9 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <SocketConcrete.h>
-#include "Handler.h"
+#include <core/SocketConcrete.h>
+#include "Core.h"
+#include <Error.h>
 #include <thread>
 #include <condition_variable>
 
@@ -19,6 +20,9 @@
 namespace sck {
     SocketConcrete::SocketConcrete(std::shared_ptr<Handler> channel)
         : channel(channel) {
+        if (nullptr == this->channel) {
+            throw Error("found null channel when building SocketConcrete");
+        }
     }
 
     SocketConcrete::~SocketConcrete() {
@@ -62,6 +66,10 @@ namespace sck {
       }
    }
 
+    bool SocketConcrete::isOpen() const {
+        return this->channel->isOpen();
+    }
+
     void SocketConcrete::close() {
         if (!this->isOpen()) {
             return;
@@ -79,7 +87,7 @@ namespace sck {
 
     void SocketConcrete::bindToPort(const std::uint16_t& port) {
       int reusePortOptVal = 1;
-      ::setsockopt(this->channel->getSocketId(), SOL_SOCKET, REBIND_OPTION, reinterpret_cast<const
+      ::setsockopt(**this->channel, SOL_SOCKET, REBIND_OPTION, reinterpret_cast<const
 #ifdef _WIN32
          char*  // not sure it would work with void* also in Windows
 #else
@@ -88,32 +96,34 @@ namespace sck {
       >(&reusePortOptVal), sizeof(int));
 
       // bind the server to the port
-      if (sck::Family::IP_V4 == this->getFamily()) {
-         //v4 family
-         SocketAddressIn_t addr;
-         ::memset(&addr, 0, sizeof(SocketAddressIn_t));
-         addr.sin_family = AF_INET;
-         addr.sin_port = htons(port);
+      auto fam = this->getFamily();
+      if (sck::Family::IP_V4 == fam) {
+          SocketIp4 addr;
+          ::memset(&addr, 0, sizeof(SocketIp4));
+          addr.sin_family = AF_INET;
+          addr.sin_port = htons(port);
 #ifdef _WIN32
-         addr.sin_addr.s_addr = ADDR_ANY;
+          addr.sin_addr.s_addr = ADDR_ANY;
 #else
-         addr.sin_addr.s_addr = htonl(INADDR_ANY);
+          addr.sin_addr.s_addr = htonl(INADDR_ANY);
 #endif
-         if (::bind(this->channel->getSocketId(), reinterpret_cast<SocketAddress_t*>(&addr), sizeof(SocketAddressIn_t)) == SCK_SOCKET_ERROR) {
-            throwWithCode("can't bind localhost on port: " + std::to_string(port));
-         }
+          if (::bind(**this->channel, reinterpret_cast<SocketIp*>(&addr), sizeof(SocketIp4)) == SCK_SOCKET_ERROR) {
+              throwWithCode("can't bind localhost on port: " + std::to_string(port));
+          }
       }
-      else {
-         //v6 family
-         SocketAddressIn6_t addr;
-         ::memset(&addr, 0, sizeof(SocketAddressIn6_t));
+      else if(sck::Family::IP_V6 == fam) {
+          SocketIp6 addr;
+         ::memset(&addr, 0, sizeof(SocketIp6));
          addr.sin6_family = AF_INET6;
          addr.sin6_flowinfo = 0;
          addr.sin6_addr = IN6ADDR_ANY_INIT;  // apparently, there is no such a cross-system define for ipv4 addresses
          addr.sin6_port = htons(port);
-         if (::bind(this->channel->getSocketId(), reinterpret_cast<SocketAddress_t*>(&addr), sizeof(SocketAddressIn6_t)) == SCK_SOCKET_ERROR) {
+         if (::bind(**this->channel, reinterpret_cast<SocketIp*>(&addr), sizeof(SocketIp6)) == SCK_SOCKET_ERROR) {
             throwWithCode("can't bind localhost on port: " + std::to_string(port));
          }
+      }
+      else {
+          throw Error("found an unrecognized family type when binding the socket");
       }
     }
 }

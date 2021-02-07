@@ -9,10 +9,10 @@
 #define _CROSS_SOCKET_ASYNCTCPSERVER_H
 
 #include <async/AsyncDecorator.h>
-#include <async/TcpServerListener.h>
+#include <async/listener/TcpServerListener.h>
 
 namespace sck::async {
-    class AsyncTcpServer : public AsyncDecorator<TcpServerListener> {
+    class AsyncTcpServer : public AsyncDecorator<listener::TcpServerListener> {
     public:
         AsyncTcpServer(std::unique_ptr<tcp::TcpServer> server);
 

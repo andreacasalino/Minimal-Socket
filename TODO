@@ -9,3 +9,5 @@ remove default d'tor
 provare in Windows
 remove Socket Server
 add explicit a c?tor single input
+indicare quando throw in doc class
+rename protocol in family everywhere

@@ -5,38 +5,40 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include "Handler.h"
-#include <sstream>
-#include <Error.h>
-
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #else
 #include <netdb.h>
 #endif
+#include "Core.h"
+#include <Error.h>
 
 namespace sck {
 #ifdef _WIN32
-   std::shared_ptr<SocketHandler::WSAManager> SocketHandler::WSAManager::managerInstance;
+   std::size_t Handler::SocketHandlerFactory::handlerCounter = 0;
+   std::mutex Handler::SocketHandlerFactory::handlerCounterMtx;
 
-   std::shared_ptr<SocketHandler::WSAManager> SocketHandler::WSAManager::getManager() {
-      if (nullptr == managerInstance) {
-         managerInstance = std::shared_ptr<SocketHandler::WSAManager>(new SocketHandler::WSAManager()); //not possible to call make_shared because c'tor is private
-      }
-      return managerInstance;
+   void Handler::SocketHandlerFactory::beforeOpen() {
+       std::lock_guard<std::mutex> hndLck(handlerCounterMtx);
+       ++handlerCounter;
+       if (1 == handlerCounter) {
+       // first socket opened
+           WSADATA wsa;
+           WSAStartup(MAKEWORD(2, 0), &wsa);
+       }
    }
 
-   SocketHandler::WSAManager::WSAManager() {
-      WSADATA wsa;
-      WSAStartup(MAKEWORD(2, 0), &wsa);
-   }
-
-   SocketHandler::WSAManager::~WSAManager() {
-      WSACleanup();
+   void Handler::SocketHandlerFactory::afterClose() {
+       std::lock_guard<std::mutex> hndLck(handlerCounterMtx);
+       --handlerCounter;
+       if (0 == handlerCounter) {
+       // last socket closed
+           WSACleanup();
+       }
    }
 #endif
 
-   int getLastError() {
+   int getLastErrorCode() {
 #ifdef _WIN32
       return WSAGetLastError();
 #else
@@ -45,13 +47,11 @@ namespace sck {
    }
 
    void throwWithCode(const std::string& what){
-      std::stringstream s;
-      s << what << " , error code: " << getLastError();
-      throw Error(s.str());
+      throw Error(what, " , error code: ", getLastErrorCode());
    }
 
-   std::unique_ptr<SocketAddressIn_t> convertIpv4(const sck::Address& address) {
-      auto tryConversion = [](SocketAddressIn_t& recipient, const sck::Address& address) -> bool {
+   std::unique_ptr<SocketIp4> convertIpv4(const sck::Ip& address) {
+      auto tryConversion = [](SocketIp4& recipient, const sck::Ip& address) -> bool {
    #if !defined(_WIN32)
          in_addr ia;
          if (1 == ::inet_pton(AF_INET, address.getHost().c_str(), &ia)) {
@@ -82,9 +82,9 @@ namespace sck {
       };
 
       if (sck::Family::IP_V4 == address.getFamily()) {
-         std::unique_ptr<SocketAddressIn_t> resolved = std::make_unique<SocketAddressIn_t>();
+         std::unique_ptr<SocketIp4> resolved = std::make_unique<SocketIp4>();
          // set everything to 0 first
-         ::memset(&(*resolved), 0, sizeof(SocketAddressIn_t));
+         ::memset(&(*resolved), 0, sizeof(SocketIp4));
          resolved->sin_family = AF_INET;
          if (!tryConversion(*resolved, address)) {
             return nullptr;
@@ -95,8 +95,8 @@ namespace sck {
       return nullptr;
    }
 
-   std::unique_ptr<SocketAddressIn6_t> convertIpv6(const sck::Address& address) {
-         auto tryConversion = [](SocketAddressIn6_t& recipient, const sck::Address& address) -> bool { 
+   std::unique_ptr<SocketIp6> convertIpv6(const sck::Ip& address) {
+         auto tryConversion = [](SocketIp6& recipient, const sck::Ip& address) -> bool {
    #if !defined(_WIN32)
          in6_addr ia;
          if (1 == ::inet_pton(AF_INET6, address.getHost().c_str(), &ia)) {
@@ -127,9 +127,9 @@ namespace sck {
       };
 
       if (sck::Family::IP_V6 == address.getFamily()) {
-         std::unique_ptr<SocketAddressIn6_t> resolved = std::make_unique<SocketAddressIn6_t>();
+         std::unique_ptr<SocketIp6> resolved = std::make_unique<SocketIp6>();
          // set everything to 0 first
-         ::memset(&(*resolved), 0, sizeof(SocketAddressIn6_t));
+         ::memset(&(*resolved), 0, sizeof(SocketIp6));
          resolved->sin6_family = AF_INET6;
          resolved->sin6_flowinfo = 0;
          if (!tryConversion(*resolved, address)) {
@@ -141,15 +141,15 @@ namespace sck {
       return nullptr;
    }
 
-   AddressPtr convert(const SocketAddress_t& address) {
+   IpPtr convert(const SocketIp& address) {
       // refer to https://stackoverflow.com/questions/11684008/how-do-you-cast-sockaddr-structure-to-a-sockaddr-in-c-networking-sockets-ubu
       std::string ip;      
       std::uint16_t port;
       if (AF_INET == address.sa_family) {
          // ipv4 address
          // inet_ntoa is deprecated, but using inet_ntop for ipv4 address, leads to an ip that has no sense
-         ip = std::string(::inet_ntoa(reinterpret_cast<const SocketAddressIn_t*>(&address)->sin_addr));
-         port = ntohs(reinterpret_cast<const SocketAddressIn_t*>(&address)->sin_port);
+         ip = std::string(::inet_ntoa(reinterpret_cast<const SocketIp4*>(&address)->sin_addr));
+         port = ntohs(reinterpret_cast<const SocketIp4*>(&address)->sin_port);
       }
       else {
          // ipv6 address
@@ -158,9 +158,9 @@ namespace sck {
          ::memset(temp, 0, INET6_ADDRSTRLEN);
          ::inet_ntop(address.sa_family, &address, temp, INET6_ADDRSTRLEN);
          ip = std::string(temp, INET6_ADDRSTRLEN);
-         port = ntohs(reinterpret_cast<const SocketAddressIn6_t*>(&address)->sin6_port);
+         port = ntohs(reinterpret_cast<const SocketIp6*>(&address)->sin6_port);
       }
-      return sck::Address::create(ip, port);
+      return sck::Ip::create(ip, port);
    }
 
    Handler::~Handler() {
@@ -171,21 +171,22 @@ namespace sck {
 
    Handler::Handler()
       : opened(false)
-      , socketId(SCK_INVALID_SOCKET) {
-#ifdef _WIN32
-      this->manager = WSAManager::getManager();
-#endif
+      , hndl(SCK_INVALID_SOCKET) {
    }
 
-   Handler::Handler(Socket_t extOpendSocket)
-      : Handler() {
-      this->opened = true;
-      this->socketId = extOpendSocket;
+   Handler::Handler(const SocketHandler& hndl)
+       : opened(true)
+       , hndl(hndl) {
+#ifdef _WIN32
+       SocketHandlerFactory::beforeOpen();
+#endif
    }
 
    void Handler::open(const Protocol& type, const Family& family) {
       if(this->opened) return;
-
+#ifdef _WIN32
+      SocketHandlerFactory::beforeOpen();
+#endif
       auto toIntFamily = [](const Family& family) -> int {
          switch (family) {
          case sck::Family::IP_V4:
@@ -200,15 +201,15 @@ namespace sck {
 
       switch (type) {
       case Protocol::TCP: 
-         this->socketId = ::socket(toIntFamily(family), SOCK_STREAM, 0);
-         if (this->socketId == SCK_INVALID_SOCKET) {
+         this->hndl = ::socket(toIntFamily(family), SOCK_STREAM, 0);
+         if (this->hndl == SCK_INVALID_SOCKET) {
             this->close();
             throwWithCode("Stream socket could not be created");
          }         
          break;
       case Protocol::UDP:
-         this->socketId = ::socket(toIntFamily(family), SOCK_DGRAM, 0);
-         if (this->socketId == SCK_INVALID_SOCKET) {
+         this->hndl = ::socket(toIntFamily(family), SOCK_DGRAM, 0);
+         if (this->hndl == SCK_INVALID_SOCKET) {
             this->close();
             throwWithCode("DataGram socket could not be created");
          }         
@@ -222,13 +223,16 @@ namespace sck {
    void Handler::close() {
       if (!this->opened) return;
 #ifdef _WIN32
-      shutdown(this->socketId, 2);
-      closesocket(this->socketId);
+      shutdown(this->hndl, 2);
+      closesocket(this->hndl);
 #else 
-      ::shutdown(this->socketId, SHUT_RDWR);
-      ::close(this->socketId);
+      ::shutdown(this->hndl, SHUT_RDWR);
+      ::close(this->hndl);
 #endif
       this->opened = false;
-      this->socketId = SCK_INVALID_SOCKET;
+      this->hndl = SCK_INVALID_SOCKET;
+#ifdef _WIN32
+      SocketHandlerFactory::afterClose();
+#endif
    }
 }

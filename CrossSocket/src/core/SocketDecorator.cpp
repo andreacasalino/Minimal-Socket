@@ -5,7 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <SocketDecorator.h>
+#include <core/SocketDecorator.h>
 #include <Error.h>
 
 namespace sck {

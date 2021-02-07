@@ -8,23 +8,11 @@
 #include <async/Service.h>
 
 namespace sck::async {
-    void Service::Barrier::wait() {
-        std::unique_lock<std::mutex> lk(this->queueMtx);
-        ++this->queue;
-        if(2 == this->queue) {
-            this->stopWait = true;
-            this->notification.notify_all();
-        }
-        else {
-            this->notification.wait(lk, [this](){ return static_cast<bool>(this->stopWait); });
-        }
-    }
-
     Service::Service(const std::function<void()>& iterativeAction)
         : listener(nullptr) 
         , loop([this, &iterativeAction](){
             std::function<void()> iter(iterativeAction);
-            this->barrier.wait();
+            this->loopLife = true;
             while (this->loopLife) {
                 try {
                     iter();
@@ -45,8 +33,9 @@ namespace sck::async {
                 }
             }
         }) {
-        this->loopLife = true;
-        this->barrier.wait();
+        while (!this->loopLife) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(3));
+        }
     }
 
     Service::~Service() {
@@ -54,7 +43,7 @@ namespace sck::async {
         this->loop.join();
     }
 
-    void Service::resetErrorListener(ErrorListener* listener) {
+    void Service::resetErrorListener(listener::ErrorListener* listener) {
         std::lock_guard<std::mutex> lk(this->listenerMtx);
         this->listener = listener;
     }

@@ -21,7 +21,7 @@ namespace sck {
       Messanger(const Messanger&) = delete;
       Messanger& operator=(const Messanger&) = delete;
 
-      virtual ~Messanger();
+      virtual ~Messanger() = default;
       
       /**
        * @return true if the message was completely sent

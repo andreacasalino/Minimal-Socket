@@ -10,10 +10,9 @@
 
 #include <thread>
 #include <functional>
-#include <condition_variable>
 #include <atomic>
-#include <async/ErrorListener.h>
-#include <memory>
+#include <mutex>
+#include <async/listener/ErrorListener.h>
 
 namespace sck::async {
     class Service {
@@ -21,32 +20,18 @@ namespace sck::async {
         Service(const Service&) = delete;
         Service& operator=(const Service&) = delete;
 
-        // start
+        // service is started when building
         Service(const std::function<void()>& iterativeAction);
-        // stop
+        // service is stop when destroying
         ~Service();
 
-        void resetErrorListener(ErrorListener* listener);
+        void resetErrorListener(listener::ErrorListener* listener);
 
     private:    
-        class Barrier {
-        public:
-            Barrier() { this->stopWait = false; };
-
-            void wait();
-
-        private:
-            std::uint8_t queue = 0;
-            std::mutex queueMtx;
-            std::condition_variable notification;
-            std::atomic_bool stopWait;
-        };
-        Barrier barrier = {};
-
-        ErrorListener* listener;
         std::mutex listenerMtx;
+        listener::ErrorListener* listener;
 
-        std::atomic_bool loopLife;
+        std::atomic_bool loopLife = false;
         std::thread loop;
     };
 }

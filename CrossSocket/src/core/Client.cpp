@@ -5,30 +5,30 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <SocketClient.h>
-#include "Handler.h"
+#include <core/Client.h>
+#include "Core.h"
 
 namespace sck {
-   SocketClient::SocketClient(const sck::Address& remoteAddress)
+   Client::Client(const sck::Ip& remoteAddress)
       : SocketConcrete(std::make_shared<Handler>())
       , MessangerConcrete(this->SocketConcrete::channel)
       , remoteAddress(remoteAddress) {
    }
 
-   SocketClient::SocketClient(const sck::Address& remoteAddress, std::shared_ptr<Handler> channel)
+   Client::Client(const sck::Ip& remoteAddress, std::shared_ptr<Handler> channel)
       : SocketConcrete(channel)
       , MessangerConcrete(this->SocketConcrete::channel)
       , remoteAddress(remoteAddress) {
    }
 
-   void SocketClient::openSpecific() {
+   void Client::openSpecific() {
       if (sck::Family::IP_V4 == this->getFamily()) {
          //v4 family
          auto addr = convertIpv4(this->remoteAddress);
          if (!addr) {
             throw std::runtime_error(this->remoteAddress.getHost() + ":" + std::to_string(this->remoteAddress.getPort()) + " is an invalid server address");
          }
-         if (::connect(this->channel->getSocketId(), reinterpret_cast<SocketAddress_t*>(&(*addr)), sizeof(SocketAddressIn_t)) == SCK_SOCKET_ERROR) {
+         if (::connect(**this->channel, reinterpret_cast<SocketIp*>(&(*addr)), sizeof(SocketIp4)) == SCK_SOCKET_ERROR) {
             throwWithCode("Connection can't be established");
          }
       }
@@ -38,7 +38,7 @@ namespace sck {
          if (!addr) {
             throw std::runtime_error(this->remoteAddress.getHost() + ":" + std::to_string(this->remoteAddress.getPort()) + " is an invalid server address");
          }
-         if (::connect(this->channel->getSocketId(), reinterpret_cast<SocketAddress_t*>(&(*addr)), sizeof(SocketAddressIn6_t)) == SCK_SOCKET_ERROR) {
+         if (::connect(**this->channel, reinterpret_cast<SocketIp*>(&(*addr)), sizeof(SocketIp6)) == SCK_SOCKET_ERROR) {
             throwWithCode("Connection can't be established");
          }
       }

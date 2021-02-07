@@ -9,11 +9,11 @@
 #include <string.h>
 
 namespace sck::async {
-    AsyncClient::AsyncClient(std::unique_ptr<SocketClient> client, const std::size_t& bufferCapacity) 
-    : AsyncDecorator<MessageListener>(std::move(client)) {
+    AsyncClient::AsyncClient(std::unique_ptr<Client> client, const std::size_t& bufferCapacity) 
+    : AsyncDecorator<listener::MessageListener>(std::move(client)) {
         this->buffer.resize(bufferCapacity);
         if(this->wrapped->isOpen()){
-            this->service = this->make_service();
+            this->open(std::chrono::milliseconds(0));
         }
     };
 

@@ -5,20 +5,20 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <MessangerConcrete.h>
+#include <core/MessangerConcrete.h>
 #include <Error.h>
-#include "Handler.h"
+#include "Core.h"
 
 namespace sck {
     MessangerConcrete::MessangerConcrete(std::shared_ptr<Handler> messageChannel) {
         if(nullptr == messageChannel) {
             throw Error("found null channel when building MessangerConcrete");
         }
-        this->messageChannel = messageChannel;
+        this->channelMsg = messageChannel;
     }
 
     bool MessangerConcrete::send(const std::pair<const char*, std::size_t>& message) {
-      int sentBytes = ::send(this->messageChannel->getSocketId(), message.first, static_cast<int>(message.second), 0);
+      int sentBytes = ::send(**this->channelMsg, message.first, static_cast<int>(message.second), 0);
       if (sentBytes == SCK_SOCKET_ERROR) {
          sentBytes = 0;
          throwWithCode("send failed");
@@ -32,7 +32,7 @@ namespace sck {
          this->actualTimeOut = timeout;
 #ifdef _WIN32
          auto tv = DWORD(this->actualTimeOut.count());
-         if (setsockopt(this->messageChannel->getSocketId(), SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&tv), sizeof(DWORD)) == SOCKET_ERROR) {
+         if (setsockopt(**this->channelMsg, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&tv), sizeof(DWORD)) == SOCKET_ERROR) {
 #else
          struct timeval tv = { 0,0 };
          if (this->actualTimeOut.count() >= 1000) {
@@ -41,13 +41,13 @@ namespace sck {
          else {
             tv.tv_usec = std::chrono::duration_cast<std::chrono::microseconds>(this->actualTimeOut).count();
          }
-         if (::setsockopt(this->messageChannel->getSocketId(), SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&tv), sizeof(struct timeval)) < 0) {
+         if (::setsockopt(**this->channelMsg, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&tv), sizeof(struct timeval)) < 0) {
 #endif
             throwWithCode("can't set timeout");
          }
       }
 
-      int recvBytes = ::recv(this->messageChannel->getSocketId(), message.first, static_cast<int>(message.second), 0);
+      int recvBytes = ::recv(**this->channelMsg, message.first, static_cast<int>(message.second), 0);
       if (recvBytes == SCK_SOCKET_ERROR) {
          recvBytes = 0;
          throwWithCode("receive failed");

@@ -10,10 +10,10 @@
 
 #include <tcp/TcpServer.h>
 
-namespace sck::async {
+namespace sck::async::listener {
     class TcpServerListener {
     public:
-        virtual void handle(std::unique_ptr<SocketClient> clientHandler) = 0;
+        virtual void handle(std::unique_ptr<Client> clientHandler) = 0;
     };
 }
 
