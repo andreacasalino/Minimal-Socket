@@ -6,7 +6,6 @@
  **/
 
 #include <Responder.h>
-#include <stdexcept>
 #include <iostream>
 #include <thread>
 
