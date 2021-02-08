@@ -22,12 +22,12 @@ namespace sck {
       //try to resolve the Ip as an ipv4
       IpPtr addr;
       addr.reset(new Ip(host, port, sck::Family::IP_V4));
-      if (nullptr == convertIpv4(*addr)) {
+      if (nullptr != convertIpv4(*addr)) {
          return addr;
       }
       //try to resolve the Ip as an ipv6
       addr.reset(new Ip(host, port, sck::Family::IP_V6));
-      if (nullptr == convertIpv6(*addr)) {
+      if (nullptr != convertIpv6(*addr)) {
          return addr;
       }
       return nullptr;
