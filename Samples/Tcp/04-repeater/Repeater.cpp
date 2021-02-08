@@ -18,10 +18,17 @@ int main(int argc, char **argv){
     std::unique_ptr<sck::tcp::TcpClient> connection2Server = std::make_unique<sck::tcp::TcpClient>(*sck::Ip::createLocalHost(3000));
     cout << "Asking connection to " << connection2Server->getRemoteAddress().getHost() << ":" << connection2Server->getRemoteAddress().getPort() << endl;
 
+    // blocking open
+    connection2Server->open(std::chrono::milliseconds(0));
+    if (!connection2Server->isOpen()) {
+        cout << "connection failed" << endl;
+        return EXIT_FAILURE;
+    }
+    
     // accepting client
     std::unique_ptr<sck::Client> connection2Client;
     {
-        sck::tcp::TcpServer server(3000);
+        sck::tcp::TcpServer server(4000);
         server.open(std::chrono::milliseconds(0));
         if (!server.isOpen()) {
             cout << "server open failed" << endl;
@@ -39,7 +46,7 @@ int main(int argc, char **argv){
         cout << "forwarding to server " << std::string(buffer, recvBytes);
         connection2Server->send({&buffer[0], recvBytes});
 
-        recvBytes = connection2Client->receive(temp, std::chrono::milliseconds(0));
+        recvBytes = connection2Server->receive(temp, std::chrono::milliseconds(0));
         cout << " reply to client " << std::string(buffer, recvBytes) << endl;
         connection2Client->send({ &buffer[0], recvBytes });
     }
