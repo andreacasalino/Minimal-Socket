@@ -17,10 +17,10 @@ void Responder::respond() {
     std::pair<char*, std::size_t> temp = { &this->recvBuffer[0], 1000 };
     std::size_t recvBytes = this->socket->receive(temp, std::chrono::milliseconds(0));
     std::string recStr(temp.first, recvBytes);
-    std::cout << " got: " << recStr << std::endl;
+    std::cout << "got: " << recStr;
 
     const std::string surname = Names::getSurname(recStr);
-    std::cout << "sending: " << surname;
+    std::cout << "  sending: " << surname << std::endl;
     this->socket->send({ surname.data(), surname.size() });
 }
 

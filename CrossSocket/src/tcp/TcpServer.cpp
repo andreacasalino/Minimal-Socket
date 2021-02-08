@@ -52,7 +52,7 @@ namespace sck::tcp {
       std::shared_ptr<Handler> acceptedClientHandler  = std::make_shared<Handler>(temp);
       
       IpPtr remoteAddress = convert(acceptedClientAddress);
-      if (nullptr != remoteAddress) {
+      if (nullptr == remoteAddress) {
          throw std::runtime_error("accepted client remote address is not resolvable");
       }
 
