@@ -4,7 +4,7 @@ int main() {
 
    Launcher lnc("Launcher03");
    lnc.addProcess("TcpServer","3000");
-   lnc.addProcess("TcpRepeater","3000", "4000");
+   lnc.addProcess("TcpRepeater");
    lnc.addProcess("TcpClient","4000");
    lnc();
 

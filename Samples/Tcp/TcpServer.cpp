@@ -12,19 +12,6 @@
 #include <list>
 using namespace std;
 
-class AcceptedClient {
-public:
-    AcceptedClient(std::unique_ptr<sck::Client> acceptedClient) : acceptedClient(std::move(acceptedClient)) {};
-
-    void run() {
-        Responder resp(std::move(this->acceptedClient));
-        resp.respondForever();
-    };
-
-private:
-    std::unique_ptr<sck::Client> acceptedClient;
-};
-
 int main(int argc, char** argv){
     cout << "-----------------------  Server  -----------------------" << endl;
 
@@ -56,16 +43,19 @@ int main(int argc, char** argv){
     }
     cout << "connection opened" << endl;
 
-    std::list<AcceptedClient> clients;
-    std::list<std::thread> clientThreads;
+    std::list<Responder> responders;
+    std::list<std::thread> respThreads;
     for (std::size_t c = 0; c < clientNumbers; ++c) {
         //accept the client
-        clients.emplace_back(server.acceptClient());
+        responders.emplace_back(server.acceptClient());
         cout << "new client connected" << endl;
-        clientThreads.emplace_back(&AcceptedClient::run, &clients.back());
+        respThreads.emplace_back([&responders]() {
+            Responder* respRef = &responders.back();
+            respRef->respondForever();
+        });
     }
 
-    for (auto it = clientThreads.begin(); it != clientThreads.end(); ++it) {
+    for (auto it = respThreads.begin(); it != respThreads.end(); ++it) {
         it->join();
     }
 
