@@ -1,10 +1,10 @@
-add_executable(TcpClient Client.cpp)
+add_executable(TcpClient TcpClient.cpp)
 target_link_libraries(TcpClient Sample-Utils)	
 
-add_executable(TcpServer Server.cpp)
+add_executable(TcpServer TcpServer.cpp)
 target_link_libraries(TcpServer Sample-Utils)
 
-add_executable(TcpRepeater Repeater.cpp)
+add_executable(TcpRepeater TcpRepeater.cpp)
 target_link_libraries(TcpRepeater Sample-Utils)	
 
 ## launchers ##
