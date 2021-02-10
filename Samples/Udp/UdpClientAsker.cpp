@@ -14,7 +14,7 @@ int main(int argc, char **argv){
     cout << "-----------------------  Client Asker -----------------------" << endl;
 
     if (argc == 1) {
-        cout << "correct syntax is: 'server port', <optional>'rate', <optional>'port to reserve', <optional>'server host'" << endl;
+        cout << "correct syntax is: 'server port', <optional>'rate', <optional>'port to reserve',  <optional>'send initial handshake flag 0/1', <optional>'server host'" << endl;
         return EXIT_FAILURE;
     }
 
@@ -32,9 +32,14 @@ int main(int argc, char **argv){
     }
     cout << "port reserved by this udp " << port << endl;
 
-    sck::IpPtr serverAddress;
+    bool handShake = false;
     if (argc > 4) {
-        serverAddress = sck::Ip::create(std::string(argv[4]), serverPort);
+        handShake = static_cast<bool>(std::atoi(argv[4]));
+    }
+
+    sck::IpPtr serverAddress;
+    if (argc > 5) {
+        serverAddress = sck::Ip::create(std::string(argv[5]), serverPort);
     }
     else {
         serverAddress = sck::Ip::createLocalHost(serverPort);
@@ -50,6 +55,12 @@ int main(int argc, char **argv){
     // blocking open
     client->open(std::chrono::milliseconds(0));
     cout << "connection opened" << endl;
+
+    if (handShake) {
+        std::string hello = "hello";
+        client->send({hello.data(), hello.size()});
+        cout << "handshake sent" << endl;
+    }
 
     Asker ask(std::move(client));
     ask.askForever(rate);
