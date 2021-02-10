@@ -33,7 +33,20 @@ public:
       std::list<std::string> parsed;
       this->parseArgs(parsed, args ...);
 
-      this->commands.emplace_back(std::make_pair(procName, parsed));
+      this->commands.push_back({0, procName, parsed});
+   };
+
+   /**
+    * @brief Add 1 process to launch, precedeed by a tunable sleep, with possibly some additional command arguments.
+    * @param[in] the name of the process to launch and the sleep in seconds
+    * @param[in] the list of arguments to pass when launching the process
+    */
+   template <typename ... Args>
+   void addProcessSleep(const std::pair<std::string, unsigned int>& procNameSleepTime, Args ... args) {
+       std::list<std::string> parsed;
+       this->parseArgs(parsed, args ...);
+
+       this->commands.push_back({ procNameSleepTime.second, procNameSleepTime.first, parsed });
    };
 
     /** 
@@ -58,8 +71,14 @@ private:
       return;
    };
 
+   struct Info {
+       unsigned int msSleep;
+       std::string processName;
+       std::list<std::string> processArguments;
+   };
+
    std::string nameFile;
-   std::list<std::pair<std::string, std::list<std::string>>> commands;
+   std::list<Info> commands;
 };
 
 #include <fstream>
@@ -73,34 +92,39 @@ void  Launcher::operator()() const {
 #endif
 
     std::ofstream f(name);
+    auto addSleep = [&f](const unsigned int& sleep) {
+        if (0 == sleep) return;
+#ifdef _WIN32
+        f << std::endl << "timeout /t " << sleep;
+#else
+        f << std::endl << "sleep " << sleep;
+#endif
+    };
+
     auto it = this->commands.begin();
     auto itEnd = this->commands.end();
     --itEnd;
     for (it; it != itEnd; ++it) {
+        addSleep(it->msSleep);
 #ifdef _WIN32
-        f << std::endl << "start \"\" \"" << it->first << "\"";
-        for(auto a : it->second) f << " \"" << a << "\"";
+        f << std::endl << "start \"\" \"" << it->processName << "\"";
+        for(auto a : it->processArguments) f << " \"" << a << "\"";
 #elif  __linux__
         f << std::endl << "gnome-terminal -x sh -c \"./" << it->first;
-        for(auto a : it->second) f << " " << a;
+        for(auto a : it->processArguments) f << " " << a;
         f << "; bash\"";
 #endif
     }
+    addSleep(it->msSleep);
 #ifdef _WIN32
-    f << std::endl << "\"" << this->commands.back().first << "\""; 
-    for(auto a : this->commands.back().second) f << " \"" << a << "\"";
+    f << std::endl << "\"" << this->commands.back().processName << "\"";
+    for(auto a : this->commands.back().processArguments) f << " \"" << a << "\"";
 #elif  __linux__
     f << std::endl << "./" << this->commands.back().first;
-    for(auto a : this->commands.back().second) f << " " << a;
+    for(auto a : this->commands.back().processArguments) f << " " << a;
 #endif
 
     f.close();
-
-//#ifdef _WIN32
-//    system(name.c_str());
-//#elif  __linux__
-//    system(std::string("sh ./" + name).c_str());
-//#endif
 };
 
 #endif
