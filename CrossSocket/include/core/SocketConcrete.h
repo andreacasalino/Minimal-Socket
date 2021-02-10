@@ -33,7 +33,7 @@ namespace sck {
       bool isOpen() const;
       
    protected:
-      SocketConcrete(std::shared_ptr<Handler> channel);
+      explicit SocketConcrete(std::shared_ptr<Handler> channel);
 
       virtual void openSpecific() = 0;
 

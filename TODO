@@ -1,16 +1,4 @@
-throw sempre di Error e non runtime generica
-make attribute const when possible
-inline getter when possible
-togliere cmake script inutili
-rimettere typed connections
-virtual destroyer
-delete copy c'tor in interfacce in cima e gerarchia
-remove default d'tor
-provare in Windows
-remove Socket Server
-add explicit a c?tor single input
 indicare quando throw in doc class
-rename protocol in family everywhere
 spiegare bene come si lanciano samples
 fix readme svg con giuste porte
 aggiungere in samples qlcs che consuma async responder

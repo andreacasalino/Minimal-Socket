@@ -14,7 +14,7 @@
 namespace sck::async {
     class AsyncTcpServer : public AsyncDecorator<listener::TcpServerListener> {
     public:
-        AsyncTcpServer(std::unique_ptr<tcp::TcpServer> server);
+        explicit AsyncTcpServer(std::unique_ptr<tcp::TcpServer> server);
 
     private:
         class AcceptanceService;

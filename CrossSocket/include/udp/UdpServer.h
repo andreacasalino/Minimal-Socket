@@ -24,7 +24,7 @@ namespace sck::udp {
        * @param[in] the port to reserve
        * @param[in] the expected protocol family of the client to accept
        */
-      UdpServer(const std::uint16_t& localPort, const sck::Family& protocol = sck::Family::IP_V4);
+      explicit UdpServer(const std::uint16_t& localPort, const sck::Family& protocol = sck::Family::IP_V4);
 
    private:
       void openSpecific() final;

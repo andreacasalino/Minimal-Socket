@@ -106,9 +106,9 @@ namespace sck {
        * @brief the passed handler should be already created externally
        * by the socket api
        */
-      Handler(const SocketHandler& hndl);
+      explicit Handler(const SocketHandler& hndl);
 
-      virtual ~Handler();
+      ~Handler();
 
       /**
        * @brief internally creates a new socket

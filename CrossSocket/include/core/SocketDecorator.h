@@ -24,7 +24,7 @@ namespace sck {
       inline bool isOpen() const override { return this->wrapped->isOpen(); };
       
    protected:
-      SocketDecorator(std::unique_ptr<Socket> wrapped);
+      explicit SocketDecorator(std::unique_ptr<Socket> wrapped);
 
       std::unique_ptr<Socket> wrapped;
    };

@@ -28,7 +28,7 @@ namespace sck {
       /**
        * @param[in] the address of the server to hit
        */
-       Client(const sck::Ip& remoteAddress);
+       explicit Client(const sck::Ip& remoteAddress);
       /**
        * @param[in] the remote address already connected
        * @param[in] an already created handler to steal

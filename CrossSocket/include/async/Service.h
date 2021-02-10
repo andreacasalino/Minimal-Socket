@@ -21,7 +21,7 @@ namespace sck::async {
         Service& operator=(const Service&) = delete;
 
         // service is started when building
-        Service(const std::function<void()>& iterativeAction);
+        explicit Service(const std::function<void()>& iterativeAction);
         // service is stop when destroying
         ~Service();
 
