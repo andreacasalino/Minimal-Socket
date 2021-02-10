@@ -212,7 +212,8 @@ namespace sck {
          if (this->hndl == SCK_INVALID_SOCKET) {
             this->close();
             throwWithCode("DataGram socket could not be created");
-         }         
+         }        
+         break;
       default:
          throw Error("unknown protocol type");
       }
