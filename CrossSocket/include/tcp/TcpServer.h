@@ -34,11 +34,11 @@ namespace sck::tcp {
    private:
       void openSpecific() override;
 
-      inline sck::Family getFamily() const final { return this->protocol; };
+      inline sck::Family getFamily() const final { return this->family; };
       inline sck::Protocol getProtocol() const final { return Protocol::TCP; };
 
       std::uint16_t port;
-      sck::Family protocol;
+      sck::Family family;
    };
 }
 

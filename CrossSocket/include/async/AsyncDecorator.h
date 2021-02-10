@@ -42,7 +42,7 @@ namespace sck::async {
         };
         
     protected:
-        AsyncDecorator(std::unique_ptr<Socket> client) 
+        explicit AsyncDecorator(std::unique_ptr<Socket> client) 
             : SocketDecorator(std::move(client)) {
         };
 

@@ -31,6 +31,10 @@ namespace sck {
         }
     }
 
+    bool SocketConcrete::isOpen() const {
+        return this->channel->isOpen(); 
+    };
+
     void SocketConcrete::open(const std::chrono::milliseconds& timeout) {
       if (this->isOpen()) {
         return;
@@ -65,10 +69,6 @@ namespace sck {
          }
       }
    }
-
-    bool SocketConcrete::isOpen() const {
-        return this->channel->isOpen();
-    }
 
     void SocketConcrete::close() {
         if (!this->isOpen()) {

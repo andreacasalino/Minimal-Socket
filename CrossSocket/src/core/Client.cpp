@@ -7,6 +7,7 @@
 
 #include <core/Client.h>
 #include "Core.h"
+#include <Error.h>
 
 namespace sck {
    Client::Client(const sck::Ip& remoteAddress)
@@ -26,7 +27,7 @@ namespace sck {
          //v4 family
          auto addr = convertIpv4(this->remoteAddress);
          if (!addr) {
-            throw std::runtime_error(this->remoteAddress.getHost() + ":" + std::to_string(this->remoteAddress.getPort()) + " is an invalid server address");
+            throw Error(this->remoteAddress.getHost(), ":", std::to_string(this->remoteAddress.getPort()), " is an invalid server address");
          }
          if (::connect(**this->channel, reinterpret_cast<SocketIp*>(&(*addr)), sizeof(SocketIp4)) == SCK_SOCKET_ERROR) {
             throwWithCode("Connection can't be established");
@@ -36,7 +37,7 @@ namespace sck {
          //v6 family
          auto addr = convertIpv6(this->remoteAddress);
          if (!addr) {
-            throw std::runtime_error(this->remoteAddress.getHost() + ":" + std::to_string(this->remoteAddress.getPort()) + " is an invalid server address");
+            throw Error(this->remoteAddress.getHost(), ":", std::to_string(this->remoteAddress.getPort()), " is an invalid server address");
          }
          if (::connect(**this->channel, reinterpret_cast<SocketIp*>(&(*addr)), sizeof(SocketIp6)) == SCK_SOCKET_ERROR) {
             throwWithCode("Connection can't be established");

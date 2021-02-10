@@ -25,7 +25,7 @@ namespace sck {
       std::size_t receive(std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) final;
 
     protected:
-        MessangerConcrete(std::shared_ptr<Handler> messageChannel);
+        explicit MessangerConcrete(std::shared_ptr<Handler> messageChannel);
 
     private:
        std::chrono::milliseconds actualTimeOut = std::chrono::milliseconds(0);

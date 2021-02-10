@@ -23,14 +23,14 @@ namespace sck::tcp {
 
    private:
       void openSpecific() final {
-         throw std::runtime_error("ClientHandler from TcpServer are not re-openable!");
+         throw Error("connection returned from TcpServer::acceptClient are not re-openable");
       };
    };
 
    TcpServer::TcpServer(const std::uint16_t& port, const Family& family) 
       : SocketConcrete(std::make_shared<Handler>())
       , port(port)
-      , protocol(family) {
+      , family(family) {
    }
 
    std::unique_ptr<Client> TcpServer::acceptClient() {
@@ -53,7 +53,7 @@ namespace sck::tcp {
       
       IpPtr remoteAddress = convert(acceptedClientAddress);
       if (nullptr == remoteAddress) {
-         throw std::runtime_error("accepted client remote address is not resolvable");
+         throw Error("accepted client remote address is not resolvable");
       }
 
       return std::make_unique<ClientHandler>(*remoteAddress, acceptedClientHandler);

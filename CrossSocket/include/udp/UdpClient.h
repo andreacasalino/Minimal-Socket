@@ -26,7 +26,7 @@ namespace sck::udp {
        @param[in] Address of the remote host to hit
        @param[in] port to reserve (passing 0 a random port is reserved)
        */
-      UdpClient(const sck::Ip& remoteAddress, const std::uint16_t& localPort = 0);
+      explicit UdpClient(const sck::Ip& remoteAddress, const std::uint16_t& localPort = 0);
 
    protected:
       std::uint16_t port;
