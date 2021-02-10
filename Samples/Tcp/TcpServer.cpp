@@ -6,6 +6,7 @@
  **/
 
 #include <Responder.h>
+#include <ResponderAsync.h>
 #include <tcp/TcpServer.h>
 #include <iostream>
 #include <thread>
