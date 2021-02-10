@@ -1,6 +1,3 @@
 indicare quando throw in doc class
-spiegare bene come si lanciano samples
-fix readme svg con giuste porte
 aggiungere in samples qlcs che consuma async responder
-a volte esempio repeater non funziona
 dire in readme che samples potrebbero fallire per via di firewall
