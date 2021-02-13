@@ -12,29 +12,37 @@
 #include <utility>
 
 namespace sck {   
-   /**    
-    * @brief The interface providing functionalities for exchanging data
-    */
-   class Messanger {
+   class Sender {
    public:
-      Messanger() = default;
-      Messanger(const Messanger&) = delete;
-      Messanger& operator=(const Messanger&) = delete;
-
-      virtual ~Messanger() = default;
-      
       /**
        * @return true if the message was completely sent
        * @param[in] the message to send
        */
        virtual bool send(const std::pair<const char*, std::size_t>& message) = 0;
+   };
 
+   class Receiver {
+   public:
       /**
        * @return the number of received bytes
        * @param[in] the recepient
        * @param[in] the timeout to consider
        */
       virtual std::size_t receive(std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) = 0;
+   };
+
+   /**    
+    * @brief The interface providing functionalities for exchanging data
+    */
+   class Messanger
+      : public Sender
+      , public Receiver {
+   public:
+      Messanger() = default;
+      Messanger(const Messanger&) = delete;
+      Messanger& operator=(const Messanger&) = delete;
+
+      virtual ~Messanger() = default;
    };
 }
 

@@ -20,7 +20,6 @@ namespace sck::async {
         ReceiveService(AsyncClient& client) 
             : Service([&client](){
                 {
-                    std::lock_guard<std::mutex> bufferLock(client.bufferMtx);
                     auto pr = std::make_pair<char*, std::size_t>(client.buffer.data(), client.buffer.capacity());
                     auto recvBytes = dynamic_cast<Messanger*>(client.wrapped.get())->receive(pr, std::chrono::milliseconds(0));
                     if(recvBytes != client.buffer.capacity()) {
@@ -35,24 +34,6 @@ namespace sck::async {
             }) {
         }
     };
-
-    std::size_t AsyncClient::receive(std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) {
-        auto copyBuffer = [this, &message]() -> std::size_t {
-            std::lock_guard<std::mutex> bufferLock(this->bufferMtx);
-            ::memcpy(message.first, this->buffer.data(), this->buffer.size());
-            return this->buffer.size();
-        };
-
-        std::unique_lock<std::mutex> notifLock(this->recvMutex);
-        if(0 == timeout.count()) {
-            this->recvNotification.wait(notifLock);
-            return copyBuffer();
-        }
-        if(this->recvNotification.wait_for(notifLock, timeout) != std::cv_status::timeout) {
-            return copyBuffer();
-        }
-        return 0;
-    }
 
     std::unique_ptr<Service> AsyncClient::make_service() {
         return std::make_unique<ReceiveService>(*this);
