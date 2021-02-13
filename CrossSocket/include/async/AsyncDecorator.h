@@ -29,15 +29,19 @@ namespace sck::async {
 
         inline void open(const std::chrono::milliseconds& timeout) final {
             if (nullptr != this->service) return;
-            this->wrapped->open(timeout);
+            if(!this->wrapped->isOpen()) {
+                this->wrapped->open(timeout);
+            }
             if (this->wrapped->isOpen()) {
                 this->service = this->make_service();
+            }
+            else {
+                this->wrapped->close();
             }
         };
 
         inline void close() final { 
             this->wrapped->close();
-            if (nullptr != this->service) return;
             this->service.reset();
         };
         

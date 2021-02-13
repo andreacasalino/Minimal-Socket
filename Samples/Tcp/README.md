@@ -26,3 +26,9 @@ to run the corresponding example
 		* a Tcp server ready to accept 1 client
 		* a Tcp client that connects to an intermediate repeater
 		* a repeater creating 2 connections in order to receive the request of the client and forward them to the server, sending back the response
+		
+	*Sample04, run:
+	
+		* a Tcp server asynchronous accepting 1 single client
+		* a Tcp client that connects to the async server and exchange messages
+		

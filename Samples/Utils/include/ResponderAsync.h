@@ -11,14 +11,23 @@
 #include <async/AsyncClient.h>
 #include <Names.h>
 
-class ResponderAsync : public sck::async::listener::MessageListener {
+class ResponderAsync 
+    : public sck::async::listener::MessageListener
+    , public sck::async::listener::ErrorListener {
 public:
     ResponderAsync(std::unique_ptr<sck::Client> socket);
+
+    inline bool isRunning() const { return this->running; };
 
 private:
     void handle(const std::pair<const char*, std::size_t>& message) final;
 
+    void handle(const sck::Error& error) final;
+
+    void handle(const std::exception& error) final;
+
     std::unique_ptr<sck::async::AsyncClient> asyncSocket;
+    std::atomic_bool running;
 };
 
 #endif
