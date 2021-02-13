@@ -1,53 +1,35 @@
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
 #ifndef _CROSS_SOCKET_SOCKET_H_
 #define _CROSS_SOCKET_SOCKET_H_
 
-#include "Address.h"
-#include <memory>
+#include <chrono>
 
-namespace sck {
-   /**
-    * @brief interface to the socket APIs
-    */
-   class SocketHandler;
-
+namespace sck {   
    /**    
     * @brief The interface every socket must derive from.
     */
    class Socket {
    public:
+      Socket() = default;
       Socket(const Socket&) = delete;
       Socket& operator=(const Socket&) = delete;
 
-      virtual ~Socket();
+      virtual ~Socket() = default;
       
-      void open();
+      virtual void open(const std::chrono::milliseconds& timeout) = 0;
 
-      void close();
+      virtual void close() = 0;
 
-      inline bool isConnected() const { return this->connected; }
-   protected:
-      Socket();
-      /**
-       * @param[in] an already created handler to steal
+      /**    
+       * @return true only if a previous successfull call to open was done
        */
-      Socket(std::unique_ptr<SocketHandler> channel);
-
-      virtual void openConnection() = 0;
-
-      virtual void closeConnection();
-
-      std::unique_ptr<SocketHandler> channel;
-
-      virtual void initHandle() = 0;
- 
-      /**
-       * @brief The value should be deduced from object to object
-       */
-      virtual sck::Family getFamily() = 0;
-
-      void bindToPort(const std::uint16_t& port);
-
-      bool connected;
+      virtual bool isOpen() const = 0;
    };
 }
 
