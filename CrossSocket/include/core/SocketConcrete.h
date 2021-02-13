@@ -14,18 +14,16 @@
 namespace sck {
    enum Protocol { UDP, TCP };
 
-   /**
-    * @brief interface to the socket APIs
-    */
    class Handler;
 
-   /**    
-    * @brief The interface every socket must derive from.
-    */
    class SocketConcrete : public Socket {
    public:
       ~SocketConcrete();
 
+      /**
+       * @brief When something goes wrong inside the method, close is
+       * internally called, leaving the socket in a closed status.
+       */
       void open(const std::chrono::milliseconds& timeout) final;
 
       void close() final;
@@ -35,8 +33,14 @@ namespace sck {
    protected:
       explicit SocketConcrete(std::shared_ptr<Handler> channel);
 
+      /**
+       * @brief The methods containing the specific steps to perform to fully open a concrete socket
+       */
       virtual void openSpecific() = 0;
 
+      /**
+       * @brief The methods containing the specific steps to perform to fully close a concrete socket
+       */
       virtual void closeSpecific();
 
       /**

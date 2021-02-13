@@ -17,7 +17,6 @@ namespace sck::udp {
 
    /**
     * @brief interface for a standard udp connection.
-    * A udp may or not reserve a port, in order to be reached by another udp client.
     */
    class UdpClient
       : public Client {

@@ -12,9 +12,6 @@
 #include <memory>
 
 namespace sck {   
-   /**
-    * @brief interface to the socket APIs
-    */
    class Handler;
 
    class MessangerConcrete
