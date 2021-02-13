@@ -23,7 +23,7 @@ namespace sck::async {
     */
     class AsyncClient 
         : public AsyncDecorator<listener::MessageListener>
-        , public Messanger {
+        , public Sender {
     public:
         AsyncClient(std::unique_ptr<Client> client, const std::size_t& bufferCapacity);
 
@@ -31,15 +31,9 @@ namespace sck::async {
             return dynamic_cast<Messanger*>(this->wrapped.get())->send(message);
         };
 
-        std::size_t receive(std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) final;
-
     private:
-        std::mutex bufferMtx;
         std::vector<char> buffer;
         class ReceiveService;
-
-        std::mutex recvMutex;
-        std::condition_variable recvNotification;
 
         std::unique_ptr<Service> make_service() final;
     };
