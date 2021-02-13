@@ -29,8 +29,12 @@ namespace sck::async {
       /**
         * @brief Set a new error listener.
         */
-        inline void resetErrorListener(listener::ErrorListener* listener) {
-            this->service->resetErrorListener(listener);
+        inline void resetErrorListener(listener::ErrorListener* list) {
+            std::lock_guard<std::mutex> lk(this->errorListenerMtx);
+            this->errorListener = list;
+            if(nullptr != this->service) {
+                this->service->resetErrorListener(list);
+            }
         };
 
         inline void open(const std::chrono::milliseconds& timeout) final {
@@ -61,6 +65,9 @@ namespace sck::async {
 
         std::mutex listenerMtx;
         Listener* listener = nullptr;
+
+        std::mutex errorListenerMtx;
+        listener::ErrorListener* errorListener = nullptr;
     };
 }
 

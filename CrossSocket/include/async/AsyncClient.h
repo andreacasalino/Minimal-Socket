@@ -11,13 +11,11 @@
 #include <async/AsyncDecorator.h>
 #include <core/Client.h>
 #include <async/listener/MessageListener.h>
-#include <condition_variable>
-#include <mutex>
 #include <vector>
 
 namespace sck::async {
    /**
-    * @brief An asynchronous client can be any kind of socket that is MessangerConcrete, that keeps receive messages
+    * @brief An asynchronous client can be any kind of socket that is a MessangerConcrete, that keeps receive messages
     * inside a private thread stored by this class. From the outside it is possible to send messages to the remote host
     * or subscribe to the received messages by setting a MessageListener (calling AsyncDecorator::resetListener(...))
     */

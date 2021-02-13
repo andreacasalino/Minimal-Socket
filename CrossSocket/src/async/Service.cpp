@@ -8,8 +8,8 @@
 #include <async/Service.h>
 
 namespace sck::async {
-    Service::Service(const std::function<void()>& iterativeAction)
-        : listener(nullptr) 
+    Service::Service(const std::function<void()>& iterativeAction, listener::ErrorListener* list)
+        : listener(list) 
         , loop([this, &iterativeAction](){
             std::function<void()> iter(iterativeAction);
             this->loopLife = true;
