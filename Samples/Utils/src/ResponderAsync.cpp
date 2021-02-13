@@ -11,6 +11,8 @@
 ResponderAsync::ResponderAsync(std::unique_ptr<sck::Client> socket) {
     this->running = true;
     this->asyncSocket = std::make_unique<sck::async::AsyncClient>(std::move(socket), 1000);
+    //this->asyncSocket->resetErrorListener(this);
+    this->asyncSocket->resetListener(this);
     this->asyncSocket->open(std::chrono::milliseconds(0));
     if(!this->asyncSocket->isOpen()) {
         this->running = false;

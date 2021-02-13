@@ -10,9 +10,7 @@
 namespace sck::async {
     AsyncTcpServer::AsyncTcpServer(std::unique_ptr<tcp::TcpServer> server)
         : AsyncDecorator<listener::TcpServerListener>(std::move(server)) {
-        if(this->wrapped->isOpen()){
-            this->open(std::chrono::milliseconds(0));
-        }
+        this->wrapped->close();
     };
 
     class AsyncTcpServer::AcceptanceService : public Service {

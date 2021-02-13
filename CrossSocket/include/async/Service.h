@@ -25,7 +25,7 @@ namespace sck::async {
         // service is stop when destroying
         ~Service();
 
-        void resetErrorListener(listener::ErrorListener* listener);
+        void resetErrorListener(listener::ErrorListener* list);
 
     private:    
         std::mutex listenerMtx;

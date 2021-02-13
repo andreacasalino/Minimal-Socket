@@ -43,8 +43,8 @@ namespace sck::async {
         this->loop.join();
     }
 
-    void Service::resetErrorListener(listener::ErrorListener* listener) {
+    void Service::resetErrorListener(listener::ErrorListener* list) {
         std::lock_guard<std::mutex> lk(this->listenerMtx);
-        this->listener = listener;
+        this->listener = list;
     }
 }
