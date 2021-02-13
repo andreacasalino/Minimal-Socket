@@ -18,9 +18,9 @@ namespace sck::async {
     public:
         ~AsyncDecorator() { this->close(); };
 
-        inline void resetListener(Listener* listener) {
+        inline void resetListener(Listener* list) {
             std::lock_guard<std::mutex> lk(this->listenerMtx);
-            this->listener = listener;
+            this->listener = list;
         };
 
         inline void resetErrorListener(listener::ErrorListener* listener) {

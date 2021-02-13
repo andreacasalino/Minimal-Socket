@@ -11,10 +11,8 @@
 namespace sck::async {
     AsyncClient::AsyncClient(std::unique_ptr<Client> client, const std::size_t& bufferCapacity) 
     : AsyncDecorator<listener::MessageListener>(std::move(client)) {
+        this->wrapped->close();
         this->buffer.resize(bufferCapacity);
-        if(this->wrapped->isOpen()){
-            this->open(std::chrono::milliseconds(0));
-        }
     };
 
     class AsyncClient::ReceiveService : public Service {
