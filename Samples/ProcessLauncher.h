@@ -110,7 +110,7 @@ void  Launcher::operator()() const {
         f << std::endl << "start \"\" \"" << it->processName << "\"";
         for(auto a : it->processArguments) f << " \"" << a << "\"";
 #elif  __linux__
-        f << std::endl << "gnome-terminal -x sh -c \"./" << it->first;
+        f << std::endl << "gnome-terminal -x sh -c \"./" << it->processName;
         for(auto a : it->processArguments) f << " " << a;
         f << "; bash\"";
 #endif
@@ -120,7 +120,7 @@ void  Launcher::operator()() const {
     f << std::endl << "\"" << this->commands.back().processName << "\"";
     for(auto a : this->commands.back().processArguments) f << " \"" << a << "\"";
 #elif  __linux__
-    f << std::endl << "./" << this->commands.back().first;
+    f << std::endl << "./" << this->commands.back().processName;
     for(auto a : this->commands.back().processArguments) f << " " << a;
 #endif
 
