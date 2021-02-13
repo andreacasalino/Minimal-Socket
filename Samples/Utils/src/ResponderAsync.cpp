@@ -6,7 +6,6 @@
  **/
 
 #include <ResponderAsync.h>
-#include <stdexcept>
 
 ResponderAsync::ResponderAsync(std::unique_ptr<sck::Client> socket) {
     this->running = true;
@@ -21,7 +20,6 @@ ResponderAsync::ResponderAsync(std::unique_ptr<sck::Client> socket) {
 
 void ResponderAsync::handle(const std::pair<const char*, std::size_t>& message) {
     std::string recStr(message.first, message.second);
-
     const std::string surname = Names::getSurname(recStr);
     this->asyncSocket->send({ surname.data(), surname.size() });
 }

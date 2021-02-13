@@ -9,6 +9,7 @@
 #define _CROSS_SOCKET_ERRORLISTENER_H_
 
 #include <Error.h>
+#include <stdexcept>
 
 namespace sck::async::listener {
     class ErrorListener {
