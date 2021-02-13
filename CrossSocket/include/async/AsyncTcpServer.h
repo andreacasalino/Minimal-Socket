@@ -12,6 +12,11 @@
 #include <async/listener/TcpServerListener.h>
 
 namespace sck::async {
+   /**
+    * @brief An asynchronous tcp server keeps accpeting new clients
+    * inside a private thread stored by this class. From the outside it is possible to subscribe to the 
+    * accepted clients by setting a TcpServerListener (calling AsyncDecorator::resetListener(...))
+    */
     class AsyncTcpServer : public AsyncDecorator<listener::TcpServerListener> {
     public:
         explicit AsyncTcpServer(std::unique_ptr<tcp::TcpServer> server);

@@ -15,6 +15,10 @@
 #include <async/listener/ErrorListener.h>
 
 namespace sck::async {
+   /**
+    * @brief A service store a thread that keep executes a specific function, i.e. the iterativeAction,
+    * untill the object is destroyed from the outside
+    */
     class Service {
     public:
         Service(const Service&) = delete;

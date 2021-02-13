@@ -12,9 +12,9 @@
 
 namespace sck::udp {
    /**
-    * @brief A UdpServer is an UdpClient, with the possibility to deduce the remoteAddress,
+    * @brief A UdpServer is an UdpClient, with the possibility to deduce the remoteAddress when calling open,
     * by setting as target the first UdpClient that hits this socket, sending 
-    * at least 1 byte of data.
+    * at least a 1 byte (or more) message.
     * IMPORTANT!!! The first message sent to the server will be lost.
     */
    class UdpServer

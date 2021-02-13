@@ -16,6 +16,11 @@
 #include <vector>
 
 namespace sck::async {
+   /**
+    * @brief An asynchronous client can be any kind of socket that is MessangerConcrete, that keeps receive messages
+    * inside a private thread stored by this class. From the outside it is possible to send messages to the remote host
+    * or subscribe to the received messages by setting a MessageListener (calling AsyncDecorator::resetListener(...))
+    */
     class AsyncClient 
         : public AsyncDecorator<listener::MessageListener>
         , public Messanger {

@@ -19,7 +19,7 @@ namespace sck {
    typedef std::unique_ptr<Ip> IpPtr;
 
    /**
-    * @brief representation of a network address
+    * @brief representation of a network ip address
     */
    class Ip {
    public:

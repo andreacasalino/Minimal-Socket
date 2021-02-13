@@ -12,9 +12,6 @@
 #include <core/MessangerConcrete.h>
 
 namespace sck {
-   /**
-    * @brief this is the abstract base class for every implementation of a concrete client (tcp or udp)
-    */
    class Client 
       : public SocketConcrete
       , public MessangerConcrete {
@@ -41,7 +38,7 @@ namespace sck {
       void openSpecific() override;
 
       /**
-       * @brief address of the server connected to this socket
+       * @brief address of the entity connected to this socket
        */
       sck::Ip remoteAddress;
 

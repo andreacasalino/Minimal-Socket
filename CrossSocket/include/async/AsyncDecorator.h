@@ -18,11 +18,17 @@ namespace sck::async {
     public:
         ~AsyncDecorator() { this->close(); };
 
+      /**
+        * @brief Set a new Listener.
+        */
         inline void resetListener(Listener* list) {
             std::lock_guard<std::mutex> lk(this->listenerMtx);
             this->listener = list;
         };
 
+      /**
+        * @brief Set a new error listener.
+        */
         inline void resetErrorListener(listener::ErrorListener* listener) {
             this->service->resetErrorListener(listener);
         };

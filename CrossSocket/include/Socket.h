@@ -26,6 +26,9 @@ namespace sck {
 
       virtual void close() = 0;
 
+      /**    
+       * @return true only if a previous successfull call to open was done
+       */
       virtual bool isOpen() const = 0;
    };
 }
