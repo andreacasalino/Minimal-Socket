@@ -10,6 +10,7 @@
 
 #include <Messanger.h>
 #include <memory>
+#include <mutex>
 
 namespace sck {   
    class Handler;
@@ -28,6 +29,11 @@ namespace sck {
        std::chrono::milliseconds actualTimeOut = std::chrono::milliseconds(0);
 
        std::shared_ptr<Handler> channelMsg;
+
+       // enforces the calling of receive from a single thread
+       std::mutex receiveMtx;
+       // enforces the calling of send from a single thread
+       std::mutex sendMtx;
    };
 }
 
