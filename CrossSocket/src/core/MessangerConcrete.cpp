@@ -18,6 +18,7 @@ namespace sck {
     }
 
     bool MessangerConcrete::send(const std::pair<const char*, std::size_t>& message) {
+      std::lock_guard<std::mutex> sendLock(this->sendMtx);
       int sentBytes = ::send(**this->channelMsg, message.first, static_cast<int>(message.second), 0);
       if (sentBytes == SCK_SOCKET_ERROR) {
          sentBytes = 0;
@@ -27,6 +28,7 @@ namespace sck {
     }
 
     std::size_t MessangerConcrete::receive(std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) {
+      std::lock_guard<std::mutex> recvLock(this->receiveMtx);
       if (timeout.count() != this->actualTimeOut.count()) {
          //set new timeout
          this->actualTimeOut = timeout;
