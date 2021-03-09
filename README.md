@@ -12,4 +12,4 @@ Use [CMake](https://cmake.org) to configure and compile the library and the samp
 
 **Run the examples**
 
-Check the *README.md* inside the sample folders
+Check the *README.md* inside Samples/Tcp/ and Samples/Udp
