@@ -1,0 +1,67 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  ubuntu-build-gcc:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Build project
+      uses: nicledomaS/cmake_build_action@v1.3
+      with:
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF
+        submodule_update: ON
+        run_tests: ON
+        unit_test_build: -Dtest=ON
+    - name: Install artifacts
+      run: cmake --install ./build
+    - uses: actions/upload-artifact@v2
+      with:
+        path: artifacts
+        name: Ubuntu_GCC.tar.gz
+        
+  ubuntu-build-clang:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Build project
+      uses: nicledomaS/cmake_build_action@v1.3
+      with:
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++;-DBUILD_SAMPLES=OFF
+        submodule_update: ON
+        run_tests: ON
+        unit_test_build: -Dtest=ON
+    - name: Install artifacts
+      run: cmake --install ./build
+    - uses: actions/upload-artifact@v2
+      with:
+        path: artifacts
+        name: Ubuntu_CLANG.tar.gz
+        
+  windows-build-vs:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Build project
+      uses: nicledomaS/cmake_build_action@v1.3
+      with:
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF
+        submodule_update: ON
+        run_tests: ON
+        unit_test_build: -Dtest=ON
+    - name: Install artifacts
+      run: cmake --install ./build
+    - uses: actions/upload-artifact@v2
+      with:
+        path: build/artifacts
+        name: Win32_VS.tar.gz
