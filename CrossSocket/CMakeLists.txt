@@ -38,6 +38,6 @@ target_link_libraries(${PROJECT_NAME}
 
 install(TARGETS ${PROJECT_NAME})
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include
-        DESTINATION "include/" # target directory
+        DESTINATION "./" # target directory
 )
 
