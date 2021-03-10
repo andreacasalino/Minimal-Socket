@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  ubuntu-build-gcc:
+  ubuntu-build-gcc-static:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -28,7 +28,26 @@ jobs:
         path: artifacts
         name: Ubuntu_GCC.tar.gz
         
-  ubuntu-build-clang:
+  ubuntu-build-gcc-shared:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Build project
+      uses: nicledomaS/cmake_build_action@v1.3
+      with:
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
+        submodule_update: ON
+        run_tests: ON
+        unit_test_build: -Dtest=ON
+    - name: Install artifacts
+      run: cmake --install ./build
+    - uses: actions/upload-artifact@v2
+      with:
+        path: artifacts
+        name: Ubuntu_GCC.tar.gz
+        
+  ubuntu-build-clang-static:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -46,8 +65,27 @@ jobs:
       with:
         path: artifacts
         name: Ubuntu_CLANG.tar.gz
+                
+  ubuntu-build-clang-shared:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Build project
+      uses: nicledomaS/cmake_build_action@v1.3
+      with:
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
+        submodule_update: ON
+        run_tests: ON
+        unit_test_build: -Dtest=ON
+    - name: Install artifacts
+      run: cmake --install ./build
+    - uses: actions/upload-artifact@v2
+      with:
+        path: artifacts
+        name: Ubuntu_CLANG.tar.gz
         
-  windows-build-vs:
+  windows-build-vs-static:
     runs-on: windows-latest
     steps:
     - name: Checkout
@@ -64,4 +102,23 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: build/artifacts
-        name: Win32_VS.tar.gz
+        name: Win32_VisualStudio.tar.gz
+                
+  windows-build-vs-shared:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Build project
+      uses: nicledomaS/cmake_build_action@v1.3
+      with:
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
+        submodule_update: ON
+        run_tests: ON
+        unit_test_build: -Dtest=ON
+    - name: Install artifacts
+      run: cmake --install ./build
+    - uses: actions/upload-artifact@v2
+      with:
+        path: build/artifacts
+        name: Win32_VisualStudio.tar.gz
