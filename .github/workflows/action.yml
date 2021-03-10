@@ -26,7 +26,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
-        name: Ubuntu_GCC.tar.gz
+        name: Ubuntu_GCC_static.tar.gz
         
   ubuntu-build-gcc-shared:
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
-        name: Ubuntu_GCC.tar.gz
+        name: Ubuntu_GCC_shared.tar.gz
         
   ubuntu-build-clang-static:
     runs-on: ubuntu-latest
@@ -64,7 +64,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
-        name: Ubuntu_CLANG.tar.gz
+        name: Ubuntu_CLANG_static.tar.gz
                 
   ubuntu-build-clang-shared:
     runs-on: ubuntu-latest
@@ -83,7 +83,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
-        name: Ubuntu_CLANG.tar.gz
+        name: Ubuntu_CLANG_shared.tar.gz
         
   windows-build-vs-static:
     runs-on: windows-latest
@@ -102,7 +102,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: build/artifacts
-        name: Win32_VisualStudio.tar.gz
+        name: Win32_VisualStudio_static.zip
                 
   windows-build-vs-shared:
     runs-on: windows-latest
@@ -121,4 +121,4 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: build/artifacts
-        name: Win32_VisualStudio.tar.gz
+        name: Win32_VisualStudio_shared.zip
