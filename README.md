@@ -6,10 +6,14 @@ completely platform independent way.
   * The libarary is contained in the ./CrossSocket folder
   * Samples showing the library usage are contained in the ./Samples folder. ATTENTION!!! Samples execution might be blocked by your firewall
  
-**Build**
+**Build from sources**
 
 Use [CMake](https://cmake.org) to configure and compile the library and the samples.
 
 **Run the examples**
 
 Check the *README.md* inside Samples/Tcp/ and Samples/Udp/
+
+**Download compiled binaries**
+
+You can simply download and use the binaries of the latest master version [here](https://github.com/andreacasalino/Cross-Platform-Socket/actions/)
