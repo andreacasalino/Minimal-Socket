@@ -16,4 +16,6 @@ Check the *README.md* inside Samples/Tcp/ and Samples/Udp/
 
 **Download compiled binaries**
 
-You can simply download and use the binaries of the latest master version [here](https://github.com/andreacasalino/Cross-Platform-Socket/actions/)
+You can simply download and use the binaries of the latest master version [here](https://github.com/andreacasalino/Cross-Platform-Socket/actions/runs/640613596)
+
+If you have found this library usefull, remember to **start** it
