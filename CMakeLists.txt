@@ -14,9 +14,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 set(WITH_SOURCE_TREE ON)
 include(GroupSources)
 include(AutoCollect)
+include(MakeLibrary)
 
+project(CrossSocket)
 add_subdirectory(CrossSocket)
+
 if(BUILD_SAMPLES)
     add_subdirectory(Samples)
 endif()
-
