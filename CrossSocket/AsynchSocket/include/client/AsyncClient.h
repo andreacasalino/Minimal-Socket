@@ -10,7 +10,7 @@
 
 #include <AsyncDecorator.h>
 #include <core/Client.h>
-#include <listener/MessageListener.h>
+#include <client/MessageListener.h>
 #include <vector>
 
 namespace sck::async {
