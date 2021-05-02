@@ -6,6 +6,7 @@
  **/
 
 #include <tcp/TcpClient.h>
+#include "../Channel.h"
 
 namespace sck::tcp {
    TcpClient::TcpClient(const sck::Ip& remoteAddress)

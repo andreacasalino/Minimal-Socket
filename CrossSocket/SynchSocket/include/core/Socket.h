@@ -11,6 +11,7 @@
 #include <core/components/ChannelAware.h>
 #include <core/components/FamilyAware.h>
 #include <core/components/ProtocolAware.h>
+#include <core/components/StateAware.h>
 #include <core/components/Openable.h>
 #include <core/components/Closable.h>
 #include <Ip.h>
@@ -18,9 +19,12 @@
 namespace sck {
     class Socket
         : virtual public ChannelAware
+        , public StateAware
         , public Closable {
     public:
         virtual ~Socket() override;
+
+        bool isOpen() const final;
 
         void close() final;
 
@@ -46,8 +50,6 @@ namespace sck {
          * internally called, leaving the object in a closed status.
          */
         void open(const std::chrono::milliseconds& timeout) final;
-
-        bool isOpen() const final;
 
     protected:
         explicit SocketOpenable(std::unique_ptr<Channel> channel);

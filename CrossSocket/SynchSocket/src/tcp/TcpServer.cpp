@@ -46,7 +46,7 @@ namespace sck::tcp {
          throw Error("accepted client remote address is not resolvable");
       }
 
-      return std::make_unique<TcpClientHandler>(std::move(acceptedClientHandler), *remoteAddress);
+      return std::unique_ptr<TcpClientHandler>(new TcpClientHandler(std::move(acceptedClientHandler), *remoteAddress));
    }
 
    void TcpServer::openSteps() {

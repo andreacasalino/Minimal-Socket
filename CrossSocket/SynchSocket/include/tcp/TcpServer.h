@@ -14,14 +14,7 @@
 #include <core/BindCapable.h>
 
 namespace sck::tcp {
-    class TcpClientHandler
-        : public Socket
-        , public Messanger
-        , public RemoteAddressAware {
-        friend class TcpServer;
-    protected:
-        TcpClientHandler(std::unique_ptr<Channel> channel, const sck::Ip& remoteAddress);
-    };
+    class TcpClientHandler;
 
    /**
     * @brief interface for a tcp server.
@@ -52,6 +45,15 @@ namespace sck::tcp {
 
       std::uint16_t port;
       sck::Family family;
+   };
+
+   class TcpClientHandler
+       : public Socket
+       , public Messanger
+       , public RemoteAddressAware {
+       friend class TcpServer;
+   protected:
+       TcpClientHandler(std::unique_ptr<Channel> channel, const sck::Ip& remoteAddress);
    };
 }
 

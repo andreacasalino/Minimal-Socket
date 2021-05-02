@@ -20,6 +20,10 @@ namespace sck {
         this->channel = std::move(channel);
     }
 
+    bool Socket::isOpen() const {
+        return this->channel->isOpen();
+    };
+
     Socket::~Socket() {
         if (this->isOpen()) {
             this->close();
@@ -44,10 +48,6 @@ namespace sck {
     SocketOpenable::SocketOpenable(std::unique_ptr<Channel> channel)
         : Socket(std::move(channel)) {
     }
-
-    bool SocketOpenable::isOpen() const {
-        return this->channel->isOpen();
-    };
 
     void SocketOpenable::open(const std::chrono::milliseconds& timeout) {
         if (this->isOpen()) {

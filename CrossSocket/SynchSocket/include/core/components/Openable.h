@@ -18,11 +18,6 @@ namespace sck {
          * @param timeout to assume for the open operation. When passing 0, an infite timeout is assumed
          */
         virtual void open(const std::chrono::milliseconds& timeout) = 0;
-
-        /**
-         * @return true only if a previous successfull call to open was done
-         */
-        virtual bool isOpen() const = 0;
     };
 }
 
