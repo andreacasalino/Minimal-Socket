@@ -8,12 +8,13 @@
 #ifndef SAMPLE_RESPONDER_ASYNC_H
 #define SAMPLE_RESPONDER_ASYNC_H
 
-#include <async/AsyncClient.h>
+#ifdef ASYNCH_ENABLED
+#include <client/AsyncClient.h>
 #include <Names.h>
 
-class ResponderAsync 
-    : public sck::async::listener::MessageListener
-    , public sck::async::listener::ErrorListener {
+class ResponderAsync
+    : public sck::async::MessageListener
+    , public sck::async::ErrorListener {
 public:
     ResponderAsync(std::unique_ptr<sck::Client> socket);
 
@@ -29,5 +30,6 @@ private:
     std::unique_ptr<sck::async::AsyncClient> asyncSocket;
     std::atomic_bool running;
 };
+#endif
 
 #endif

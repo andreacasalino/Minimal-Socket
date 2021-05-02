@@ -8,7 +8,8 @@
 #ifndef _CROSS_SOCKET_UDPCONNECTION_H_
 #define _CROSS_SOCKET_UDPCONNECTION_H_
 
-#include <core/Client.h>
+#include <core/Connection.h>
+#include <core/BindCapable.h>
 
 namespace sck::udp {
 
@@ -21,7 +22,8 @@ namespace sck::udp {
     * @brief interface for a standard udp connection.
     */
    class UdpConnection
-      : public Client {
+      : public Connection
+      , public BindCapable {
    public:
       /**
        @param[in] Address of the remote host to hit
@@ -32,7 +34,7 @@ namespace sck::udp {
    protected:
       std::uint16_t port;
 
-      void openSpecific() override;
+      void openSteps() override;
 
    private:
       inline sck::Protocol getProtocol() const final { return Protocol::UDP; };

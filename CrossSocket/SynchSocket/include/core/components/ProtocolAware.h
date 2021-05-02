@@ -12,12 +12,7 @@ namespace sck {
     enum Protocol { UDP, TCP };
 
     class ProtocolAware {
-    public:
-        virtual ~ProtocolAware() = default;
-
     protected:
-        ProtocolAware() = default;
-
         virtual sck::Protocol getProtocol() const = 0;
     };
 }

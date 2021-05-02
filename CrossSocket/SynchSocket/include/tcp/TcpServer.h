@@ -8,16 +8,28 @@
 #ifndef _CROSS_SOCKET_TCPSERVER_H_
 #define _CROSS_SOCKET_TCPSERVER_H_
 
-#include <core/OpenConcrete.h>
-#include <core/Client.h>
+#include <core/Socket.h>
+#include <core/Messanger.h>
+#include <core/components/RemoteAddressAware.h>
+#include <core/BindCapable.h>
 
 namespace sck::tcp {
+    class TcpClientHandler
+        : public Socket
+        , public Messanger
+        , public RemoteAddressAware {
+        friend class TcpServer;
+    protected:
+        TcpClientHandler(std::unique_ptr<Channel> channel, const sck::Ip& remoteAddress);
+    };
+
    /**
     * @brief interface for a tcp server.
     * When calling open, the server binds and listen to the port, in order to be later ready to accept clients
     */
    class TcpServer
-      : public OpenConcrete {
+      : public SocketOpenable
+      , public BindCapable {
    public:
       /**
        * @param[in] the port to reserve
@@ -30,10 +42,10 @@ namespace sck::tcp {
        * returns an interface to use for exchanging data to and from the accepted clients.
        * This is a blocking operation.
        */
-      std::unique_ptr<Client> acceptClient();
+      std::unique_ptr<TcpClientHandler> acceptClient();
 
    private:
-      void openSpecific() override;
+      void openSteps() override;
 
       inline sck::Family getFamily() const final { return this->family; };
       inline sck::Protocol getProtocol() const final { return Protocol::TCP; };

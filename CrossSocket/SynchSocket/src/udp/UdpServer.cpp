@@ -25,7 +25,7 @@ namespace sck::udp {
       : UdpConnection(getInitialAddress(protocol), localPort) {
    }
 
-   void UdpServer::openSpecific() {
+   void UdpServer::openSteps() {
       this->bindToPort(this->port);
 
       // receive a message from the client, that from now on will become the recognized one.
@@ -44,7 +44,7 @@ namespace sck::udp {
       if(nullptr == remoteConverted) {
          throw Error(remoteAddr.sa_data, " is an invalid data for udp serer remote address");
       }
-      this->remoteAddress = *remoteConverted;
-      this->Client::openSpecific();
+      this->remoteAddress = std::move(remoteConverted);
+      this->Connection::openSteps();
    }
 }

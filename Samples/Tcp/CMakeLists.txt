@@ -1,3 +1,13 @@
+project("Tcp-Samples")
+
+function(MakeSample NAME)
+
+endfunction()
+
+function(MakeInstallableSample NAME)
+
+endfunction()
+
 add_executable(TcpClient TcpClient.cpp)
 target_link_libraries(TcpClient Sample-Utils)	
 

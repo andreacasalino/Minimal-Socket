@@ -12,12 +12,7 @@
 
 namespace sck {
     class FamilyAware {
-    public:
-        virtual ~FamilyAware() = default;
-
     protected:
-        FamilyAware() = default;
-
         /**
          * @brief These values should be internally deduced from object to object
          */

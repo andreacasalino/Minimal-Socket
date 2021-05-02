@@ -11,12 +11,12 @@
 namespace sck::udp {
 
    UdpConnection::UdpConnection(const sck::Ip& remoteAddress, const std::uint16_t& localPort)
-      : Client(remoteAddress)
+      : Connection(remoteAddress)
       , port(localPort) {
    }
 
-   void UdpConnection::openSpecific() {
+   void UdpConnection::openSteps() {
       this->bindToPort(this->port);
-      this->Client::openSpecific();      
+      this->Connection::openSteps();      
    }
 }
