@@ -5,11 +5,11 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <core/Receiver.h>
+#include <core/Messanger.h>
 #include "../Channel.h"
 
 namespace sck {
-    std::size_t Receiver::receive(std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) {
+    std::size_t Messanger::receive(std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) {
         std::lock_guard<std::mutex> recvLock(this->receiveMtx);
         if (timeout.count() != this->actualTimeOut.count()) {
             //set new timeout
@@ -41,5 +41,15 @@ namespace sck {
             recvBytes = 0;
         }
         return static_cast<std::size_t>(recvBytes);
+    }
+
+    bool Messanger::send(const std::pair<const char*, std::size_t>& message) {
+        std::lock_guard<std::mutex> sendLock(this->sendMtx);
+        int sentBytes = ::send(**this->channel, message.first, static_cast<int>(message.second), 0);
+        if (sentBytes == SCK_SOCKET_ERROR) {
+            sentBytes = 0;
+            throwWithCode("send failed");
+        }
+        return (sentBytes == static_cast<int>(message.second));
     }
 }

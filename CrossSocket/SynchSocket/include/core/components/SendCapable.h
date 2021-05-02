@@ -14,16 +14,11 @@
 namespace sck {
     class SendCapable {
     public:
-        virtual ~SendCapable() = default;
-
         /**
          * @return true if the message was completely sent
          * @param[in] the message to send
          */
         virtual bool send(const std::pair<const char*, std::size_t>& message) = 0;
-
-    protected:
-        SendCapable() = default;
     };
 }
 

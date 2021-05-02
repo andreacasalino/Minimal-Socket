@@ -5,6 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+#ifdef ASYNCH_ENABLED
 #include <ResponderAsync.h>
 
 ResponderAsync::ResponderAsync(std::unique_ptr<sck::Client> socket) {
@@ -33,3 +34,4 @@ void ResponderAsync::handle(const std::exception& error) {
     this->asyncSocket->close();
     this->running = false;
 };
+#endif

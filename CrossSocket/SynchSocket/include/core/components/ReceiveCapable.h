@@ -14,8 +14,6 @@
 namespace sck {
     class ReceiveCapable {
     public:
-        virtual ~ReceiveCapable() = default;
-
         /**
          * @param[in] the buffer that will receive the message:
          *                               first element of the pair is the data pointer of the buffer
@@ -25,9 +23,6 @@ namespace sck {
          * @return the number of received bytes actually received and copied into message (can be also less than the buffer size)
          */
         virtual std::size_t receive(std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) = 0;
-
-    protected:
-        ReceiveCapable() = default;
     };
 }
 

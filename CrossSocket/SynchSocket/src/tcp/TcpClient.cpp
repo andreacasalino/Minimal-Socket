@@ -6,15 +6,9 @@
  **/
 
 #include <tcp/TcpClient.h>
-#include "../Channel.h"
 
 namespace sck::tcp {
-
    TcpClient::TcpClient(const sck::Ip& remoteAddress)
-      : Client(remoteAddress) {
-   }
-
-   TcpClient::TcpClient(const sck::Ip& remoteAddress, std::unique_ptr<Channel> channel)
-      : Client(remoteAddress, std::move(channel)) {
+      : Connection(remoteAddress) {
    }
 }

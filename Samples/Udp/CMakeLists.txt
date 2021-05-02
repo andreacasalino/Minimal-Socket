@@ -1,3 +1,5 @@
+project("Udp-Samples")
+
 add_executable(UdpClientAsker UdpClientAsker.cpp)
 target_link_libraries(UdpClientAsker Sample-Utils)	
 

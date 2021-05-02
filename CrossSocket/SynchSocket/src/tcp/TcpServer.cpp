@@ -6,34 +6,24 @@
  **/
 
 #include <tcp/TcpServer.h>
-#include <tcp/TcpClient.h>
 #include "../Channel.h"
 #include <Error.h>
 
 namespace sck::tcp {
    constexpr std::size_t LISTEN_BACKLOG = 50;
 
-   class ClientHandler : public TcpClient {
-   public:
-      explicit ClientHandler(const sck::Ip& remoteAddress, std::unique_ptr<Channel> channel)
-         : TcpClient(remoteAddress, std::move(channel)) {
-      };
-
-      ~ClientHandler() override = default;
-
-   private:
-      void openSpecific() final {
-         throw Error("connection returned from TcpServer::acceptClient are not re-openable");
-      };
-   };
+   TcpClientHandler::TcpClientHandler(std::unique_ptr<Channel> channel, const sck::Ip& remoteAddress)
+        : Socket(std::move(channel)) {
+       this->remoteAddress = std::make_unique<Ip>(remoteAddress);
+   }
 
    TcpServer::TcpServer(const std::uint16_t& port, const Family& family) 
-      : OpenConcrete(std::make_unique<Channel>())
+      : SocketOpenable(std::make_unique<Channel>())
       , port(port)
       , family(family) {
    }
 
-   std::unique_ptr<Client> TcpServer::acceptClient() {
+   std::unique_ptr<TcpClientHandler> TcpServer::acceptClient() {
        if (!this->isOpen()) {
            throw Error("a tcp server should be opened before accepting a new client");
        }
@@ -56,10 +46,10 @@ namespace sck::tcp {
          throw Error("accepted client remote address is not resolvable");
       }
 
-      return std::make_unique<ClientHandler>(*remoteAddress, std::move(acceptedClientHandler));
+      return std::make_unique<TcpClientHandler>(std::move(acceptedClientHandler), *remoteAddress);
    }
 
-   void TcpServer::openSpecific() {
+   void TcpServer::openSteps() {
       this->bindToPort(this->port);
       // listen to the port to allow all the following clients acceptance
       if (::listen(**this->channel, LISTEN_BACKLOG) == SCK_SOCKET_ERROR) {
