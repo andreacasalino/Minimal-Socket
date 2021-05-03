@@ -5,12 +5,12 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef _CROSS_SOCKET_ASYNCCLIENT_H
-#define _CROSS_SOCKET_ASYNCCLIENT_H
+#ifndef _CROSS_SOCKET_ASYNCMESSANGER_H
+#define _CROSS_SOCKET_ASYNCMESSANGER_H
 
-#include <AsyncDecorator.h>
-#include <core/Client.h>
-#include <client/MessageListener.h>
+#include <AsyncSocket.h>
+#include <messanger/MessangerListener.h>
+#include <core/components/SendCapable.h>
 #include <vector>
 
 namespace sck::async {
@@ -20,10 +20,10 @@ namespace sck::async {
     * or subscribe to the received messages by setting a MessageListener (calling AsyncDecorator::resetListener(...))
     */
     class AsyncClient 
-        : public AsyncDecorator<MessageListener>
+        : public AsyncSocket<MessangerListener>
         , public SendCapable {
     public:
-        AsyncClient(std::unique_ptr<Client> client, const std::size_t& bufferCapacity);
+        AsyncClient(std::unique_ptr<SocketOpenable> client, const std::size_t& bufferCapacity);
 
         inline bool send(const std::pair<const char*, std::size_t>& message) final {
             return dynamic_cast<Sender*>(this->wrapped.get())->send(message);

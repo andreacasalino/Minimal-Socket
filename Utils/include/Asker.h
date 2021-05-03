@@ -8,21 +8,25 @@
 #ifndef SAMPLE_ASKER_H
 #define SAMPLE_ASKER_H
 
-#include <core/Client.h>
+#include <core/Messanger.h>
 #include <Names.h>
+#include <Logger.h>
 
-class Asker {
-public:
-    Asker(std::unique_ptr<sck::Client> socket);
+namespace sck::sample {
+    class Asker
+        : public Logger {
+    public:
+        Asker(std::unique_ptr<sck::Messanger> socket);
 
-    void ask();
+        void ask();
 
-    void askForever(const std::chrono::milliseconds& sampleTime);
+        void askForever(const std::chrono::milliseconds& sampleTime);
 
-private:
-    std::unique_ptr<sck::Client> socket;
-    Names cursor;
-    char recvBuffer[1000];
-};
+    private:
+        std::unique_ptr<sck::Messanger> socket;
+        Names cursor;
+        char recvBuffer[1000];
+    };
+}
 
 #endif

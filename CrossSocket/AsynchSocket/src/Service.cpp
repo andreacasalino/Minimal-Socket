@@ -33,6 +33,7 @@ namespace sck::async {
                 }
             }
         }) {
+        // wait till the thread is actually spawned
         while (!this->loopLife) {
             std::this_thread::sleep_for(std::chrono::milliseconds(3));
         }

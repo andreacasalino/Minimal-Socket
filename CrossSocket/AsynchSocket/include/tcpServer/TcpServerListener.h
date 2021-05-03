@@ -13,7 +13,7 @@
 namespace sck::async {
     class TcpServerListener {
     public:
-        virtual void handle(std::unique_ptr<Client> clientHandler) = 0;
+        virtual void handle(std::unique_ptr<tcp::TcpClientHandler> clientHandler) = 0;
     };
 }
 

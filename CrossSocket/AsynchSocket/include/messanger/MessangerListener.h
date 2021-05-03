@@ -5,13 +5,13 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef _CROSS_SOCKET_MESSAGELISTENER_H_
-#define _CROSS_SOCKET_MESSAGELISTENER_H_
+#ifndef _CROSS_SOCKET_MESSANGERLISTENER_H_
+#define _CROSS_SOCKET_MESSANGERLISTENER_H_
 
 #include <utility>
 
 namespace sck::async {
-    class MessageListener {
+    class MessangerListener {
     public:
         virtual void handle(const std::pair<const char*, std::size_t>& message) = 0;
     };

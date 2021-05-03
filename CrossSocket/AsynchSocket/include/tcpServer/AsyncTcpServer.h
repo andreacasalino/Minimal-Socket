@@ -8,7 +8,7 @@
 #ifndef _CROSS_SOCKET_ASYNCTCPSERVER_H
 #define _CROSS_SOCKET_ASYNCTCPSERVER_H
 
-#include <AsyncDecorator.h>
+#include <AsyncSocket.h>
 #include <tcpServer/TcpServerListener.h>
 
 namespace sck::async {
@@ -17,7 +17,7 @@ namespace sck::async {
     * inside a private thread stored by this class. From the outside it is possible to subscribe to the 
     * accepted clients by setting a TcpServerListener (calling AsyncDecorator::resetListener(...))
     */
-    class AsyncTcpServer : public AsyncDecorator<TcpServerListener> {
+    class AsyncTcpServer : public AsyncSocket<TcpServerListener> {
     public:
         explicit AsyncTcpServer(std::unique_ptr<tcp::TcpServer> server);
 

@@ -9,7 +9,7 @@
 
 namespace sck::async {
     AsyncTcpServer::AsyncTcpServer(std::unique_ptr<tcp::TcpServer> server)
-        : AsyncDecorator<TcpServerListener>(std::move(server)) {
+        : AsyncSocket<TcpServerListener>(std::move(server)) { 
     };
 
     class AsyncTcpServer::AcceptanceService : public Service {
