@@ -11,22 +11,24 @@
 #include <map>
 #include <string>
 
-class Names {
-public:
-    Names();
+namespace sck::sample {
+    class Names {
+    public:
+        Names();
 
-    inline const std::string& getCursorName() const { return this->cursor->first; };
-    inline const std::string& getCursorSurname() const { return this->cursor->second; };
+        inline const std::string& getCursorName() const { return this->cursor->first; };
+        inline const std::string& getCursorSurname() const { return this->cursor->second; };
 
-    static const std::string& getSurname(const std::string& name);
+        static const std::string& getSurname(const std::string& name);
 
-    Names& operator++();
+        Names& operator++();
 
-private:
-    static const std::map<std::string, std::string> namesSurnames;
-    static const std::string unknown;
+    private:
+        static const std::map<std::string, std::string> namesSurnames;
+        static const std::string unknown;
 
-    std::map<std::string, std::string>::const_iterator cursor;
-};
+        std::map<std::string, std::string>::const_iterator cursor;
+    };
+}
 
 #endif

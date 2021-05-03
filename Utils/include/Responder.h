@@ -8,20 +8,24 @@
 #ifndef SAMPLE_RESPONDER_H
 #define SAMPLE_RESPONDER_H
 
-#include <core/Client.h>
+#include <core/Messanger.h>
 #include <Names.h>
+#include <Logger.h>
 
-class Responder {
-public:
-    Responder(std::unique_ptr<sck::Client> socket);
+namespace sck::sample {
+    class Responder
+        : public Logger {
+    public:
+        Responder(std::unique_ptr<sck::Messanger> socket);
 
-    void respond();
+        void respond();
 
-    void respondForever();
+        void respondForever();
 
-private:
-    std::unique_ptr<sck::Client> socket;
-    char recvBuffer[1000];
-};
+    private:
+        std::unique_ptr<sck::Messanger> socket;
+        char recvBuffer[1000];
+    };
+}
 
 #endif
