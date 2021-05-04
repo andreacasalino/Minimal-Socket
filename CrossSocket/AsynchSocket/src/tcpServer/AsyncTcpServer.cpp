@@ -9,24 +9,11 @@
 
 namespace sck::async {
     AsyncTcpServer::AsyncTcpServer(std::unique_ptr<tcp::TcpServer> server)
-        : AsyncSocket<TcpServerListener>(std::move(server)) { 
+        : AsyncSocket(std::move(server)) { 
     };
 
-    class AsyncTcpServer::AcceptanceService : public Service {
-    public:
-        AcceptanceService(AsyncTcpServer& server, ErrorListener* list) 
-            : Service([&server](){
-                auto client = dynamic_cast<tcp::TcpServer*>(server.wrapped.get())->acceptClient();
-                std::lock_guard<std::mutex> lk(server.listenerMtx);
-                if(nullptr != server.listener) {
-                    server.listener->handle(std::move(client));
-                }
-            }, list) {
-        }
-    };
-
-    std::unique_ptr<Service> AsyncTcpServer::make_service() {
-        std::lock_guard<std::mutex> lk(this->errorListenerMtx);
-        return std::make_unique<AcceptanceService>(*this, this->errorListener.get());
+    void AsyncTcpServer::serviceIteration() {
+        auto client = dynamic_cast<tcp::TcpServer*>(this->wrapped.get())->acceptClient();
+        //this->Talker<TcpServerListener>::notify(std::move(client));
     }
 }
