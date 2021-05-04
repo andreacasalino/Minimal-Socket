@@ -5,35 +5,33 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <client/AsyncClient.h>
+#include <messanger/AsyncMessanger.h>
 #include <string.h>
+#include <core/components/ReceiveCapable.h>
 
 namespace sck::async {
-    AsyncClient::AsyncClient(std::unique_ptr<Client> client, const std::size_t& bufferCapacity) 
-    : AsyncDecorator<MessageListener>(std::move(client)) {
-        this->buffer.resize(bufferCapacity);
+    AsyncMessanger::AsyncMessanger(std::unique_ptr<Socket> messanger, const std::size_t& bufferCapacity)
+        : AsyncSocket(std::move(messanger)) {
+        //this->recvPtr = dynamic_cast<ReceiveCapable*> (messanger.get());
+        //if (nullptr == this->recvPtr) {
+        //    throw Error("The passed socket is not receive capable");
+        //}
+        //this->sendPtr = dynamic_cast<SendCapable*> (messanger.get());
+        this->receiveBuffer.resize(bufferCapacity);
     };
 
-    class AsyncClient::ReceiveService : public Service {
-    public:
-        ReceiveService(AsyncClient& client, ErrorListener* list) 
-            : Service([&client](){
-                client.buffer.resize(client.buffer.capacity());
-                auto pr = std::make_pair<char*, std::size_t>(client.buffer.data(), client.buffer.capacity());
-                auto recvBytes = dynamic_cast<Receiver*>(client.wrapped.get())->receive(pr, std::chrono::milliseconds(0));
-                if(recvBytes != client.buffer.capacity()) {
-                    client.buffer.resize(recvBytes);
-                }
-                std::lock_guard<std::mutex> lk(client.listenerMtx);
-                if(nullptr != client.listener) {
-                    client.listener->handle({client.buffer.data(), recvBytes});
-                }
-            }, list) {
-        }
-    };
-
-    std::unique_ptr<Service> AsyncClient::make_service() {
-        std::lock_guard<std::mutex> lk(this->errorListenerMtx);
-        return std::make_unique<ReceiveService>(*this, this->errorListener.get());
+    void AsyncMessanger::serviceIteration() {
+        this->receiveBuffer.resize(this->receiveBuffer.capacity());
+        auto pr = std::make_pair<char*, std::size_t>(this->receiveBuffer.data(), this->receiveBuffer.capacity());
+       /* auto recvBytes = this->recvPtr->receive(pr, std::chrono::milliseconds(0));
+        if (recvBytes != this->receiveBuffer.capacity()) {
+            this->receiveBuffer.resize(recvBytes);
+        }*/
+        this->Talker<MessangerListener>::notify(pr);
     }
+
+    inline bool AsyncMessanger::send(const std::pair<const char*, std::size_t>& message) {
+        //return this->sendPtr->send(message);
+        return true;
+    };
 }

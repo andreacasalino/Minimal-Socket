@@ -27,7 +27,7 @@ namespace sck {
         void open(const std::chrono::milliseconds& timeout) override;
 
     protected:
-        explicit SocketDecorator(std::unique_ptr<Socket> channel);
+        SocketDecorator(std::unique_ptr<Socket> channel);
 
         std::unique_ptr<Socket> wrapped;
     };
