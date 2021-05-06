@@ -24,7 +24,7 @@ namespace sck::async {
         explicit AsyncTcpServer(std::unique_ptr<tcp::TcpServer> server);
 
     private:
-        void serviceIteration() override;
+        void serviceIteration() final;
     };
 }
 

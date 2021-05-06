@@ -14,6 +14,6 @@ namespace sck::async {
 
     void AsyncTcpServer::serviceIteration() {
         auto client = dynamic_cast<tcp::TcpServer*>(this->wrapped.get())->acceptClient();
-        //this->Talker<TcpServerListener>::notify(std::move(client));
+        this->Talker<TcpServerListener>::notify(std::move(client));
     }
 }

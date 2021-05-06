@@ -15,14 +15,13 @@
 #include <thread>
 
 namespace sck::async {
-    class Service;
-
     class AsyncSocket
         : public SocketDecorator
         , public Talker<ErrorListener> {
     public:
         virtual ~AsyncSocket() { this->close(); };
 
+        // the wrapped socket is opened and the service is spawned
         void open(const std::chrono::milliseconds& timeout) final;
 
         void close() final;
@@ -33,7 +32,7 @@ namespace sck::async {
         virtual void serviceIteration() = 0;
 
     private:
-        void spawn();
+        void spawnService();
 
         std::atomic_bool serviceLife = false;
         std::unique_ptr<std::thread> service;
