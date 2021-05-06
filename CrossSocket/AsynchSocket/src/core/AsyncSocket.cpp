@@ -11,36 +11,34 @@ namespace sck::async {
     AsyncSocket::AsyncSocket(std::unique_ptr<Socket> socket)
         : SocketDecorator(std::move(socket)) {
         if (this->wrapped->isOpen()) {
-            this->spawn();
+            this->spawnService();
         }
     };
 
-    void AsyncSocket::spawn() {
-        if (this->wrapped->isOpen()) {
+    void AsyncSocket::spawnService() {
+        this->serviceLife = false;
+        this->service = std::make_unique<std::thread>([this]() {
             this->serviceLife = true;
-            this->service = std::make_unique<std::thread>([this]() {
-                this->serviceLife = true;
-                while (this->serviceLife) {
+            while (this->serviceLife) {
+                try {
+                    this->serviceIteration();
+                }
+                catch (...) {
                     try {
-                        this->serviceIteration();
+                        std::rethrow_exception(std::current_exception());
                     }
-                    catch (...) {
-                        try {
-                            std::rethrow_exception(std::current_exception());
-                        }
-                        catch (const Error & e) {
-                            this->Talker<ErrorListener>::notify(e);
-                        }
-                        catch (const std::exception & e) {
-                            this->Talker<ErrorListener>::notify(e);
-                        }
+                    catch (const Error & e) {
+                        this->Talker<ErrorListener>::notify(e);
+                    }
+                    catch (const std::exception & e) {
+                        this->Talker<ErrorListener>::notify(e);
                     }
                 }
-                });
-            // wait till the thread is actually spawned
-            while (!this->serviceLife) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(3));
             }
+        });
+        // wait till the thread is actually spawned
+        while (!this->serviceLife) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(3));
         }
     }
 
@@ -49,11 +47,13 @@ namespace sck::async {
             throw Error("The socket was already opened");
         }
         this->SocketDecorator::open(timeout);
-        this->spawn();
+        if (this->wrapped->isOpen()) {
+            this->spawnService();
+        }
     };
 
     void AsyncSocket::close() {
-        if (!this->serviceLife) {
+        if (nullptr == this->service) {
             return;
         }
         this->serviceLife = false;

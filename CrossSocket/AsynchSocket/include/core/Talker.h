@@ -32,7 +32,7 @@ namespace sck::async {
             if (nullptr == this->listener) {
                 return;
             }
-            this->listener->handle(content);
+            this->listener->handle(std::forward<T>(content));
         };
 
     private:

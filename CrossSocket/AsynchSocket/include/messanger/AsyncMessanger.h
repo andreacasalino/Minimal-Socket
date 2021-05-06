@@ -11,6 +11,7 @@
 #include <core/AsyncSocket.h>
 #include <messanger/MessangerListener.h>
 #include <core/components/SendCapable.h>
+#include <core/Messanger.h>
 #include <vector>
 
 namespace sck::async {
@@ -21,20 +22,19 @@ namespace sck::async {
     */
     class AsyncMessanger 
         : public AsyncSocket
-        , public SendCapable
-        , public Talker<MessangerListener> {
+        , public Talker<MessangerListener>
+        , public SendCapable {
     public:
         AsyncMessanger(std::unique_ptr<Socket> messanger, const std::size_t& bufferCapacity);
 
-        bool send(const std::pair<const char*, std::size_t>& message) final;
+        inline bool send(const std::pair<const char*, std::size_t>& message) final { return this->messPtr->send(message); };
 
     private:
-        void serviceIteration() override;
+        void serviceIteration() final;
 
         std::vector<char> receiveBuffer;
 
-        ReceiveCapable* recvPtr;
-        //SendCapable* sendPtr;
+        Messanger* messPtr;
     };
 }
 
