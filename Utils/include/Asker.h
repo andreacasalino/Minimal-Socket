@@ -9,7 +9,7 @@
 #define SAMPLE_ASKER_H
 
 #include <core/Messanger.h>
-#include <Names.h>
+#include <NamesMap.h>
 #include <Logger.h>
 
 namespace sck::sample {
@@ -24,7 +24,7 @@ namespace sck::sample {
 
     private:
         std::unique_ptr<sck::Messanger> socket;
-        Names cursor;
+        NamesMap cursor;
         char recvBuffer[1000];
     };
 }
