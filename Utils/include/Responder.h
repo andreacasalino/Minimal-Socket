@@ -9,7 +9,7 @@
 #define SAMPLE_RESPONDER_H
 
 #include <core/Messanger.h>
-#include <Names.h>
+#include <NamesMap.h>
 #include <Logger.h>
 
 namespace sck::sample {

@@ -5,14 +5,14 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <Names.h>
+#include <NamesMap.h>
 
 namespace sck::sample {
-    Names::Names() {
+    NamesMap::NamesMap() {
         this->cursor = namesSurnames.begin();
     }
 
-    const std::map<std::string, std::string> Names::namesSurnames = {
+    const std::map<std::string, std::string> NamesMap::namesSurnames = {
         {"Luciano", "Pavarotti"},
         {"Gengis", "Khan"},
         {"Giulio", "Cesare"},
@@ -20,9 +20,9 @@ namespace sck::sample {
         {"Immanuel", "Kant"}
     };
 
-    const std::string Names::unknown = "unknown";
+    const std::string NamesMap::unknown = "unknown";
 
-    Names& Names::operator++() {
+    NamesMap& NamesMap::operator++() {
         ++this->cursor;
         if (this->cursor == namesSurnames.end()) {
             this->cursor = namesSurnames.begin();
@@ -30,7 +30,7 @@ namespace sck::sample {
         return *this;
     }
 
-    const std::string& Names::getSurname(const std::string& name) {
+    const std::string& NamesMap::getSurname(const std::string& name) {
         auto it = namesSurnames.find(name);
         if (it == namesSurnames.end()) return unknown;
         return it->second;

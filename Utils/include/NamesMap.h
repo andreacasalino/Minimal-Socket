@@ -5,23 +5,23 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef SAMPLE_NAMES_H
-#define SAMPLE_NAMES_H
+#ifndef SAMPLE_NAMESMAP_H
+#define SAMPLE_NAMESMAP_H
 
 #include <map>
 #include <string>
 
 namespace sck::sample {
-    class Names {
+    class NamesMap {
     public:
-        Names();
+        NamesMap();
 
         inline const std::string& getCursorName() const { return this->cursor->first; };
         inline const std::string& getCursorSurname() const { return this->cursor->second; };
 
         static const std::string& getSurname(const std::string& name);
 
-        Names& operator++();
+        NamesMap& operator++();
 
     private:
         static const std::map<std::string, std::string> namesSurnames;

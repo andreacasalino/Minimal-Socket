@@ -34,6 +34,7 @@ namespace sck::async {
 
         std::vector<char> receiveBuffer;
 
+    protected:
         Messanger* messPtr;
     };
 }

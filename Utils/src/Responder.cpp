@@ -19,7 +19,7 @@ namespace sck::sample {
         std::size_t recvBytes = this->socket->receive(temp, std::chrono::milliseconds(0));
         std::string recStr(temp.first, recvBytes);
 
-        const std::string surname = Names::getSurname(recStr);
+        const std::string surname = NamesMap::getSurname(recStr);
         this->socket->send({ surname.data(), surname.size() });
     }
 
