@@ -8,16 +8,23 @@
 #include <Logger.h>
 #include <Error.h>
 #include <iostream>
+#include <map>
 
 namespace sck::sample {
-    static std::set<std::string> logNamesReserved;
+    static std::map<std::string, std::size_t> namesUsed;
 
-    Logger::Logger(const std::string& logName)
-        : logName(logName) {
-        if (logNamesReserved.find(logName) != logNamesReserved.end()) {
-            throw Error("Names already reserved");
+    std::string makeName(const std::string& logName) {
+        auto it = namesUsed.find(logName);
+        if (it == namesUsed.end()) {
+            it = namesUsed.emplace(logName, 1).first;
         }
-        logNamesReserved.emplace(logName);
+        else {
+            ++it->second;
+        }
+        return logName + std::to_string(it->second);
+    }
+    Logger::Logger(const std::string& logName)
+        : logName(makeName(logName)) {
     }
 
     static std::mutex coutMtx;

@@ -10,7 +10,6 @@
 
 #include <string>
 #include <mutex>
-#include <set>
 #include <sstream>
 
 namespace sck::sample {

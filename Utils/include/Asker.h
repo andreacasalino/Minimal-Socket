@@ -20,6 +20,8 @@ namespace sck::sample {
 
         void ask();
 
+        void ask(const std::size_t times);
+
         void askForever(const std::chrono::milliseconds& sampleTime);
 
     private:

@@ -15,7 +15,7 @@ namespace sck {
 
     class ChannelAware {
     public:
-        virtual ~ChannelAware() = default;
+        virtual ~ChannelAware();
         
     protected:
         ChannelAware() = default;

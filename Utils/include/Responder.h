@@ -20,6 +20,8 @@ namespace sck::sample {
 
         void respond();
 
+        void respond(const std::size_t times);
+
         void respondForever();
 
     private:

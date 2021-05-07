@@ -20,7 +20,14 @@ namespace sck::sample {
         std::string recStr(temp.first, recvBytes);
 
         const std::string surname = NamesMap::getSurname(recStr);
+        this->log("request: ", recStr, " response: ", surname);
         this->socket->send({ surname.data(), surname.size() });
+    }
+
+    void Responder::respond(const std::size_t times) {
+        for (std::size_t k = 0; k < times; ++k) {
+            this->respond();
+        }
     }
 
     void Responder::respondForever() {
