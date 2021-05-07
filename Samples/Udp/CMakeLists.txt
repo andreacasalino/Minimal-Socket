@@ -8,8 +8,6 @@ MakeSample(UdpServerResponder)
 
 ## samples launchers ##
 
-add_executable(SampleUdp-01-client-client SampleUdp-01-client-client.cpp)
-add_dependencies(SampleUdp-01-client-client UdpAsker UdpResponder)
+MakeLaunch(SampleUdp-01-connection UdpAsker UdpResponder)
 
-add_executable(SampleUdp-02-client-server SampleUdp-02-client-server.cpp)
-add_dependencies(SampleUdp-02-client-server UdpAsker UdpServerResponder)
+MakeLaunch(SampleUdp-02-server UdpAsker UdpServerResponder)

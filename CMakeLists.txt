@@ -18,6 +18,8 @@ include(AutoCollect)
 include(MakeLibrary)
 include(MakeSample)
 
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
 project(CrossSocket)
 add_subdirectory(CrossSocket)
 

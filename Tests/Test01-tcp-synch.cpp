@@ -3,6 +3,7 @@
 #include <tcp/TcpServer.h>
 #include <PortFactory.h>
 #include <omp.h>
+#include <list>
 using namespace sck;
 using namespace sck::tcp;
 
