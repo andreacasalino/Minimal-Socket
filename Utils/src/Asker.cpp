@@ -28,6 +28,12 @@ namespace sck::sample {
         ++this->cursor;
     }
 
+    void Asker::ask(const std::size_t times) {
+        for (std::size_t k = 0; k < times; ++k) {
+            this->ask();
+        }
+    }
+
     void Asker::askForever(const std::chrono::milliseconds& sampleTime) {
         while (true) {
             this->ask();
