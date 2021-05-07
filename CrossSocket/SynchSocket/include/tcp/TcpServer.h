@@ -37,11 +37,12 @@ namespace sck::tcp {
        */
       std::unique_ptr<TcpClientHandler> acceptClient();
 
+   protected:
+       inline sck::Family getFamily() const final { return this->family; };
+       inline sck::Protocol getProtocol() const final { return Protocol::TCP; };
+
    private:
       void openSteps() override;
-
-      inline sck::Family getFamily() const final { return this->family; };
-      inline sck::Protocol getProtocol() const final { return Protocol::TCP; };
 
       std::uint16_t port;
       sck::Family family;

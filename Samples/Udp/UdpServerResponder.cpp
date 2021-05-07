@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     server->open(std::chrono::milliseconds(0));
     cout << "connection opened" << endl;
 
-    Responder responder(std::move(server));
+    sck::sample::Responder responder(std::move(server));
     responder.respondForever();
 
     return EXIT_SUCCESS;

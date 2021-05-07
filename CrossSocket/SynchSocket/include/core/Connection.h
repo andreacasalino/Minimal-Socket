@@ -28,7 +28,6 @@ namespace sck {
          */
         void openSteps() override;
 
-    private:
         inline sck::Family getFamily() const final { return this->remoteAddress->getFamily(); };
     };
 }

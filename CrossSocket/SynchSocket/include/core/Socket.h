@@ -42,8 +42,8 @@ namespace sck {
     class SocketOpenable
         : public Socket
         , public Openable
-        , public FamilyAware
-        , public ProtocolAware {
+        , virtual public FamilyAware
+        , virtual public ProtocolAware {
     public:
         /**
          * @brief When something goes wrong inside the method, close is

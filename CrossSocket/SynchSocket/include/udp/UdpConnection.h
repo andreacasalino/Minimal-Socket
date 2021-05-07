@@ -36,7 +36,6 @@ namespace sck::udp {
 
       void openSteps() override;
 
-   private:
       inline sck::Protocol getProtocol() const final { return Protocol::UDP; };
    };
 }

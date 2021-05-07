@@ -16,6 +16,7 @@ set(WITH_SOURCE_TREE ON)
 include(GroupSources)
 include(AutoCollect)
 include(MakeLibrary)
+include(MakeSample)
 
 project(CrossSocket)
 add_subdirectory(CrossSocket)

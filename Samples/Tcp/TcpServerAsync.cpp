@@ -5,7 +5,7 @@
 * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <ResponderAsync.h>
+#include <AsyncResponder.h>
 #include <tcp/TcpServer.h>
 #include <iostream>
 #include <list>
@@ -36,8 +36,8 @@ int main(int argc, char** argv){
     auto clientConenction = server.acceptClient();
     cout << "client accepted" << endl;
 
-    ResponderAsync responder(std::move(clientConenction));
-    while(responder.isRunning()) {
+    sck::sample::AsyncResponder responder(std::move(clientConenction));
+    while(responder.isOpen()) {
     }
 
     return EXIT_SUCCESS;

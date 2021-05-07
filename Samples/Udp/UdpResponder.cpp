@@ -6,7 +6,7 @@
  **/
 
 #include <Responder.h>
-#include <udp/UdpClient.h>
+#include <udp/UdpConnection.h>
 #include <iostream>
 using namespace std;
 
@@ -38,14 +38,14 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    std::unique_ptr<sck::udp::UdpClient> client = std::make_unique<sck::udp::UdpClient>(*serverAddress, port);
+    std::unique_ptr<sck::udp::UdpConnection> client = std::make_unique<sck::udp::UdpConnection>(*serverAddress, port);
     cout << "Expecting connection to " << client->getRemoteAddress().getHost() << ":" << client->getRemoteAddress().getPort() << endl;
 
     // blocking open
     client->open(std::chrono::milliseconds(0));
     cout << "connection opened" << endl;
 
-    Responder responder(std::move(client));
+    sck::sample::Responder responder(std::move(client));
     responder.respondForever();
 
     return EXIT_SUCCESS;
