@@ -24,7 +24,7 @@ namespace sck::tcp {
        */
       explicit TcpClient(const sck::Ip& remoteAddress);
       
-   private:
+   protected:
       inline sck::Protocol getProtocol() const final { return Protocol::TCP; };
    };
 }

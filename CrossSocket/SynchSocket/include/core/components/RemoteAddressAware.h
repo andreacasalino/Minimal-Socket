@@ -13,7 +13,7 @@
 
 namespace sck {
     class RemoteAddressAware {
-    protected:
+    public:
         /**
          * @brief returns the address of the remote entity connected with this socket
          */
