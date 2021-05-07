@@ -11,12 +11,14 @@
 #ifdef ASYNCH_ENABLED
 #include <messanger/AsyncMessanger.h>
 #include <NamesMap.h>
+#include <Logger.h>
 
 namespace sck::sample {
     class AsyncResponder
         : public sck::async::AsyncMessanger
-        , public sck::async::MessangerListener
-        , public sck::async::ErrorListener {
+        , protected sck::async::MessangerListener
+        , protected sck::async::ErrorListener
+        , public Logger {
     public:
         AsyncResponder(std::unique_ptr<sck::Socket> socket);
 

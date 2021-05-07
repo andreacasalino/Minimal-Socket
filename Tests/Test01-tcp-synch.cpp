@@ -3,12 +3,8 @@
 #include <tcp/TcpServer.h>
 #include <PortFactory.h>
 #include <omp.h>
-#include <Asker.h>
-#include <Responder.h>
 using namespace sck;
 using namespace sck::tcp;
-
-// 1 to 1
 
 TEST(TcpSynch, OpenClose) {
     const std::uint16_t port = sample::PortFactory::makePort();
@@ -44,6 +40,53 @@ TEST(TcpSynch, OpenClose) {
         }
     }
 }
+
+TEST(TcpSynch, OpenCloseManyClients) {
+    const std::uint16_t port = sample::PortFactory::makePort();
+    const std::size_t clientsNumb = 5;
+
+#pragma omp parallel num_threads(2)
+    {
+        if (0 == omp_get_thread_num()) {
+            // server
+            TcpServer server(port);
+            server.open(std::chrono::milliseconds(0));
+#pragma omp barrier
+            EXPECT_TRUE(server.isOpen());
+
+            std::list<std::unique_ptr<TcpClientHandler>> acceptedClients;
+            for (std::size_t k = 0; k < clientsNumb; ++k) {
+                acceptedClients.emplace_back(server.acceptClient());
+                EXPECT_TRUE(acceptedClients.back()->isOpen());
+            }
+            server.close();
+            EXPECT_FALSE(server.isOpen());
+#pragma omp barrier
+            for (auto it = acceptedClients.begin(); it != acceptedClients.end(); ++it) {
+                (*it)->close();
+                EXPECT_FALSE((*it)->isOpen());
+            }
+        }
+        else {
+            // client
+#pragma omp barrier
+            std::list<std::unique_ptr<TcpClient>> clients;
+            for (std::size_t k = 0; k < clientsNumb; ++k) {
+                clients.emplace_back(std::make_unique<TcpClient>(*sck::Ip::createLocalHost(port)));
+                clients.back()->open(std::chrono::milliseconds(0));
+                EXPECT_TRUE(clients.back()->isOpen());
+            }
+#pragma omp barrier
+            for (auto it = clients.begin(); it != clients.end(); ++it) {
+                (*it)->close();
+                EXPECT_FALSE((*it)->isOpen());
+            }
+        }
+    }
+}
+
+#include <Asker.h>
+#include <Responder.h>
 
 TEST(TcpSynch, ClientAsker_ServerResponder) {
     const std::uint16_t port = sample::PortFactory::makePort();
@@ -120,8 +163,6 @@ TEST(TcpSynch, ClientResponder_ServerAsker) {
         }
     }
 }
-
-// 1 to many
 
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
