@@ -25,7 +25,7 @@ namespace sck {
             else {
                 tv.tv_usec = std::chrono::duration_cast<std::chrono::microseconds>(this->actualTimeOut).count();
             }
-            if (::setsockopt(**this->channelMsg, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&tv), sizeof(struct timeval)) < 0) {
+            if (::setsockopt(**this->channel, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&tv), sizeof(struct timeval)) < 0) {
 #endif
                 throwWithCode("can't set timeout");
             }
