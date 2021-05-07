@@ -10,12 +10,14 @@
 
 namespace sck::sample {
     AsyncResponder::AsyncResponder(std::unique_ptr<sck::Socket> socket)
-        : AsyncMessanger(std::move(socket), 1000) {
+        : AsyncMessanger(std::move(socket), 1000)
+        , Logger("AsynchResponder") {
     }
 
     void AsyncResponder::handle(const std::pair<const char*, std::size_t>& message) {
         std::string recStr(message.first, message.second);
         const std::string surname = NamesMap::getSurname(recStr);
+        this->log("request: ", recStr, " response: ", surname);
         this->messPtr->send({ surname.data(), surname.size() });
     }
 

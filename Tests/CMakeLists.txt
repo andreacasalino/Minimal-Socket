@@ -26,4 +26,4 @@ endfunction()
 
 MakeTest(Test01-tcp-synch)
 
-# MakeTest(Test02-tcp-asynch)
+MakeTest(Test02-tcp-asynch)
