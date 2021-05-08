@@ -12,8 +12,9 @@ namespace sck::sample {
     AsyncResponder::AsyncResponder(std::unique_ptr<sck::Socket> socket)
         : AsyncMessanger(std::move(socket), 1000)
         , Logger("AsynchResponder") {
-        this->Talker<MessangerListener>::resetListener(this);
-        this->Talker<ErrorListener>::resetListener(this);
+
+        this->sck::async::MessageTalker::resetListener(this);
+        this->sck::async::ErrorTalker::resetListener(this);
     }
 
     void AsyncResponder::handle(const std::pair<const char*, std::size_t>& message) {

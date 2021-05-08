@@ -12,6 +12,8 @@
 #include <tcpServer/TcpServerListener.h>
 
 namespace sck::async {
+   typedef Talker<TcpServerListener> TcpClientHandlerTalker;
+
    /**
     * @brief An asynchronous tcp server keeps accpeting new clients
     * inside a private thread stored by this class. From the outside it is possible to subscribe to the 
@@ -19,7 +21,7 @@ namespace sck::async {
     */
     class AsyncTcpServer 
         : public AsyncSocket
-        , public Talker<TcpServerListener> {
+        , public TcpClientHandlerTalker {
     public:
         explicit AsyncTcpServer(std::unique_ptr<tcp::TcpServer> server);
 
