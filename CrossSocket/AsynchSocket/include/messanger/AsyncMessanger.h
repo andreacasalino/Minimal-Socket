@@ -18,9 +18,10 @@ namespace sck::async {
    typedef Talker<MessangerListener> MessageTalker;
 
    /**
-    * @brief An asynchronous client can be any kind of socket that is a MessangerConcrete, that keeps receive messages
-    * inside a private thread stored by this class. From the outside it is possible to send messages to the remote host
-    * or subscribe to the received messages by setting a MessageListener (calling AsyncDecorator::resetListener(...))
+    * @brief An asynchronous messanger can be any kind of socket able to send and receive messages. 
+    * This object stores such a messanger and keeps receive messages inside the private service stored by this class. 
+    * From the outside it is only possible to send messages or subscribe to the received messages by setting the proper 
+    * MessageListener.
     */
     class AsyncMessanger 
         : public AsyncSocket

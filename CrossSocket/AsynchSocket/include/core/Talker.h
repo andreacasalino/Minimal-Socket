@@ -12,9 +12,18 @@
 #include <Error.h>
 
 namespace sck::async {
+    /**
+     * @brief An object able to notify to an external listener.
+     * After construction, no listener is assumed, meaning that calling notify will
+     * actually have no effect.
+     */
     template<typename Listener>
     class Talker {
-    public:
+    public:    
+        /**
+         * @brief Sets the listener that should receive the notifications
+         * @param the new listener to set. Only 1 listener at a time can be supported
+         */
         void resetListener(Listener* listener) {
             if (nullptr == listener) {
                 throw Error("The passed listener is empty");

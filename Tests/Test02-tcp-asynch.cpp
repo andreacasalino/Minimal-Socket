@@ -10,7 +10,7 @@ using namespace sck::tcp;
 #include <Asker.h>
 #include <AsyncResponder.h>
 
-TEST(TcpAsync, OpenCloseAcceptSynch) {
+TEST(TcpAsync, DISABLED_OpenCloseAcceptSynch) {
     const std::uint16_t port = sample::PortFactory::makePort();
 
 #pragma omp parallel num_threads(2)
@@ -48,7 +48,7 @@ TEST(TcpAsync, OpenCloseAcceptSynch) {
     }
 }
 
-TEST(TcpAsync, ClientAsker_ServerResponder) {
+TEST(TcpAsync, DISABLED_ClientAsker_ServerResponder) {
     const std::uint16_t port = sample::PortFactory::makePort();
     const std::size_t cycles = 5;
 
@@ -117,7 +117,7 @@ private:
     std::list<std::unique_ptr<tcp::TcpClientHandler>> accepted;
 };
 
-TEST(TcpAsync, AsynchTcpServerAcceptor) {
+TEST(TcpAsync, DISABLED_AsynchTcpServerAcceptor) {
     const std::uint16_t port = sample::PortFactory::makePort();
     const std::size_t cycles = 5;
     const std::size_t clientsNumb = 5;

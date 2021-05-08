@@ -15,7 +15,7 @@ namespace sck {
     public:
         /**
          * @brief Tries to open the object, until the passed timeout, after which the object spontaneously close itself.
-         * @param timeout to assume for the open operation. When passing 0, an infite timeout is assumed
+         * @param timeout to assume for the open operation. When passing 0, an infinite timeout is assumed
          */
         virtual void open(const std::chrono::milliseconds& timeout) = 0;
     };

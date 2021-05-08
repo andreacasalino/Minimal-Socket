@@ -32,7 +32,7 @@ namespace sck {
         explicit Socket(std::unique_ptr<Channel> channel);
 
         /**
-         * @brief The methods containing the specific steps to perform to fully close a concrete socket
+         * @brief The methods containing the specific steps to perform in order to fully close a concrete socket
          */
         virtual void closeSteps();
     };

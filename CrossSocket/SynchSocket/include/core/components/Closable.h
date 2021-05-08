@@ -11,6 +11,9 @@
 namespace sck {
     class Closable {
     public:
+        /**
+         * @brief close the object
+         */
         virtual void close() = 0;
     };
 }

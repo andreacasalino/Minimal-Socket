@@ -15,9 +15,9 @@ namespace sck::async {
    typedef Talker<TcpServerListener> TcpClientHandlerTalker;
 
    /**
-    * @brief An asynchronous tcp server keeps accpeting new clients
-    * inside a private thread stored by this class. From the outside it is possible to subscribe to the 
-    * accepted clients by setting a TcpServerListener (calling AsyncDecorator::resetListener(...))
+    * @brief An asynchronous tcp server keep accept new clients
+    * inside the private service stored by this class. From the outside it is possible to subscribe to the 
+    * accepted clients by setting the proper TcpServerListener
     */
     class AsyncTcpServer 
         : public AsyncSocket

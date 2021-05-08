@@ -19,7 +19,7 @@ namespace sck {
         , public RemoteAddressAware {
     protected:
         /**
-         * @param[in] the address of the server to hit
+         * @param[in] the address of the connection to reach
          */
         explicit Connection(const sck::Ip& remoteAddress);
 
