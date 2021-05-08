@@ -15,7 +15,7 @@ namespace sck::sample {
     }
 
     void Responder::respond() {
-        std::pair<char*, std::size_t> temp = { &this->recvBuffer[0], 1000 };
+        std::pair<char*, std::size_t> temp = { this->recvBuffer.data(), this->recvBuffer.size() };
         std::size_t recvBytes = this->socket->receive(temp, std::chrono::milliseconds(0));
         std::string recStr(temp.first, recvBytes);
 

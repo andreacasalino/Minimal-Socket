@@ -5,7 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <Responder.h>
+#include <AsyncResponder.h>
 #include <udp/UdpConnection.h>
 #include <iostream>
 using namespace std;
@@ -45,8 +45,11 @@ int main(int argc, char** argv) {
     client->open(std::chrono::milliseconds(0));
     cout << "connection opened" << endl;
 
-    sck::sample::Responder responder(std::move(client));
-    responder.respondForever();
+    sck::sample::AsyncResponder responder(std::move(client));
+    responder.open(std::chrono::milliseconds(0));
+
+    while (responder.isOpen()) {
+    }
 
     return EXIT_SUCCESS;
 }

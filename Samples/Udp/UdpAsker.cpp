@@ -11,7 +11,7 @@
 using namespace std;
 
 int main(int argc, char **argv){
-    cout << "-----------------------  Client Asker -----------------------" << endl;
+    cout << "-----------------------  Connection Asker -----------------------" << endl;
 
     if (argc == 1) {
         cout << "correct syntax is: 'server port', <optional>'rate', <optional>'port to reserve',  <optional>'send initial handshake flag 0/1', <optional>'server host'" << endl;
