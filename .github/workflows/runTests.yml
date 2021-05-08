@@ -64,10 +64,10 @@ jobs:
     - name: Install artifacts
       run: cmake --install ./build
     - name: Test01-tcp-synch
-      run: ./artifacts/bin/Test01-tcp-synch
+      run: ./build/artifacts/bin/Test01-tcp-synch
     - name: Test01-udp-synch
-      run: ./artifacts/bin/Test01-udp-synch
+      run: ./build/artifacts/bin/Test01-udp-synch
     - name: Test02-tcp-asynch
-      run: ./artifacts/bin/Test02-tcp-asynch
+      run: ./build/artifacts/bin/Test02-tcp-asynch
     - name: Test02-udp-asynch
-      run: ./artifacts/bin/Test02-udp-asynch
+      run: ./build/artifacts/bin/Test02-udp-asynch
