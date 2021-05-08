@@ -23,6 +23,9 @@ namespace sck::async {
     public:
         virtual ~AsyncSocket() { this->close(); };
 
+        // true when the internal service was spawned (non basta che socket interno sia aperto)
+        inline bool isOpen() const override { return this->serviceLife; };
+
         // the wrapped socket is opened and the service is spawned
         void open(const std::chrono::milliseconds& timeout) final;
 

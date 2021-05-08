@@ -27,3 +27,7 @@ endfunction()
 MakeTest(Test01-tcp-synch)
 
 MakeTest(Test02-tcp-asynch)
+
+MakeTest(Test01-udp-synch)
+
+MakeTest(Test02-udp-asynch)

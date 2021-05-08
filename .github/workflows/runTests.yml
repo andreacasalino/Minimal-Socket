@@ -23,6 +23,12 @@ jobs:
       run: cmake --install ./build
     - name: Test01-tcp-synch
       run: ./artifacts/bin/Test01-tcp-synch
+    - name: Test01-udp-synch
+      run: ./artifacts/bin/Test01-udp-synch
+    - name: Test02-tcp-asynch
+      run: ./artifacts/bin/Test02-tcp-asynch
+    - name: Test02-udp-asynch
+      run: ./artifacts/bin/Test02-udp-asynch
       
   ubuntu-clang-tests:
     runs-on: ubuntu-latest
@@ -38,6 +44,12 @@ jobs:
       run: cmake --install ./build
     - name: Test01-tcp-synch
       run: ./artifacts/bin/Test01-tcp-synch
+    - name: Test01-udp-synch
+      run: ./artifacts/bin/Test01-udp-synch
+    - name: Test02-tcp-asynch
+      run: ./artifacts/bin/Test02-tcp-asynch
+    - name: Test02-udp-asynch
+      run: ./artifacts/bin/Test02-udp-asynch
       
   windows-vs-tests:
     runs-on: ubuntu-latest
@@ -53,3 +65,9 @@ jobs:
       run: cmake --install ./build
     - name: Test01-tcp-synch
       run: ./artifacts/bin/Test01-tcp-synch
+    - name: Test01-udp-synch
+      run: ./artifacts/bin/Test01-udp-synch
+    - name: Test02-tcp-asynch
+      run: ./artifacts/bin/Test02-tcp-asynch
+    - name: Test02-udp-asynch
+      run: ./artifacts/bin/Test02-udp-asynch
