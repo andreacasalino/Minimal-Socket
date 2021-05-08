@@ -10,7 +10,7 @@ using namespace sck::tcp;
 #include <Asker.h>
 #include <AsyncResponder.h>
 
-TEST(TcpAsynch, OpenCloseAcceptSynch) {
+TEST(TcpAsync, OpenCloseAcceptSynch) {
     const std::uint16_t port = sample::PortFactory::makePort();
 
 #pragma omp parallel num_threads(2)
@@ -28,6 +28,8 @@ TEST(TcpAsynch, OpenCloseAcceptSynch) {
                 EXPECT_FALSE(server.isOpen());
             }
             async::AsyncMessanger asynchResponder(std::move(acceptedClient), 500);
+            EXPECT_FALSE(asynchResponder.isOpen());
+            asynchResponder.open(std::chrono::milliseconds(0));
             EXPECT_TRUE(asynchResponder.isOpen());
 #pragma omp barrier
             asynchResponder.close();
@@ -46,7 +48,7 @@ TEST(TcpAsynch, OpenCloseAcceptSynch) {
     }
 }
 
-TEST(TcpAsynch, ClientAsker_ServerResponder) {
+TEST(TcpAsync, ClientAsker_ServerResponder) {
     const std::uint16_t port = sample::PortFactory::makePort();
     const std::size_t cycles = 5;
 
@@ -58,13 +60,16 @@ TEST(TcpAsynch, ClientAsker_ServerResponder) {
             {
                 TcpServer server(port);
                 server.open(std::chrono::milliseconds(0));
-#pragma omp barrier
                 EXPECT_TRUE(server.isOpen());
+#pragma omp barrier
                 acceptedClient = server.acceptClient();
                 server.close();
                 EXPECT_FALSE(server.isOpen());
             }
             sample::AsyncResponder asynchResponder(std::move(acceptedClient));
+            EXPECT_FALSE(asynchResponder.isOpen());
+            asynchResponder.open(std::chrono::milliseconds(0));
+#pragma omp barrier
             EXPECT_TRUE(asynchResponder.isOpen());
 #pragma omp barrier
             asynchResponder.close();
@@ -76,6 +81,7 @@ TEST(TcpAsynch, ClientAsker_ServerResponder) {
 #pragma omp barrier
             client->open(std::chrono::milliseconds(0));
             EXPECT_TRUE(client->isOpen());
+#pragma omp barrier
 
             sample::Asker asker(std::move(client));
             asker.ask(cycles);
@@ -92,7 +98,9 @@ class AsynchAcceptor
     , private async::ErrorListener 
 {
 public:
-    AsynchAcceptor(const std::uint16_t port) : AsyncTcpServer(std::make_unique<TcpServer>(port)) {};
+    AsynchAcceptor(const std::uint16_t port) : AsyncTcpServer(std::make_unique<TcpServer>(port)) {
+        this->sck::async::TcpClientHandlerTalker::resetListener(this);
+    };
 
     inline const std::list<std::unique_ptr<tcp::TcpClientHandler>>& getAccepted() const { return this->accepted; };
 
@@ -109,7 +117,7 @@ private:
     std::list<std::unique_ptr<tcp::TcpClientHandler>> accepted;
 };
 
-TEST(TcpAsynch, AsynchTcpServerAcceptor) {
+TEST(TcpAsync, AsynchTcpServerAcceptor) {
     const std::uint16_t port = sample::PortFactory::makePort();
     const std::size_t cycles = 5;
     const std::size_t clientsNumb = 5;
@@ -120,11 +128,13 @@ TEST(TcpAsynch, AsynchTcpServerAcceptor) {
             // acceptor
             AsynchAcceptor acceptor(port);
             acceptor.open(std::chrono::milliseconds(0));
+#pragma omp barrier
             EXPECT_TRUE(acceptor.isOpen());
 #pragma omp barrier
             EXPECT_EQ(acceptor.getAccepted().size(), cycles);
         }
         else {
+#pragma omp barrier
             // client
             std::list<TcpClient> clients;
             for (std::size_t k = 0; k < clientsNumb; ++k) {

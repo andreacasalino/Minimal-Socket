@@ -16,7 +16,7 @@ namespace sck {
         , public Openable
         , public Closable {
     public:
-        inline bool isOpen() const final { return this->wrapped->isOpen(); };
+        inline bool isOpen() const override { return this->wrapped->isOpen(); };
 
         inline void close() override { this->wrapped->close(); };
 
