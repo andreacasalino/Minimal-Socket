@@ -52,9 +52,10 @@ public:
     /** 
      * @brief Print the script and runs it
      */
-   void  operator()() const;
+   void  run() const;
 
 private:
+    std::string writeScript() const;
 
    template <typename ... Args>
    void parseArgs(std::list<std::string>& parsed , const std::string& arg, Args ... args) {
@@ -83,7 +84,7 @@ private:
 
 #include <fstream>
 
-void  Launcher::operator()() const {
+std::string Launcher::writeScript() const {
     std::string name = this->nameFile;
 #ifdef _WIN32
     name += ".bat";
@@ -108,23 +109,46 @@ void  Launcher::operator()() const {
         addSleep(it->msSleep);
 #ifdef _WIN32
         f << std::endl << "start \"\" \"" << it->processName << "\"";
-        for(auto a : it->processArguments) f << " \"" << a << "\"";
+        for (auto a : it->processArguments) f << " \"" << a << "\"";
 #elif  __linux__
         f << std::endl << "gnome-terminal -x sh -c \"./" << it->processName;
-        for(auto a : it->processArguments) f << " " << a;
+        for (auto a : it->processArguments) f << " " << a;
         f << "; bash\"";
 #endif
     }
     addSleep(it->msSleep);
 #ifdef _WIN32
     f << std::endl << "\"" << this->commands.back().processName << "\"";
-    for(auto a : this->commands.back().processArguments) f << " \"" << a << "\"";
+    for (auto a : this->commands.back().processArguments) f << " \"" << a << "\"";
 #elif  __linux__
     f << std::endl << "./" << this->commands.back().processName;
-    for(auto a : this->commands.back().processArguments) f << " " << a;
+    for (auto a : this->commands.back().processArguments) f << " " << a;
 #endif
-
     f.close();
+    return name;
+}
+
+#include <sstream>
+
+void  Launcher::run() const {
+    std::string scriptName;
+    // run
+    std::stringstream runCmd;
+#if  __linux__
+    runCmd << "sh ./";
+#endif
+    scriptName = this->writeScript();
+    runCmd << scriptName;
+    std::system(runCmd.str().c_str());
+    // delete file
+    std::stringstream delCmd;
+#ifdef _WIN32
+    delCmd << "del ";
+#elif  __linux__
+    delCmd << "rm ";
+#endif
+    delCmd << scriptName;
+    std::system(delCmd.str().c_str());
 };
 
 #endif
