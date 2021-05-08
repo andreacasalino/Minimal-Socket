@@ -15,9 +15,11 @@
 #include <thread>
 
 namespace sck::async {
+   typedef Talker<ErrorListener> ErrorTalker;
+
     class AsyncSocket
         : public SocketDecorator
-        , public Talker<ErrorListener> {
+        , public ErrorTalker {
     public:
         virtual ~AsyncSocket() { this->close(); };
 

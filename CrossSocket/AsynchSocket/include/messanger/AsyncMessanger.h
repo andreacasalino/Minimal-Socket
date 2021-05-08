@@ -15,6 +15,8 @@
 #include <vector>
 
 namespace sck::async {
+   typedef Talker<MessangerListener> MessageTalker;
+
    /**
     * @brief An asynchronous client can be any kind of socket that is a MessangerConcrete, that keeps receive messages
     * inside a private thread stored by this class. From the outside it is possible to send messages to the remote host
@@ -22,7 +24,7 @@ namespace sck::async {
     */
     class AsyncMessanger 
         : public AsyncSocket
-        , public Talker<MessangerListener>
+        , public MessageTalker
         , public SendCapable {
     public:
         AsyncMessanger(std::unique_ptr<Socket> messanger, const std::size_t& bufferCapacity);
