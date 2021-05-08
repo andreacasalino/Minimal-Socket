@@ -12,7 +12,8 @@
 #include <sstream>
 
 namespace sck {
-    /** @brief A runtime error that can be raised when using any object in sck::
+    /**
+     * @brief A runtime error that can be raised when using any object in sck::
 	 */
     class Error : public std::runtime_error {
     public:

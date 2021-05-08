@@ -9,7 +9,7 @@ using namespace sck::udp;
 #include <Asker.h>
 #include <AsyncResponder.h>
 
-TEST(UdpAsync, Asker_Responder) {
+TEST(UdpAsync, DISABLED_Asker_Responder) {
     const std::uint16_t portA = sample::PortFactory::makePort();
     const std::uint16_t portB = sample::PortFactory::makePort();
     const std::size_t cycles = 5;
