@@ -10,9 +10,6 @@
 namespace sck::async {
     AsyncSocket::AsyncSocket(std::unique_ptr<Socket> socket)
         : SocketDecorator(std::move(socket)) {
-        if (this->wrapped->isOpen()) {
-            this->spawnService();
-        }
     };
 
     void AsyncSocket::spawnService() {
@@ -46,18 +43,19 @@ namespace sck::async {
         if (nullptr != this->service) {
             throw Error("The socket was already opened");
         }
-        this->SocketDecorator::open(timeout);
-        if (this->wrapped->isOpen()) {
-            this->spawnService();
+        // open the wrapped socket when necessary
+        if (!this->wrapped->isOpen()) {
+            this->SocketDecorator::open(timeout);
         }
+        this->spawnService();
     };
 
     void AsyncSocket::close() {
+        this->wrapped->close();
         if (nullptr == this->service) {
             return;
         }
         this->serviceLife = false;
-        this->wrapped->close();
         if (this->service->joinable()) {
             this->service->join();
         }

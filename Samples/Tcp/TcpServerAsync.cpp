@@ -11,15 +11,24 @@
 #include <list>
 using namespace std;
 
-int main(int argc, char** argv){
+int main(int argc, char** argv) {
     cout << "-----------------------  Server Async  -----------------------" << endl;
 
     if (argc == 1) {
-        cout << "correct syntax is: 'port to bind'" << endl;
+        cout << "correct syntax is: 'port to bind', 'number of clients to accept'" << endl;
         return EXIT_FAILURE;
     }
 
     std::uint16_t port = std::atoi(argv[1]);
+    std::size_t clientNumbers = 1;
+    if (argc > 2) {
+        clientNumbers = std::atoi(argv[2]);
+    }
+    if (0 == clientNumbers) {
+        cout << "invalid number of clients" << endl;
+        return EXIT_FAILURE;
+    }
+    cout << "clients excepted " << clientNumbers << endl;
 
     //build the server object
     sck::tcp::TcpServer server(port);
@@ -33,11 +42,23 @@ int main(int argc, char** argv){
     }
     cout << "connection opened" << endl;
 
-    auto clientConenction = server.acceptClient();
-    cout << "client accepted" << endl;
+    std::list<sck::sample::AsyncResponder> responders;
+    for (std::size_t c = 0; c < clientNumbers; ++c) {
+        //accept the client
+        cout << "waiting client " << c << endl;
+        responders.emplace_back(server.acceptClient());
+        cout << "new client connected" << endl;
+        responders.back().open(std::chrono::milliseconds(0));
+    }
 
-    sck::sample::AsyncResponder responder(std::move(clientConenction));
-    while(responder.isOpen()) {
+    while (!responders.empty()) {
+        auto it = responders.begin();
+        while (it != responders.end()) {
+            if (!it->isOpen()) {
+                it = responders.erase(it);
+            }
+            else ++it;
+        }
     }
 
     return EXIT_SUCCESS;

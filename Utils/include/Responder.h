@@ -11,6 +11,7 @@
 #include <core/Messanger.h>
 #include <NamesMap.h>
 #include <Logger.h>
+#include <array>
 
 namespace sck::sample {
     class Responder
@@ -26,7 +27,7 @@ namespace sck::sample {
 
     private:
         std::unique_ptr<sck::Messanger> socket;
-        char recvBuffer[1000];
+        std::array<char, 1000> recvBuffer;
     };
 }
 

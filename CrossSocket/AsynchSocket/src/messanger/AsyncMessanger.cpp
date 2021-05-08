@@ -26,6 +26,7 @@ namespace sck::async {
         if (recvBytes != this->receiveBuffer.capacity()) {
             this->receiveBuffer.resize(recvBytes);
         }
+        pr.second = recvBytes;
         this->Talker<MessangerListener>::notify(pr);
     }
 }

@@ -15,7 +15,7 @@ namespace sck::async {
     template<typename Listener>
     class Talker {
     public:
-        void resetListener(std::shared_ptr<Listener> listener) {
+        void resetListener(Listener* listener) {
             if (nullptr == listener) {
                 throw Error("The passed listener is empty");
             }
