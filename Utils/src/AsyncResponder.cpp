@@ -25,11 +25,11 @@ namespace sck::sample {
     }
 
     void AsyncResponder::handle(const sck::Error& error) {
-        this->close();
+        //this->close();
     };
 
     void AsyncResponder::handle(const std::exception& error) {
-        this->close();
+        //this->close();
     };
 }
 

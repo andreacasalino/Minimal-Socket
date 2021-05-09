@@ -10,6 +10,7 @@
 
 #include <core/BindCapable.h>
 #include <core/Socket.h>
+#include <core/SocketDecorator.h>
 
 namespace sck::sample {
     class PortFactory {
@@ -18,6 +19,12 @@ namespace sck::sample {
     };
 
     void openSocket(SocketOpenable& socket);
+
+    void closeSocket(Socket& socket);
+
+    void openSocketDecorator(SocketDecorator& socket);
+
+    void closeSocketDecorator(SocketDecorator& socket);
 }
 
 #endif
