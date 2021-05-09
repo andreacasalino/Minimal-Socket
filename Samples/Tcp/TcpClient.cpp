@@ -49,7 +49,7 @@ int main(int argc, char **argv){
     }
     cout << "connection opened" << endl;
 
-    Asker ask(std::move(client));
+    sck::sample::Asker ask(std::move(client));
     ask.askForever(rate);
     
     return EXIT_SUCCESS;
