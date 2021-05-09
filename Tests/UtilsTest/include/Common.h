@@ -9,7 +9,7 @@
 #define SAMPLE_COMMON_H
 
 #include <core/BindCapable.h>
-#include <core/components/Openable.h>
+#include <core/Socket.h>
 
 namespace sck::sample {
     class PortFactory {
@@ -17,7 +17,7 @@ namespace sck::sample {
         static std::uint16_t makePort();
     };
 
-    void open(Openable& socket);
+    void openSocket(SocketOpenable& socket);
 }
 
 #endif

@@ -12,15 +12,8 @@ function(MakeTest NAME)
 	PUBLIC
 		Utils
 		UtilsTest
-		gtest
 	)
-	
-	find_package(OpenMP)	
-	target_link_libraries(${NAME}
-	PUBLIC
-		OpenMP::OpenMP_CXX
-	)
-	
+		
 	install(TARGETS ${NAME})
 endfunction()
 
