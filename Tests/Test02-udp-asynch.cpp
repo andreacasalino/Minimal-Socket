@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
-#include <udp/UdpConnection.h>
-#include <PortFactory.h>
+#include <UdpCommon.h>
 #include <omp.h>
 #include <list>
 using namespace sck;
@@ -9,36 +8,22 @@ using namespace sck::udp;
 #include <Asker.h>
 #include <AsyncResponder.h>
 
-TEST(UdpAsync, DISABLED_Asker_Responder) {
-    const std::uint16_t portA = sample::PortFactory::makePort();
-    const std::uint16_t portB = sample::PortFactory::makePort();
+TEST(UdpAsync, Asker_Responder) {
+    auto connections = sample::makeOpenedUdpConnections(sample::PortFactory::makePort(), sample::PortFactory::makePort());
     const std::size_t cycles = 5;
 
 #pragma omp parallel num_threads(2)
     {
         if (0 == omp_get_thread_num()) {
             // connection A
-            std::unique_ptr<UdpConnection> connectionA = std::make_unique<UdpConnection>(*sck::Ip::createLocalHost(portB) , portA);
-            EXPECT_FALSE(connectionA->isOpen());
-            connectionA->open(std::chrono::milliseconds(0));
-            EXPECT_TRUE(connectionA->isOpen());
-            sample::AsyncResponder asynchResponder(std::move(connectionA));
-            EXPECT_FALSE(asynchResponder.isOpen());
-            asynchResponder.open(std::chrono::milliseconds(0));
+            sample::AsyncResponder asynchResponder(std::move(connections.first));
+            sample::openSocketDecorator(asynchResponder);
 #pragma omp barrier
-            EXPECT_TRUE(asynchResponder.isOpen());
-#pragma omp barrier
-            asynchResponder.close();
-            EXPECT_TRUE(!asynchResponder.isOpen());
+            sample::closeSocketDecorator(asynchResponder);
         }
         else {
             // connection B
-            std::unique_ptr<UdpConnection> connectionB = std::make_unique<UdpConnection>(*sck::Ip::createLocalHost(portA) , portB);
-            EXPECT_FALSE(connectionB->isOpen());
-#pragma omp barrier
-            connectionB->open(std::chrono::milliseconds(0));
-            EXPECT_TRUE(connectionB->isOpen());
-            sample::Asker asker(std::move(connectionB));
+            sample::Asker asker(std::move(connections.second));
             asker.ask(cycles);
 #pragma omp barrier
         }
