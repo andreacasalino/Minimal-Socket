@@ -23,8 +23,8 @@ namespace sck::sample {
         return port;
     }
 
-    void open(Openable& socket) {
+    void openSocket(SocketOpenable& socket) {
         socket.open(std::chrono::milliseconds(0));
-        EXPECT_TRUE(dynamic_cast<StateAware*>(&socket)->isOpen());
+        EXPECT_TRUE(socket.isOpen());
     }
 }

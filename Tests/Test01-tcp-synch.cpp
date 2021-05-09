@@ -1,9 +1,6 @@
 #include <gtest/gtest.h>
-#include <tcp/TcpClient.h>
-#include <tcp/TcpServer.h>
-#include <PortFactory.h>
+#include <TcpCommon.h>
 #include <omp.h>
-#include <list>
 using namespace sck;
 using namespace sck::tcp;
 
@@ -14,17 +11,7 @@ TEST(TcpSynch, OpenClose) {
     {
         if (0 == omp_get_thread_num()) {
             // server
-            std::unique_ptr<TcpClientHandler> acceptedClient;
-            {
-                TcpServer server(port);
-                server.open(std::chrono::milliseconds(0));
-#pragma omp barrier
-                EXPECT_TRUE(server.isOpen());
-                acceptedClient = server.acceptClient();
-                server.close();
-                EXPECT_FALSE(server.isOpen());
-            }
-            EXPECT_TRUE(acceptedClient->isOpen());
+            auto acceptedClient = sample::accept(port);
 #pragma omp barrier
             acceptedClient->close();
             EXPECT_FALSE(acceptedClient->isOpen());
@@ -32,9 +19,7 @@ TEST(TcpSynch, OpenClose) {
         else {
             // client
             TcpClient client(*sck::Ip::createLocalHost(port));
-#pragma omp barrier
-            client.open(std::chrono::milliseconds(0));
-            EXPECT_TRUE(client.isOpen());
+            sample::openTcpClient(client);
 #pragma omp barrier
             client.close();
             EXPECT_FALSE(client.isOpen());
@@ -50,18 +35,9 @@ TEST(TcpSynch, OpenCloseManyClients) {
     {
         if (0 == omp_get_thread_num()) {
             // server
-            TcpServer server(port);
-            server.open(std::chrono::milliseconds(0));
-#pragma omp barrier
-            EXPECT_TRUE(server.isOpen());
-
-            std::list<std::unique_ptr<TcpClientHandler>> acceptedClients;
-            for (std::size_t k = 0; k < clientsNumb; ++k) {
-                acceptedClients.emplace_back(server.acceptClient());
-                EXPECT_TRUE(acceptedClients.back()->isOpen());
-            }
-            server.close();
-            EXPECT_FALSE(server.isOpen());
+            tcp::TcpServer server(port);
+            sample::openSocket(server);
+            auto acceptedClients = sample::accept(server, clientsNumb);
 #pragma omp barrier
             for (auto it = acceptedClients.begin(); it != acceptedClients.end(); ++it) {
                 (*it)->close();
@@ -70,12 +46,11 @@ TEST(TcpSynch, OpenCloseManyClients) {
         }
         else {
             // client
-#pragma omp barrier
-            std::list<std::unique_ptr<TcpClient>> clients;
+            std::vector<std::unique_ptr<TcpClient>> clients;
+            clients.reserve(clientsNumb);
             for (std::size_t k = 0; k < clientsNumb; ++k) {
                 clients.emplace_back(std::make_unique<TcpClient>(*sck::Ip::createLocalHost(port)));
-                clients.back()->open(std::chrono::milliseconds(0));
-                EXPECT_TRUE(clients.back()->isOpen());
+                sample::openTcpClient(*clients.back());
             }
 #pragma omp barrier
             for (auto it = clients.begin(); it != clients.end(); ++it) {
@@ -97,18 +72,7 @@ TEST(TcpSynch, ClientAsker_ServerResponder) {
     {
         if (0 == omp_get_thread_num()) {
             // server
-            std::unique_ptr<TcpClientHandler> acceptedClient;
-            {
-                TcpServer server(port);
-                server.open(std::chrono::milliseconds(0));
-#pragma omp barrier
-                EXPECT_TRUE(server.isOpen());
-                acceptedClient = server.acceptClient();
-                server.close();
-                EXPECT_FALSE(server.isOpen());
-            }
-            EXPECT_TRUE(acceptedClient->isOpen());
-
+            auto acceptedClient = sample::accept(port);
             sample::Responder responder(std::move(acceptedClient));
             responder.respond(cycles);
 #pragma omp barrier
@@ -116,10 +80,7 @@ TEST(TcpSynch, ClientAsker_ServerResponder) {
         else {
             // client
             std::unique_ptr<TcpClient> client = std::make_unique<TcpClient>(*sck::Ip::createLocalHost(port));
-#pragma omp barrier
-            client->open(std::chrono::milliseconds(0));
-            EXPECT_TRUE(client->isOpen());
-
+            sample::openTcpClient(*client);
             sample::Asker asker(std::move(client));
             asker.ask(cycles);
 #pragma omp barrier
@@ -135,18 +96,7 @@ TEST(TcpSynch, ClientResponder_ServerAsker) {
     {
         if (0 == omp_get_thread_num()) {
             // server
-            std::unique_ptr<TcpClientHandler> acceptedClient;
-            {
-                TcpServer server(port);
-                server.open(std::chrono::milliseconds(0));
-#pragma omp barrier
-                EXPECT_TRUE(server.isOpen());
-                acceptedClient = server.acceptClient();
-                server.close();
-                EXPECT_FALSE(server.isOpen());
-            }
-            EXPECT_TRUE(acceptedClient->isOpen());
-
+            auto acceptedClient = sample::accept(port);
             sample::Asker asker(std::move(acceptedClient));
             asker.ask(cycles);
 #pragma omp barrier
@@ -154,10 +104,7 @@ TEST(TcpSynch, ClientResponder_ServerAsker) {
         else {
             // client
             std::unique_ptr<TcpClient> client = std::make_unique<TcpClient>(*sck::Ip::createLocalHost(port));
-#pragma omp barrier
-            client->open(std::chrono::milliseconds(0));
-            EXPECT_TRUE(client->isOpen());
-
+            sample::openTcpClient(*client);
             sample::Responder responder(std::move(client));
             responder.respond(cycles);
 #pragma omp barrier

@@ -10,13 +10,17 @@
 
 #include <tcp/TcpClient.h>
 #include <tcp/TcpServer.h>
+#include <Common.h>
+#include <vector>
 
 namespace sck::sample {
-    typedef std::unique_ptr<> UdpConnectionPtr;
+    typedef std::unique_ptr<tcp::TcpClientHandler> TcpClientHndlrPtr;
 
-    void open(const );
+    std::vector<TcpClientHndlrPtr> accept(tcp::TcpServer& server, const std::size_t clients);
 
-    std::unique_ptr<tcp::TcpClientHandler>  accept();
+    TcpClientHndlrPtr accept(const std::uint16_t port);
+
+    void openTcpClient(tcp::TcpClient& client);
 }
 
 #endif

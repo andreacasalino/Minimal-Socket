@@ -6,15 +6,14 @@
  **/
 
 #include <UdpCommon.h>
-#include <Common.h>
 
 namespace sck::sample {
-    std::pair<UdpConnectionPtr, UdpConnectionPtr> makeOpenUdpConnections(const std::size_t portA, const std::size_t portB) {
-        UdpConnectionPtr connA = std::make_unique<udp::UdpConnection>(Ip::createLocalHost(portB) , portA);
-        UdpConnectionPtr connB = std::make_unique<udp::UdpConnection>(Ip::createLocalHost(portA) , portB);
+    std::pair<UdpConnectionPtr, UdpConnectionPtr> makeOpenedUdpConnections(const std::uint16_t portA, const std::uint16_t portB) {
+        UdpConnectionPtr connA = std::make_unique<udp::UdpConnection>(*Ip::createLocalHost(portB) , portA);
+        UdpConnectionPtr connB = std::make_unique<udp::UdpConnection>(*Ip::createLocalHost(portA) , portB);
 
-        open(*connA);
-        open(*connB);
+        openSocket(*connA);
+        openSocket(*connB);
 
         return std::make_pair(std::move(connA), std::move(connB));
     };

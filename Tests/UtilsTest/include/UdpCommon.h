@@ -9,11 +9,12 @@
 #define SAMPLE_UDP_COMMON_H
 
 #include <udp/UdpConnection.h>
+#include <Common.h>
 
 namespace sck::sample {
     typedef std::unique_ptr<udp::UdpConnection> UdpConnectionPtr;
 
-    std::pair<UdpConnectionPtr, UdpConnectionPtr> makeOpenUdpConnections(const std::size_t portA, const std::size_t portB);
+    std::pair<UdpConnectionPtr, UdpConnectionPtr> makeOpenedUdpConnections(const std::uint16_t portA, const std::uint16_t portB);
 }
 
 #endif
