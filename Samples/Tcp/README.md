@@ -17,7 +17,7 @@ You don't need to manually do that, since this is done running one of the launch
 
 	*SampleTcp-03-asyncserver-clients, run:
 	
-		* a Tcp server asynchronous accepting 1 single client
+		* a Tcp server accepting 1 single client and asynchronously exchange message with it
 		* a Tcp client that connects to the async server and exchange messages
 			
 	*SampleTcp-04-repeater, run:
