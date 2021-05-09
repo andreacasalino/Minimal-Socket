@@ -43,20 +43,25 @@ int main(int argc, char** argv){
     }
     cout << "connection opened" << endl;
 
-    std::list<Responder> responders;
+    std::list<sck::sample::Responder> responders;
     std::list<std::thread> respThreads;
     for (std::size_t c = 0; c < clientNumbers; ++c) {
         //accept the client
+        cout << "waiting client " << c << endl;
         responders.emplace_back(server.acceptClient());
         cout << "new client connected" << endl;
-        respThreads.emplace_back([&responders]() {
-            Responder* respRef = &responders.back();
-            respRef->respondForever();
-        });
+        respThreads.emplace_back(&sck::sample::Responder::respondForever, &responders.back());
     }
 
-    for (auto it = respThreads.begin(); it != respThreads.end(); ++it) {
-        it->join();
+    while (!respThreads.empty()) {
+        auto it = respThreads.begin();
+        while (it != respThreads.end()) {
+            if (it->joinable()) {
+                it->join();
+                it = respThreads.erase(it);
+            }
+            else ++it;
+        }
     }
 
     return EXIT_SUCCESS;

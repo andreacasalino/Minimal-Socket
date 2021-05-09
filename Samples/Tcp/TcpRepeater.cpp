@@ -25,7 +25,7 @@ int main(){
     }
     
     // accepting client
-    std::unique_ptr<sck::Client> connection2Client;
+    std::unique_ptr<sck::tcp::TcpClientHandler> connection2Client;
     {
         sck::tcp::TcpServer server(4000);
         server.open(std::chrono::milliseconds(0));

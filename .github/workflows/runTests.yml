@@ -1,0 +1,73 @@
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  ubuntu-gcc-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Build project
+      uses: nicledomaS/cmake_build_action@v1.3
+      with:
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
+        submodule_update: ON
+    - name: Install artifacts
+      run: cmake --install ./build
+    - name: Test01-tcp-synch
+      run: ./artifacts/bin/Test01-tcp-synch
+    - name: Test01-udp-synch
+      run: ./artifacts/bin/Test01-udp-synch
+    - name: Test02-tcp-asynch
+      run: ./artifacts/bin/Test02-tcp-asynch
+    - name: Test02-udp-asynch
+      run: ./artifacts/bin/Test02-udp-asynch
+      
+  ubuntu-clang-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Build project
+      uses: nicledomaS/cmake_build_action@v1.3
+      with:
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
+        submodule_update: ON
+    - name: Install artifacts
+      run: cmake --install ./build
+    - name: Test01-tcp-synch
+      run: ./artifacts/bin/Test01-tcp-synch
+    - name: Test01-udp-synch
+      run: ./artifacts/bin/Test01-udp-synch
+    - name: Test02-tcp-asynch
+      run: ./artifacts/bin/Test02-tcp-asynch
+    - name: Test02-udp-asynch
+      run: ./artifacts/bin/Test02-udp-asynch
+      
+  windows-vs-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Build project
+      uses: nicledomaS/cmake_build_action@v1.3
+      with:
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
+        submodule_update: ON
+    - name: Install artifacts
+      run: cmake --install ./build
+    - name: Test01-tcp-synch
+      run: ./build/artifacts/bin/Test01-tcp-synch
+    - name: Test01-udp-synch
+      run: ./build/artifacts/bin/Test01-udp-synch
+    - name: Test02-tcp-asynch
+      run: ./build/artifacts/bin/Test02-tcp-asynch
+    - name: Test02-udp-asynch
+      run: ./build/artifacts/bin/Test02-udp-asynch
