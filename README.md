@@ -1,3 +1,6 @@
+![binaries_compilation](https://github.com/andreacasalino/Cross-Platform-Socket/actions/workflows/installArtifacts.yml/badge.svg)
+![binaries_compilation](https://github.com/andreacasalino/Cross-Platform-Socket/actions/workflows/runTests.yml/badge.svg)
+
 This repository contains the minimal functionalities to create and use from **C++** both **tcp** and **udp** sockets in a
 completely platform independent way.
 
@@ -15,7 +18,7 @@ Use [CMake](https://cmake.org) to configure and compile the library and the samp
 
 **Run the Samples**
 
-Check the *README.md* inside Samples/Tcp/ and Samples/Udp/
+Check the *README.md* inside Samples/Tcp/ and Samples/Udp/ to understand the samples purpose and how to run them
 
 **Download compiled binaries**
 
