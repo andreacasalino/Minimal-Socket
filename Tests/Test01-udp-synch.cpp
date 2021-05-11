@@ -50,7 +50,7 @@ TEST(UdpSynch, Asker_Responder) {
 
 #include <udp/UdpServer.h>
 
-TEST(UdpSynch, DIAsker_ServerResponder) {
+TEST(UdpSynch, DISABLED_Asker_ServerResponder) {
     const std::uint16_t portA = sample::PortFactory::makePort();
     const std::uint16_t portB = sample::PortFactory::makePort();
     const std::size_t cycles = 5;
