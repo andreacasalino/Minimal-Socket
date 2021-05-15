@@ -43,7 +43,7 @@ namespace sck::sample {
         EXPECT_FALSE(closable.isOpen());
     }
 
-    void closeSocket(Socket& socket) {
+    void closeSocket(SocketClosable& socket) {
         close(socket);
     }
     
