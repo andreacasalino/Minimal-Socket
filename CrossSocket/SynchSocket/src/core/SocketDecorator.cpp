@@ -9,7 +9,7 @@
 #include <Error.h>
 
 namespace sck {
-    SocketDecorator::SocketDecorator(std::unique_ptr<Socket> channel)
+    SocketDecorator::SocketDecorator(std::unique_ptr<SocketClosable> channel)
         : wrapped(std::move(channel)) {
         if (nullptr == this->wrapped) {
             throw Error("The decorator can't wrap a nullptr");

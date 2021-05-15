@@ -9,6 +9,7 @@
 #define _CROSS_SOCKET_ASYNCMESSANGER_H
 
 #include <core/AsyncSocket.h>
+#include <core/Connection.h>
 #include <messanger/MessangerListener.h>
 #include <core/components/SendCapable.h>
 #include <core/Messanger.h>
@@ -28,7 +29,7 @@ namespace sck::async {
         , public MessageTalker
         , public SendCapable {
     public:
-        AsyncMessanger(std::unique_ptr<Socket> messanger, const std::size_t& bufferCapacity);
+        AsyncMessanger(std::unique_ptr<Connection> messanger, const std::size_t& bufferCapacity);
 
         inline bool send(const std::pair<const char*, std::size_t>& message) final { return this->messPtr->send(message); };
 

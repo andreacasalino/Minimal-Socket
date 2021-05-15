@@ -8,13 +8,14 @@
 #ifndef _CROSS_SOCKET_CONNECTION_H_
 #define _CROSS_SOCKET_CONNECTION_H_
 
-#include <core/Socket.h>
+#include <core/SocketOpenable.h>
+#include <core/SocketClosable.h>
 #include <core/Messanger.h>
 #include <core/components/RemoteAddressAware.h>
 
 namespace sck {
     class Connection
-        : public SocketOpenable
+        : public SocketClosable
         , public Messanger
         , public RemoteAddressAware {
     protected:
@@ -22,6 +23,18 @@ namespace sck {
          * @param[in] the address of the connection to reach
          */
         explicit Connection(const sck::Ip& remoteAddress);
+    };
+
+
+
+    class ConnectionOpenable
+        : public Connection
+        , public SocketOpenable {
+    protected:
+        /**
+         * @param[in] the address of the connection to reach
+         */
+        explicit ConnectionOpenable(const sck::Ip& remoteAddress);
 
         /**
          * @brief connect is internally called

@@ -13,14 +13,14 @@ namespace sck::tcp {
    constexpr std::size_t LISTEN_BACKLOG = 50;
 
    TcpClientHandler::TcpClientHandler(std::unique_ptr<Channel> channel, const sck::Ip& remoteAddress)
-        : Socket(std::move(channel)) {
-       this->remoteAddress = std::make_unique<Ip>(remoteAddress);
+      : Connection(remoteAddress) {
+       this->channel = std::move(channel);
    }
 
    TcpServer::TcpServer(const std::uint16_t& port, const Family& family) 
-      : SocketOpenable(std::make_unique<Channel>())
-      , port(port)
+      : port(port)
       , family(family) {
+       this->channel = std::make_unique<Channel>();
    }
 
    std::unique_ptr<TcpClientHandler> TcpServer::acceptClient() {
