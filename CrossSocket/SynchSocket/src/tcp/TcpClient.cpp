@@ -10,6 +10,6 @@
 
 namespace sck::tcp {
    TcpClient::TcpClient(const sck::Ip& remoteAddress)
-      : Connection(remoteAddress) {
+      : ConnectionOpenable(remoteAddress) {
    }
 }

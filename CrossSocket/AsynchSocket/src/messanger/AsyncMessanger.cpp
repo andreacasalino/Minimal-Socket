@@ -10,12 +10,9 @@
 #include <core/components/ReceiveCapable.h>
 
 namespace sck::async {
-    AsyncMessanger::AsyncMessanger(std::unique_ptr<Socket> messanger, const std::size_t& bufferCapacity)
+    AsyncMessanger::AsyncMessanger(std::unique_ptr<Connection> messanger, const std::size_t& bufferCapacity)
         : AsyncSocket(std::move(messanger)) {
         this->messPtr = dynamic_cast<Messanger*> (this->wrapped.get());
-        if (nullptr == this->messPtr) {
-            throw Error("The passed socket is not a messanger");
-        }
         this->receiveBuffer.resize(bufferCapacity);
     };
 
