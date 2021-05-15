@@ -9,7 +9,8 @@
 #define SAMPLE_COMMON_H
 
 #include <core/BindCapable.h>
-#include <core/Socket.h>
+#include <core/SocketOpenable.h>
+#include <core/SocketClosable.h>
 #include <core/SocketDecorator.h>
 
 namespace sck::sample {
@@ -20,7 +21,7 @@ namespace sck::sample {
 
     void openSocket(SocketOpenable& socket);
 
-    void closeSocket(Socket& socket);
+    void closeSocket(SocketClosable& socket);
 
     void openSocketDecorator(SocketDecorator& socket);
 

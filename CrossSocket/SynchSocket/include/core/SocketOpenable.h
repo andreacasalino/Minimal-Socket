@@ -24,8 +24,6 @@ namespace sck {
         , virtual public FamilyAware
         , virtual public ProtocolAware {
     public:
-        virtual ~SocketOpenable() override;
-
         /**
          * @brief When something goes wrong inside the method, close is
          * internally called, leaving the object in a closed status.
