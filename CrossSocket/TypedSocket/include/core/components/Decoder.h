@@ -10,7 +10,7 @@
 
 #include <string>
 
-namespace sck {
+namespace sck::typed {
     template<typename T>
     class Decoder {
     protected:
