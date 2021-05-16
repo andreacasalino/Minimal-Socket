@@ -8,7 +8,6 @@
 #ifndef _CROSS_SOCKET_ENCODER_H_
 #define _CROSS_SOCKET_ENCODER_H_
 
-#include <utility>
 #include <string>
 
 namespace sck {

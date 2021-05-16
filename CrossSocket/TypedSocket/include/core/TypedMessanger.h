@@ -14,20 +14,26 @@
 #include <core/TypedSender.h>
 
 namespace sck::typed {
-    template<typename T, typename Encoder_, typename Decoder_>
-    class TypedSocket
+    template<typename SendT, typename Encoder_, typename RecvT, typename Decoder_>
+    class TypedMessanger
         : public SocketDecorator
-        , public TypedSender<Encoder_>
-        , public TypedReceiver<Decoder_> {
+        , public TypedSender<SendT, Encoder_>
+        , public TypedReceiver<RecvT, Decoder_> {
     public:
-        TypedSocket(std::unique_ptr<Connection> channel)
+        TypedMessanger(std::unique_ptr<Connection> channel, const std::size_t bufferCapacity)
             : SocketDecorator(std::move(channel))
-            , TypedSender<Encoder_>()
-            , TypedReceiver<Decoder_>() {
+            , TypedReceiver<RecvT, Decoder_>(bufferCapacity) {
             this->sender = dynamic_cast<sck::SendCapable*>(this->wrapped.get());
             this->receiver = dynamic_cast<sck::ReceiveCapable*>(this->wrapped.get());
         };
     };
+
+    //template<typename T, typename Encoder_, typename Decoder_>
+    //class TypedMessangerSingleT
+    //    : public TypedMessanger<T, Encoder_, T, Decoder_> {
+    //public:
+
+    //};
 }
 
 #endif
