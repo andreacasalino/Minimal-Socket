@@ -8,8 +8,6 @@
 #ifndef _CROSS_SOCKET_TYPEDSENDCAPABLE_H_
 #define _CROSS_SOCKET_TYPEDSENDCAPABLE_H_
 
-#include <chrono>
-
 namespace sck::typed {
     template<typename T>
     class SendCapable {
