@@ -38,7 +38,9 @@ namespace sck::typed {
         };
 
     protected:
-        TypedReceiver(const std::size_t bufferCapacity);
+        TypedReceiver(const std::size_t bufferCapacity) 
+            : Buffer(bufferCapacity) {
+        };
 
     protected:
         sck::ReceiveCapable* receiver;

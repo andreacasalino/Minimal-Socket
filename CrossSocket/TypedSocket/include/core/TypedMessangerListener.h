@@ -8,7 +8,7 @@
 #ifndef _CROSS_SOCKET_TYPEDMESSANGERLISTENER_H_
 #define _CROSS_SOCKET_TYPEDMESSANGERLISTENER_H_
 
-namespace sck::async {
+namespace sck::typed {
     template<typename T>
     class TypedMessangerListener {
     public:
