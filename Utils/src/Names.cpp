@@ -37,6 +37,7 @@ namespace sck::sample {
         return it->second;
     }
 
+#ifdef TYPED_ENABLED
     bool NamesDecoder::decode(const std::string& buffer, NamesCollection& message) const {
         message.clear();
         if (buffer.empty()) {
@@ -77,4 +78,5 @@ namespace sck::sample {
         buffer = stream.str();
         return true;
     }
+#endif
 }
