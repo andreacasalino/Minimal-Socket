@@ -11,15 +11,15 @@ TEST(UdpSynch, OpenClose) {
     {
         if (0 == omp_get_thread_num()) {
             // connection A
-            sample::openSocket(*connections.first);
+            sample::open(*connections.first);
 #pragma omp barrier
-            sample::closeSocket(*connections.first);
+            sample::close(*connections.first);
         }
         else {
             // connection B
-            sample::openSocket(*connections.second);
+            sample::open(*connections.second);
 #pragma omp barrier
-            sample::closeSocket(*connections.second);
+            sample::close(*connections.second);
         }
     }
 }

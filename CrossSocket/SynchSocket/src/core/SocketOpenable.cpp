@@ -5,50 +5,13 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <core/Socket.h>
+#include <core/SocketOpenable.h>
 #include "../Channel.h"
-#include <Error.h>
 #include <thread>
 #include <condition_variable>
 #include <mutex>
 
 namespace sck {
-    Socket::Socket(std::unique_ptr<Channel> channel) {
-        if (nullptr == channel) {
-            throw Error("found null channel when building the socket object");
-        }
-        this->channel = std::move(channel);
-    }
-
-    bool Socket::isOpen() const {
-        return this->channel->isOpen();
-    };
-
-    Socket::~Socket() {
-        if (this->isOpen()) {
-            this->close();
-        }
-    }
-
-    void Socket::close() {
-        if (!this->isOpen()) {
-            return;
-        }
-        try {
-            this->closeSteps();
-        }
-        catch (...) {
-        }
-    }
-
-    void Socket::closeSteps() {
-        this->channel->close();
-    }
-
-    SocketOpenable::SocketOpenable(std::unique_ptr<Channel> channel)
-        : Socket(std::move(channel)) {
-    }
-
     void SocketOpenable::open(const std::chrono::milliseconds& timeout) {
         if (this->isOpen()) {
             return;

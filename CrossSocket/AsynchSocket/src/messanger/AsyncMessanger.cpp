@@ -10,23 +10,17 @@
 #include <core/components/ReceiveCapable.h>
 
 namespace sck::async {
-    AsyncMessanger::AsyncMessanger(std::unique_ptr<Socket> messanger, const std::size_t& bufferCapacity)
-        : AsyncSocket(std::move(messanger)) {
+    AsyncMessanger::AsyncMessanger(std::unique_ptr<Connection> messanger, const std::size_t& bufferCapacity)
+        : AsyncSocket(std::move(messanger))
+        , Buffer(bufferCapacity) {
         this->messPtr = dynamic_cast<Messanger*> (this->wrapped.get());
-        if (nullptr == this->messPtr) {
-            throw Error("The passed socket is not a messanger");
-        }
-        this->receiveBuffer.resize(bufferCapacity);
     };
 
     void AsyncMessanger::serviceIteration() {
-        this->receiveBuffer.resize(this->receiveBuffer.capacity());
-        auto pr = std::make_pair<char*, std::size_t>(this->receiveBuffer.data(), this->receiveBuffer.capacity());
-        auto recvBytes = this->messPtr->receive(pr, std::chrono::milliseconds(0));
-        if (recvBytes != this->receiveBuffer.capacity()) {
-            this->receiveBuffer.resize(recvBytes);
-        }
-        pr.second = recvBytes;
-        this->Talker<MessangerListener>::notify(pr);
+        this->resetBufferSize();
+        auto buffer = this->getBuffer();
+        auto recvBytes = this->messPtr->receive(buffer, std::chrono::milliseconds(0));
+        buffer.second = recvBytes;
+        this->Talker<MessangerListener>::notify(buffer);
     }
 }

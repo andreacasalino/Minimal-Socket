@@ -7,7 +7,6 @@
 
 #include <Common.h>
 #include <mutex>
-#include <gtest/gtest.h>
 #include <core/components/StateAware.h>
 
 namespace sck::sample {
@@ -21,33 +20,5 @@ namespace sck::sample {
         std::lock_guard<std::mutex> lk(portMtx);
         ++port;
         return port;
-    }
-
-    template<typename T>
-    void open(T& openable) {
-        openable.open(std::chrono::milliseconds(0));
-        EXPECT_TRUE(openable.isOpen());
-    }
-
-    void openSocket(SocketOpenable& socket) {
-        open(socket);
-    }
-
-    void openSocketDecorator(SocketDecorator& socket) {
-        open(socket);
-    }
-
-    template<typename T>
-    void close(T& closable) {
-        closable.close();
-        EXPECT_FALSE(closable.isOpen());
-    }
-
-    void closeSocket(Socket& socket) {
-        close(socket);
-    }
-    
-    void closeSocketDecorator(SocketDecorator& socket) {
-        close(socket);
     }
 }

@@ -45,6 +45,6 @@ namespace sck::udp {
          throw Error(remoteAddr.sa_data, " is an invalid data for udp serer remote address");
       }
       this->remoteAddress = std::move(remoteConverted);
-      this->Connection::openSteps();
+      this->ConnectionOpenable::openSteps();
    }
 }

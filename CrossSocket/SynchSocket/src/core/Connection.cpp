@@ -10,12 +10,16 @@
 #include <Error.h>
 
 namespace sck {
-    Connection::Connection(const sck::Ip& remoteAddress)
-        : SocketOpenable(std::make_unique<Channel>()) {
+    Connection::Connection(const sck::Ip& remoteAddress) {
         this->remoteAddress = std::make_unique<Ip>(remoteAddress);
+        this->channel = std::make_unique<Channel>();
     }
 
-    void Connection::openSteps() {
+    ConnectionOpenable::ConnectionOpenable(const sck::Ip& remoteAddress)
+        : Connection(remoteAddress) {
+    }
+
+    void ConnectionOpenable::openSteps() {
         if (sck::Family::IP_V4 == this->getFamily()) {
             //v4 family
             auto addr = convertIpv4(*this->remoteAddress);

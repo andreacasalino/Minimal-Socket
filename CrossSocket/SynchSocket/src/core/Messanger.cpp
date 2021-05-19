@@ -9,7 +9,7 @@
 #include "../Channel.h"
 
 namespace sck {
-    std::size_t Messanger::receive(std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) {
+    std::size_t Messanger::receive(const std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) {
         std::lock_guard<std::mutex> recvLock(this->receiveMtx);
         if (timeout.count() != this->actualTimeOut.count()) {
             //set new timeout

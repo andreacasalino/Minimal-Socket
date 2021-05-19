@@ -24,3 +24,5 @@ MakeTest(Test02-tcp-asynch)
 MakeTest(Test01-udp-synch)
 
 MakeTest(Test02-udp-asynch)
+
+MakeTest(Test03-typed)

@@ -1,4 +1,4 @@
-set(PROJECT_SHORTNAME "Utils")
+set(PROJECT_SHORTNAME "Typed-Cross-Socket")
 
 MakeLibrary(${PROJECT_SHORTNAME} include)
 
@@ -9,14 +9,12 @@ if(COMPILE_ASYNCH)
 	)
 else()
 	target_link_libraries(${PROJECT_SHORTNAME}
-	  PUBLIC
-		Synch-Cross-Socket
-	)
+	PUBLIC
+		Synch-Cross-Socket    
+	)	
 endif()
 
-if(COMPILE_TYPED)
-	target_link_libraries(${PROJECT_SHORTNAME}
-	  PUBLIC
-		Typed-Cross-Socket
-	)
-endif()
+target_compile_definitions(${PROJECT_SHORTNAME} 
+PUBLIC 
+	TYPED_ENABLED
+)

@@ -17,7 +17,7 @@ namespace sck::tcp {
     * it should be ready to listen and accept this client
     */
    class TcpClient
-      : public Connection {
+      : public ConnectionOpenable {
    public:      
       /**
        * @param[in] the address of the server to reach

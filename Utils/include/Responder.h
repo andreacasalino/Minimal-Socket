@@ -9,7 +9,7 @@
 #define SAMPLE_RESPONDER_H
 
 #include <core/Messanger.h>
-#include <NamesMap.h>
+#include <Names.h>
 #include <Logger.h>
 #include <array>
 

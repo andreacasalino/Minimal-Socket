@@ -17,9 +17,9 @@ TEST(UdpAsync, Asker_Responder) {
         if (0 == omp_get_thread_num()) {
             // connection A
             sample::AsyncResponder asynchResponder(std::move(connections.first));
-            sample::openSocketDecorator(asynchResponder);
+            sample::open(asynchResponder);
 #pragma omp barrier
-            sample::closeSocketDecorator(asynchResponder);
+            sample::close(asynchResponder);
         }
         else {
             // connection B
