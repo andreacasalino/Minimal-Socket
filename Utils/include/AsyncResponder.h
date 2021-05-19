@@ -10,7 +10,7 @@
 
 #ifdef ASYNCH_ENABLED
 #include <messanger/AsyncMessanger.h>
-#include <NamesMap.h>
+#include <Names.h>
 #include <Logger.h>
 
 namespace sck::sample {
@@ -20,7 +20,7 @@ namespace sck::sample {
         , protected sck::async::ErrorListener
         , public Logger {
     public:
-        AsyncResponder(std::unique_ptr<sck::Socket> socket);
+        AsyncResponder(std::unique_ptr<sck::Connection> socket);
 
     private:
         void handle(const std::pair<const char*, std::size_t>& message) final;

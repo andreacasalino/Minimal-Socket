@@ -9,7 +9,7 @@
 #include <AsyncResponder.h>
 
 namespace sck::sample {
-    AsyncResponder::AsyncResponder(std::unique_ptr<sck::Socket> socket)
+    AsyncResponder::AsyncResponder(std::unique_ptr<sck::Connection> socket)
         : AsyncMessanger(std::move(socket), 1000)
         , Logger("AsynchResponder") {
 

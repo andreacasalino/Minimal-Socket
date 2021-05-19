@@ -22,7 +22,7 @@ namespace sck::udp {
     * @brief interface for a standard udp connection.
     */
    class UdpConnection
-      : public Connection
+      : public ConnectionOpenable
       , public BindCapable {
    public:
       /**

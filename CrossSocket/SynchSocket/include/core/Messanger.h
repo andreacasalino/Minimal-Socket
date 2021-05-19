@@ -19,7 +19,7 @@ namespace sck {
         , virtual public ReceiveCapable
         , virtual public SendCapable {
     public:
-        std::size_t receive(std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) final;
+        std::size_t receive(const std::pair<char*, std::size_t>& message, const std::chrono::milliseconds& timeout) final;
 
         bool send(const std::pair<const char*, std::size_t>& message) final;
 

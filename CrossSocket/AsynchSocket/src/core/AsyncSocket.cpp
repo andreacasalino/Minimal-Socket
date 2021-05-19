@@ -8,7 +8,7 @@
 #include <core/AsyncSocket.h>
 
 namespace sck::async {
-    AsyncSocket::AsyncSocket(std::unique_ptr<Socket> socket)
+    AsyncSocket::AsyncSocket(std::unique_ptr<SocketClosable> socket)
         : SocketDecorator(std::move(socket)) {
     };
 

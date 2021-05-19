@@ -8,7 +8,8 @@
 #ifndef _CROSS_SOCKET_SOCKETDECORATOR_H_
 #define _CROSS_SOCKET_SOCKETDECORATOR_H_
 
-#include <core/Socket.h>
+#include <core/SocketClosable.h>
+#include <core/components/Openable.h>
 
 namespace sck {
     class SocketDecorator
@@ -27,9 +28,9 @@ namespace sck {
         void open(const std::chrono::milliseconds& timeout) override;
 
     protected:
-        SocketDecorator(std::unique_ptr<Socket> channel);
+        SocketDecorator(std::unique_ptr<SocketClosable> channel);
 
-        std::unique_ptr<Socket> wrapped;
+        std::unique_ptr<SocketClosable> wrapped;
     };
 }
 

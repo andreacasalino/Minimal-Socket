@@ -8,7 +8,7 @@
 #ifndef _CROSS_SOCKET_TCPSERVER_H_
 #define _CROSS_SOCKET_TCPSERVER_H_
 
-#include <core/Socket.h>
+#include <core/Connection.h>
 #include <core/Messanger.h>
 #include <core/components/RemoteAddressAware.h>
 #include <core/BindCapable.h>
@@ -22,6 +22,7 @@ namespace sck::tcp {
     */
    class TcpServer
       : public SocketOpenable
+      , public SocketClosable
       , public BindCapable {
    public:
       /**
@@ -49,9 +50,7 @@ namespace sck::tcp {
    };
 
    class TcpClientHandler
-       : public Socket
-       , public Messanger
-       , public RemoteAddressAware {
+       : public Connection {
        friend class TcpServer;
    protected:
        TcpClientHandler(std::unique_ptr<Channel> channel, const sck::Ip& remoteAddress);

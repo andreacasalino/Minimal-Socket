@@ -44,7 +44,7 @@ namespace sck::async {
         void close() final;
         
     protected:
-        AsyncSocket(std::unique_ptr<Socket> socket);
+        AsyncSocket(std::unique_ptr<SocketClosable> socket);
 
         virtual void serviceIteration() = 0;
 
