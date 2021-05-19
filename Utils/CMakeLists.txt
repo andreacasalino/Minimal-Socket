@@ -7,10 +7,16 @@ if(COMPILE_ASYNCH)
 	  PUBLIC
 		Asynch-Cross-Socket
 	)
-	target_compile_definitions(${PROJECT_SHORTNAME} PUBLIC ASYNCH_ENABLED)
 else()
 	target_link_libraries(${PROJECT_SHORTNAME}
 	  PUBLIC
 		Synch-Cross-Socket
+	)
+endif()
+
+if(COMPILE_TYPED)
+	target_link_libraries(${PROJECT_SHORTNAME}
+	  PUBLIC
+		Typed-Cross-Socket
 	)
 endif()

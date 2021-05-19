@@ -24,6 +24,7 @@ namespace sck::typed {
         , public TypedSender<SendT, Encoder_>
         , public async::Talker<TypedMessangerListener<RecvT>>
         , protected Decoder_ {
+        static_assert(std::is_base_of<Decoder<RecvT>, Decoder_>::value, "Not valid Decoder_ type");
     public:
         TypedAsynchMessanger(std::unique_ptr<Connection> messanger, const std::size_t& bufferCapacity)
             : asyncMessanger(std::move(messanger), bufferCapacity) {

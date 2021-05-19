@@ -5,11 +5,39 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <NamesCoder.h>
+#include <Names.h>
 #include <sstream>
 
 namespace sck::sample {
-    bool NamesDecoder::decode(const std::string& buffer, Names& message) const {
+    NamesMap::NamesMap() {
+        this->cursor = namesSurnames.begin();
+    }
+
+    const std::map<std::string, std::string> NamesMap::namesSurnames = {
+        {"Luciano", "Pavarotti"},
+        {"Gengis", "Khan"},
+        {"Giulio", "Cesare"},
+        {"Theodor", "Roosvelt"},
+        {"Immanuel", "Kant"}
+    };
+
+    const std::string NamesMap::unknown = "unknown";
+
+    NamesMap& NamesMap::operator++() {
+        ++this->cursor;
+        if (this->cursor == namesSurnames.end()) {
+            this->cursor = namesSurnames.begin();
+        }
+        return *this;
+    }
+
+    const std::string& NamesMap::getSurname(const std::string& name) {
+        auto it = namesSurnames.find(name);
+        if (it == namesSurnames.end()) return unknown;
+        return it->second;
+    }
+
+    bool NamesDecoder::decode(const std::string& buffer, NamesCollection& message) const {
         message.clear();
         if (buffer.empty()) {
             return true;
@@ -21,7 +49,7 @@ namespace sck::sample {
             }
         }
         if (posSeparator.empty()) {
-            message = {buffer};
+            message = { buffer };
             return true;
         }
         std::size_t posPrev = 0;
@@ -35,7 +63,7 @@ namespace sck::sample {
         return true;
     }
 
-    bool NamesEncoder::encode(std::string& buffer, const Names& message) const {
+    bool NamesEncoder::encode(std::string& buffer, const NamesCollection& message) const {
         std::stringstream stream;
         if (!message.empty()) {
             auto it = message.begin();

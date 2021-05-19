@@ -9,7 +9,7 @@
 #define SAMPLE_ASKER_H
 
 #include <core/Messanger.h>
-#include <NamesMap.h>
+#include <Names.h>
 #include <Logger.h>
 
 namespace sck::sample {
