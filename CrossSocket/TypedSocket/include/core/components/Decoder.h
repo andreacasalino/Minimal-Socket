@@ -14,7 +14,7 @@ namespace sck::typed {
     template<typename T>
     class Decoder {
     protected:
-        virtual bool decode(const std::string& buffer, T& message) = 0;
+        virtual bool decode(const std::string& buffer, T& message) const = 0;
     };
 }
 

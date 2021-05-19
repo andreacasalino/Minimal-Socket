@@ -14,6 +14,8 @@
 #include <core/TypedSender.h>
 
 namespace sck::typed {
+    std::pair<SendCapable*, ReceiveCapable*> extractComponents(SocketClosable* connection);
+
     template<typename SendT, typename Encoder_, typename RecvT, typename Decoder_>
     class TypedMessanger
         : public SocketDecorator
@@ -23,17 +25,11 @@ namespace sck::typed {
         TypedMessanger(std::unique_ptr<Connection> channel, const std::size_t bufferCapacity)
             : SocketDecorator(std::move(channel))
             , TypedReceiver<RecvT, Decoder_>(bufferCapacity) {
-            this->sender = dynamic_cast<sck::SendCapable*>(this->wrapped.get());
-            this->receiver = dynamic_cast<sck::ReceiveCapable*>(this->wrapped.get());
+            auto components = extractComponents(this->wrapped.get());
+            this->sender = components.first;
+            this->receiver = components.second;
         };
     };
-
-    //template<typename T, typename Encoder_, typename Decoder_>
-    //class TypedMessangerSingleT
-    //    : public TypedMessanger<T, Encoder_, T, Decoder_> {
-    //public:
-
-    //};
 }
 
 #endif
