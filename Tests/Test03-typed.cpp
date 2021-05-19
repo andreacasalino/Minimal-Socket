@@ -82,11 +82,13 @@ TEST(Typed, Sync) {
 
 std::string toString(const sample::Names& names) {
     std::stringstream stream;
-    auto it = names.begin();
-    stream << *it;
-    ++it;
-    for (it; it != names.end(); ++it) {
-        stream << ';' << *it;
+    if (!names.empty()) {
+        auto it = names.begin();
+        stream << *it;
+        ++it;
+        for (it; it != names.end(); ++it) {
+            stream << ';' << *it;
+        }
     }
     return stream.str();
 };
