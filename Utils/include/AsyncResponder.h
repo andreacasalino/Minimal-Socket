@@ -10,7 +10,7 @@
 
 #ifdef ASYNCH_ENABLED
 #include <messanger/AsyncMessanger.h>
-#include <NamesMap.h>
+#include <Names.h>
 #include <Logger.h>
 
 namespace sck::sample {

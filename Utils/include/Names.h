@@ -5,11 +5,16 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef SAMPLE_NAMESMAP_H
-#define SAMPLE_NAMESMAP_H
+#ifndef SAMPLE_NAMES_H
+#define SAMPLE_NAMES_H
 
 #include <map>
 #include <string>
+#ifdef TYPED_ENABLED
+#include <core/components/Encoder.h>
+#include <core/components/Decoder.h>
+#include <list>
+#endif
 
 namespace sck::sample {
     class NamesMap {
@@ -31,6 +36,20 @@ namespace sck::sample {
 
         std::map<std::string, std::string>::const_iterator cursor;
     };
+
+#ifdef TYPED_ENABLED
+    typedef std::list<std::string> NamesCollection;
+
+    class NamesDecoder : public typed::Decoder<NamesCollection> {
+    protected:
+        bool decode(const std::string& buffer, NamesCollection& message) const final;
+    };
+
+    class NamesEncoder : public typed::Encoder<NamesCollection> {
+    protected:
+        bool encode(std::string& buffer, const NamesCollection& message) const final;
+    };
+#endif
 }
 
 #endif

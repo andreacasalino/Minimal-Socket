@@ -6,3 +6,8 @@ target_link_libraries(${PROJECT_SHORTNAME}
 PUBLIC
 	Synch-Cross-Socket    
 )
+
+target_compile_definitions(${PROJECT_SHORTNAME} 
+PUBLIC 
+	ASYNCH_ENABLED
+)
