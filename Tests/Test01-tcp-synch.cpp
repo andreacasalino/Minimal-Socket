@@ -13,14 +13,14 @@ TEST(TcpSynch, OpenClose) {
             // server
             auto acceptedClient = sample::accept(port);
 #pragma omp barrier
-            sample::closeSocket(*acceptedClient);
+            sample::close(*acceptedClient);
         }
         else {
             // client
             TcpClient client(*sck::Ip::createLocalHost(port));
             sample::openTcpClient(client);
 #pragma omp barrier
-            sample::closeSocket(client);
+            sample::close(client);
         }
     }
 }
@@ -34,11 +34,11 @@ TEST(TcpSynch, OpenCloseManyClients) {
         if (0 == omp_get_thread_num()) {
             // server
             tcp::TcpServer server(port);
-            sample::openSocket(server);
+            sample::open(server);
             auto acceptedClients = sample::accept(server, clientsNumb);
 #pragma omp barrier
             for (auto it = acceptedClients.begin(); it != acceptedClients.end(); ++it) {
-                sample::closeSocket(**it);
+                sample::close(**it);
             }
         }
         else {
@@ -51,7 +51,7 @@ TEST(TcpSynch, OpenCloseManyClients) {
             }
 #pragma omp barrier
             for (auto it = clients.begin(); it != clients.end(); ++it) {
-                sample::closeSocket(**it);
+                sample::close(**it);
             }
         }
     }

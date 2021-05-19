@@ -17,9 +17,9 @@ TEST(TcpAsync, OpenCloseAcceptSynch) {
             // server
             auto acceptedClient = sample::accept(port);
             sample::AsyncResponder asynchResponder(std::move(acceptedClient));
-            sample::openSocketDecorator(asynchResponder);
+            sample::open(asynchResponder);
 #pragma omp barrier
-            sample::closeSocketDecorator(asynchResponder);
+            sample::close(asynchResponder);
         }
         else {
             // client
@@ -40,7 +40,7 @@ TEST(TcpAsync, ClientAsker_ServerResponder) {
             // server
             auto acceptedClient = sample::accept(port);
             sample::AsyncResponder asynchResponder(std::move(acceptedClient));
-            sample::openSocketDecorator(asynchResponder);
+            sample::open(asynchResponder);
 #pragma omp barrier
         }
         else {

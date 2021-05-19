@@ -23,13 +23,13 @@ namespace sck::sample {
 
     TcpClientHndlrPtr accept(const std::uint16_t port) {
         tcp::TcpServer server(port);
-        openSocket(server);
+        open(server);
         return std::move(accept(server, 1).front());
     }
 
     void openTcpClient(tcp::TcpClient& client) {
         EXPECT_FALSE(client.isOpen());
 #pragma omp barrier
-        openSocket(client);
+        open(client);
     }
 }

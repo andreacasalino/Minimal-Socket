@@ -5,8 +5,8 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef SAMPLE_NAMESCODING_H
-#define SAMPLE_NAMESCODING_H
+#ifndef SAMPLE_NAMESCODER_H
+#define SAMPLE_NAMESCODER_H
 
 #include <core/components/Encoder.h>
 #include <core/components/Decoder.h>
