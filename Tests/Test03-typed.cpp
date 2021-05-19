@@ -7,11 +7,13 @@ using namespace sck::tcp;
 #include <NamesMap.h>
 #include <core/TypedMessanger.h>
 #include <core/TypedAsyncMessanger.h>
-#include <NamesCoding.h>
+#include <NamesCoder.h>
 #include <Logger.h>
 using namespace sck::typed;
 
-sample::Names getNames() {
+constexpr std::size_t BUFFER_CAPACITY = 2500;
+
+sample::Names getAllNames() {
     sample::Names names;
     sample::NamesMap map;
     for (std::size_t k = 0; k < sample::NamesMap::size(); ++k) {
@@ -21,7 +23,7 @@ sample::Names getNames() {
     return names;
 };
 
-sample::Names getSurnames() {
+sample::Names getAllSurnames() {
     sample::Names surnames;
     sample::NamesMap map;
     for (std::size_t k = 0; k < sample::NamesMap::size(); ++k) {
@@ -41,14 +43,14 @@ sample::Names getResponse(const sample::Names& request) {
 
 void doRequests(TypedMessanger<sample::Names, sample::NamesEncoder, sample::Names, sample::NamesDecoder>& messanger, const std::size_t cycles) {
     for (std::size_t k = 0; k < cycles; ++k) {
-        EXPECT_TRUE(messanger.send(getNames()));
+        EXPECT_TRUE(messanger.send(getAllNames()));
         sample::Names response;
         EXPECT_TRUE(messanger.receive(response, std::chrono::milliseconds(0)));
-        EXPECT_EQ(response, getSurnames());
+        EXPECT_EQ(response, getAllSurnames());
     }
 }
 
-TEST(SyncTyped, ClientAsker_ServerResponder) {
+TEST(Typed, Sync) {
     const std::uint16_t port = sample::PortFactory::makePort();
     const std::size_t cycles = 5;
 
@@ -57,7 +59,7 @@ TEST(SyncTyped, ClientAsker_ServerResponder) {
         if (0 == omp_get_thread_num()) {
             // server
             auto acceptedClient = sample::accept(port);
-            TypedMessanger<sample::Names, sample::NamesEncoder, sample::Names, sample::NamesDecoder> messanger(std::move(acceptedClient), 2500);
+            TypedMessanger<sample::Names, sample::NamesEncoder, sample::Names, sample::NamesDecoder> messanger(std::move(acceptedClient), BUFFER_CAPACITY);
             // exchange typed messages
             for (std::size_t k = 0; k < cycles; ++k) {
                 sample::Names request;
@@ -70,7 +72,7 @@ TEST(SyncTyped, ClientAsker_ServerResponder) {
             // client
             std::unique_ptr<TcpClient> client = std::make_unique<TcpClient>(*sck::Ip::createLocalHost(port));
             sample::openTcpClient(*client);
-            TypedMessanger<sample::Names, sample::NamesEncoder, sample::Names, sample::NamesDecoder> messanger(std::move(client), 2500);
+            TypedMessanger<sample::Names, sample::NamesEncoder, sample::Names, sample::NamesDecoder> messanger(std::move(client), BUFFER_CAPACITY);
             doRequests(messanger, cycles);
 #pragma omp barrier
         }
@@ -78,14 +80,25 @@ TEST(SyncTyped, ClientAsker_ServerResponder) {
 }
 
 
+std::string toString(const sample::Names& names) {
+    std::stringstream stream;
+    auto it = names.begin();
+    stream << *it;
+    ++it;
+    for (it; it != names.end(); ++it) {
+        stream << ';' << *it;
+    }
+    return stream.str();
+};
+
 class TypedAsyncResponder
     : public TypedAsynchMessanger<sample::Names, sample::NamesEncoder, sample::Names, sample::NamesDecoder>
     , public TypedMessangerListener<sample::Names>
     , protected sck::async::ErrorListener
     , public sample::Logger {
 public:
-    TypedAsyncResponder(std::unique_ptr<Connection> messanger, const std::size_t& bufferCapacity) 
-        : TypedAsynchMessanger<sample::Names, sample::NamesEncoder, sample::Names, sample::NamesDecoder>(std::move(messanger), bufferCapacity)
+    TypedAsyncResponder(std::unique_ptr<Connection> messanger) 
+        : TypedAsynchMessanger<sample::Names, sample::NamesEncoder, sample::Names, sample::NamesDecoder>(std::move(messanger), BUFFER_CAPACITY)
         , Logger("TypedAsyncResponder") {
         this->resetErrorListener(this);
         this->resetListener(this);
@@ -93,12 +106,10 @@ public:
 
 private:
     void handle(const sample::Names& message) final {
+        this->log("request: ", toString(message));
         sample::Names response = getResponse(message);
+        this->log("response: ", toString(response));
         this->send(response);
-        //std::string recStr(message.first, message.second);
-        //const std::string surname = NamesMap::getSurname(recStr);
-        //this->log("request: ", recStr, " response: ", surname);
-        //this->messPtr->send({ surname.data(), surname.size() });
     };
 
     void handle(const sck::Error& error) final {};
@@ -106,7 +117,7 @@ private:
     void handle(const std::exception& error) final {};
 };
 
-TEST(AsyncTyped, ClientAsker_ServerResponder) {
+TEST(Typed, Async) {
     const std::uint16_t port = sample::PortFactory::makePort();
     const std::size_t cycles = 5;
 
@@ -115,16 +126,16 @@ TEST(AsyncTyped, ClientAsker_ServerResponder) {
         if (0 == omp_get_thread_num()) {
             // server
             auto acceptedClient = sample::accept(port);
-            TypedAsynchMessanger<sample::Names, sample::NamesEncoder, sample::Names, sample::NamesDecoder> asynchResponder(std::move(acceptedClient), 2500);
+            TypedAsyncResponder asynchResponder(std::move(acceptedClient));
             open(asynchResponder);
 #pragma omp barrier
-            asynchResponder.close();
+            close(asynchResponder);
         }
         else {
             // client
             std::unique_ptr<TcpClient> client = std::make_unique<TcpClient>(*sck::Ip::createLocalHost(port));
             sample::openTcpClient(*client);
-            TypedMessanger<sample::Names, sample::NamesEncoder, sample::Names, sample::NamesDecoder> messanger(std::move(client), 2500);
+            TypedMessanger<sample::Names, sample::NamesEncoder, sample::Names, sample::NamesDecoder> messanger(std::move(client), BUFFER_CAPACITY);
             doRequests(messanger, cycles);
 #pragma omp barrier
         }

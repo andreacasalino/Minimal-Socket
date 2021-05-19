@@ -9,9 +9,9 @@
 #define SAMPLE_COMMON_H
 
 #include <core/BindCapable.h>
-#include <core/SocketOpenable.h>
-#include <core/SocketClosable.h>
-#include <core/SocketDecorator.h>
+#include <core/components/Openable.h>
+#include <core/components/Closable.h>
+#include <gtest/gtest.h>
 
 namespace sck::sample {
     class PortFactory {
@@ -19,13 +19,17 @@ namespace sck::sample {
         static std::uint16_t makePort();
     };
 
-    void openSocket(SocketOpenable& socket);
+    template <typename T>
+    void open(T& openable) {
+        openable.open(std::chrono::milliseconds(0));
+        EXPECT_TRUE(openable.isOpen());
+    }
 
-    void closeSocket(SocketClosable& socket);
-
-    void openSocketDecorator(SocketDecorator& socket);
-
-    void closeSocketDecorator(SocketDecorator& socket);
+    template <typename T>
+    void close(T& closable) {
+        closable.close();
+        EXPECT_FALSE(closable.isOpen());
+    };
 }
 
 #endif

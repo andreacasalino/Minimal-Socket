@@ -36,11 +36,10 @@ namespace sck::typed {
 
         inline void open(const std::chrono::milliseconds& timeout) override { this->asyncMessanger.open(timeout); };
 
-        inline void resetErrorListener(async::ErrorListener* listener) { this->asyncMessanger.resetListener(listener); };
+        inline void resetErrorListener(async::ErrorListener* listener) { this->asyncMessanger.async::ErrorTalker::resetListener(listener); };
 
     protected:
         void handle(const std::pair<const char*, std::size_t>& message) final {
-            // bool decode(const std::string& buffer, T& message)
             RecvT typed;
             this->Decoder_::decode(std::string(message.first, message.second), typed);
             this->notify(typed);

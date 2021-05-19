@@ -5,7 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <NamesCoding.h>
+#include <NamesCoder.h>
 #include <sstream>
 
 namespace sck::sample {

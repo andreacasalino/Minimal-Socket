@@ -12,8 +12,8 @@ namespace sck::sample {
         UdpConnectionPtr connA = std::make_unique<udp::UdpConnection>(*Ip::createLocalHost(portB) , portA);
         UdpConnectionPtr connB = std::make_unique<udp::UdpConnection>(*Ip::createLocalHost(portA) , portB);
 
-        openSocket(*connA);
-        openSocket(*connB);
+        open(*connA);
+        open(*connB);
 
         return std::make_pair(std::move(connA), std::move(connB));
     };
