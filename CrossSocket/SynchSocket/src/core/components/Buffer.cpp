@@ -16,6 +16,7 @@ namespace sck {
     void Buffer::resetBufferSize(const std::size_t newSize) {
         if (0 == newSize) {
             this->buffer.resize(this->bufferCapacity);
+            return;
         }
         else if(newSize > this->bufferCapacity) {
             throw Error("New buffer size can't exceed buffer capacity");

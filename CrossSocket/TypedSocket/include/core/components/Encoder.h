@@ -14,7 +14,7 @@ namespace sck::typed {
     template<typename T>
     class Encoder {
     protected:
-        virtual bool encode(std::string& buffer, const T& message) = 0;
+        virtual bool encode(std::string& buffer, const T& message) const = 0;
     };
 }
 

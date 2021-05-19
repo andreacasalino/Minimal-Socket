@@ -23,6 +23,8 @@ namespace sck::sample {
 
         NamesMap& operator++();
 
+        inline static std::size_t size() { return namesSurnames.size(); };
+
     private:
         static const std::map<std::string, std::string> namesSurnames;
         static const std::string unknown;

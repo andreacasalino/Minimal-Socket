@@ -10,7 +10,7 @@
 
 namespace sck::typed {
     template<typename T>
-    class SendCapable {
+    class TypedSendCapable {
     public:
         virtual bool send(const T& message) = 0;
     };

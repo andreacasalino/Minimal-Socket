@@ -16,7 +16,7 @@
 namespace sck::typed {
     template<typename T, typename Encoder_>
     class TypedSender
-        : public SendCapable<T>
+        : public TypedSendCapable<T>
         , public Encoder_ {
         static_assert(std::is_base_of<Encoder<T>, Encoder_>::value, "Not valid Encoder_ type");
     public:

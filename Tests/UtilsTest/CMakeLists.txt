@@ -6,7 +6,7 @@ find_package(OpenMP)
 	
 target_link_libraries(${PROJECT_SHORTNAME}
   PUBLIC
-	Synch-Cross-Socket
+	Typed-Cross-Socket
 	gtest
 	OpenMP::OpenMP_CXX
 )

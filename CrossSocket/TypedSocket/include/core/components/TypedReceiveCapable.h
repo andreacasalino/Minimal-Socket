@@ -12,7 +12,7 @@
 
 namespace sck::typed {
     template<typename T>
-    class ReceiveCapable {
+    class TypedReceiveCapable {
     public:
         virtual bool receive(T& recipient, const std::chrono::milliseconds& timeout) = 0;
     };
