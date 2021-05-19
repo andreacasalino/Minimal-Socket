@@ -37,12 +37,14 @@ namespace sck::sample {
 
     bool NamesEncoder::encode(std::string& buffer, const Names& message) const {
         std::stringstream stream;
-        auto it = message.begin();
-        stream << *it;
-        ++it;
-        for (it; it != message.end(); ++it) {
-            stream << ';';
+        if (!message.empty()) {
+            auto it = message.begin();
             stream << *it;
+            ++it;
+            for (it; it != message.end(); ++it) {
+                stream << ';';
+                stream << *it;
+            }
         }
         buffer = stream.str();
         return true;

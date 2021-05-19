@@ -28,6 +28,7 @@ namespace sck::typed {
         TypedAsynchMessanger(std::unique_ptr<Connection> messanger, const std::size_t& bufferCapacity)
             : asyncMessanger(std::move(messanger), bufferCapacity) {
             this->sender = &this->asyncMessanger;
+            this->asyncMessanger.async::MessageTalker::resetListener(this);
         };
 
         inline bool isOpen() const override { return this->asyncMessanger.isOpen(); };
@@ -41,8 +42,9 @@ namespace sck::typed {
     protected:
         void handle(const std::pair<const char*, std::size_t>& message) final {
             RecvT typed;
-            this->Decoder_::decode(std::string(message.first, message.second), typed);
-            this->notify(typed);
+            if (this->Decoder_::decode(std::string(message.first, message.second), typed)) {
+                this->notify(typed);
+            }
         }
 
     private:
