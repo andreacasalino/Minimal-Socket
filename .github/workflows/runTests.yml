@@ -9,18 +9,33 @@ on:
       - master
 
 jobs:
-  ubuntu-gcc-tests:
-    runs-on: ubuntu-latest
+  unitTests:
+    strategy:
+      matrix:
+        name: [ubuntu-gcc, ubuntu-clang, windows-VS]
+        include:
+            - name: ubuntu-gcc
+              os: ubuntu-latest
+              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\""
+            - name: ubuntu-clang
+              os: ubuntu-latest
+              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
+            - name: windows-VS
+              os: windows-latest
+              compiler_opt: ""
+              
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
-    - name: Build project
-      uses: nicledomaS/cmake_build_action@v1.3
-      with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
-        submodule_update: ON
-    - name: Install artifacts
-      run: cmake --install ./build
+    - name: Checkout submodules
+      run:  git submodule update --init --recursive
+    - name: CMake configure
+      run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_SAMPLES=OFF -DBUILD_TESTS=ON -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }}     
+    - name: Build
+      run:  cmake --build ./build --config Release
+    - name: Install
+      run:  cmake --install ./build --config Release
     - name: Test01-tcp-synch
       run: ./artifacts/bin/Test01-tcp-synch
     - name: Test01-udp-synch
@@ -31,49 +46,7 @@ jobs:
       run: ./artifacts/bin/Test02-udp-asynch
     - name: Test03-typed
       run: ./artifacts/bin/Test03-typed
-      
-  ubuntu-clang-tests:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2.0.0
-    - name: Build project
-      uses: nicledomaS/cmake_build_action@v1.3
+    - uses: actions/upload-artifact@v2
       with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
-        submodule_update: ON
-    - name: Install artifacts
-      run: cmake --install ./build
-    - name: Test01-tcp-synch
-      run: ./artifacts/bin/Test01-tcp-synch
-    - name: Test01-udp-synch
-      run: ./artifacts/bin/Test01-udp-synch
-    - name: Test02-tcp-asynch
-      run: ./artifacts/bin/Test02-tcp-asynch
-    - name: Test02-udp-asynch
-      run: ./artifacts/bin/Test02-udp-asynch
-    - name: Test03-typed
-      run: ./artifacts/bin/Test03-typed
-      
-  windows-vs-tests:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2.0.0
-    - name: Build project
-      uses: nicledomaS/cmake_build_action@v1.3
-      with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
-        submodule_update: ON
-    - name: Install artifacts
-      run: cmake --install ./build
-    - name: Test01-tcp-synch
-      run: ./build/artifacts/bin/Test01-tcp-synch
-    - name: Test01-udp-synch
-      run: ./build/artifacts/bin/Test01-udp-synch
-    - name: Test02-tcp-asynch
-      run: ./build/artifacts/bin/Test02-tcp-asynch
-    - name: Test02-udp-asynch
-      run: ./build/artifacts/bin/Test02-udp-asynch
-    - name: Test03-typed
-      run: ./build/artifacts/bin/Test03-typed
+        path: artifacts
+        name: ${{ matrix.name }}

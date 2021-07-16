@@ -9,104 +9,50 @@ on:
       - master
 
 jobs:
-  ubuntu-build-gcc-static:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2.0.0
-    - name: Build project
-      uses: nicledomaS/cmake_build_action@v1.3
-      with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF
-        submodule_update: ON
-    - name: Install artifacts
-      run: cmake --install ./build
-    - uses: actions/upload-artifact@v2
-      with:
-        path: artifacts
-        name: Ubuntu_GCC_static.tar.gz
+  binCompile:
+    strategy:
+      # max-parallel: 4
+      matrix:
+        name: [ubuntu-gcc-static, ubuntu-clang-static, windows-VS-static,ubuntu-gcc-shared, ubuntu-clang-shared, windows-VS-shared]
+        include:
+            - name: ubuntu-gcc-static
+              os: ubuntu-latest
+              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\""
+              lib_opt: ""
+            - name: ubuntu-clang-static
+              os: ubuntu-latest
+              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
+              lib_opt: ""
+            - name: windows-VS-static
+              os: windows-latest
+              compiler_opt: ""      
+              lib_opt: ""
+            - name: ubuntu-gcc-shared
+              os: ubuntu-latest
+              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\""
+              lib_opt: "-DLIB_OPT=ON"
+            - name: ubuntu-clang-shared
+              os: ubuntu-latest
+              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
+              lib_opt: "-DLIB_OPT=ON"
+            - name: windows-VS-shared
+              os: windows-latest
+              compiler_opt: ""      
+              lib_opt: "-DLIB_OPT=ON"
         
-  ubuntu-build-gcc-shared:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
-    - name: Build project
-      uses: nicledomaS/cmake_build_action@v1.3
-      with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
-        submodule_update: ON
+    - name: Checkout submodules
+      run:  git submodule update --init --recursive
+    - name: CMake configure
+      run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_SAMPLES=OFF -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }} ${{ matrix.lib_opt }}
+    - name: build release
+      run: cmake --build ./build --config Release
     - name: Install artifacts
-      run: cmake --install ./build
+      run: cmake --install ./build --config Release
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
-        name: Ubuntu_GCC_shared.tar.gz
-        
-  ubuntu-build-clang-static:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2.0.0
-    - name: Build project
-      uses: nicledomaS/cmake_build_action@v1.3
-      with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++;-DBUILD_SAMPLES=OFF
-        submodule_update: ON
-    - name: Install artifacts
-      run: cmake --install ./build
-    - uses: actions/upload-artifact@v2
-      with:
-        path: artifacts
-        name: Ubuntu_CLANG_static.tar.gz
-                
-  ubuntu-build-clang-shared:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2.0.0
-    - name: Build project
-      uses: nicledomaS/cmake_build_action@v1.3
-      with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
-        submodule_update: ON
-    - name: Install artifacts
-      run: cmake --install ./build
-    - uses: actions/upload-artifact@v2
-      with:
-        path: artifacts
-        name: Ubuntu_CLANG_shared.tar.gz
-        
-  windows-build-vs-static:
-    runs-on: windows-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2.0.0
-    - name: Build project
-      uses: nicledomaS/cmake_build_action@v1.3
-      with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF
-        submodule_update: ON
-    - name: Install artifacts
-      run: cmake --install ./build
-    - uses: actions/upload-artifact@v2
-      with:
-        path: build/artifacts
-        name: Win32_VisualStudio_static.zip
-                
-  windows-build-vs-shared:
-    runs-on: windows-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2.0.0
-    - name: Build project
-      uses: nicledomaS/cmake_build_action@v1.3
-      with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
-        submodule_update: ON
-    - name: Install artifacts
-      run: cmake --install ./build
-    - uses: actions/upload-artifact@v2
-      with:
-        path: build/artifacts
-        name: Win32_VisualStudio_shared.zip
+        name: ${{ matrix.name }}      
