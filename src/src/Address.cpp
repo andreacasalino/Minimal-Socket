@@ -5,14 +5,14 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <SynchSocket/Address.h>
-#include <SynchSocket/Error.h>
+#include <MinimalSocket/Address.h>
+#include <MinimalSocket/Error.h>
 
 #include "Commons.h"
 
 #include <sstream>
 
-namespace MinCppSock {
+namespace MinimalSocket {
 Address::Address(const std::string &hostIp, const Port &port) {
   this->host = hostIp;
   this->port = port;
@@ -61,4 +61,18 @@ std::string to_string(const Address &subject) {
   stream << subject.getHost() << ':' << subject.getPort();
   return stream.str();
 }
-} // namespace MinCppSock
+
+std::optional<AddressFamily>
+deduceAddressFamily(const std::string &host_address) {
+  try {
+    Address temp(host_address, 0);
+    return temp.getFamily();
+  } catch (...) {
+  }
+  return std::nullopt;
+}
+
+bool isValidAddress(const std::string &host_address) {
+  return deduceAddressFamily(host_address) != std::nullopt;
+}
+} // namespace MinimalSocket

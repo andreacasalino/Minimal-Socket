@@ -3,3 +3,7 @@ use inet_pton also in windows
 replace all std::uint16_t with Port
 
 check if there is a way to check if an external passed socket was open or not in SocketHandler::open(const SocketHandlerType &)
+
+support for bluetooth connection
+
+variant per vari stati di udp connection

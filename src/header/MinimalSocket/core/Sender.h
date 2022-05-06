@@ -1,0 +1,30 @@
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.28.2020
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
+#pragma once
+
+#include <MiminalSocket/core/Socket.h>
+
+namespace MinimalSocket {
+class Sender : public virtual Socket {
+public:
+  /**
+   * @return true if the message was completely sent
+   * @param[in] the message to send
+   */
+  bool send(const Buffer &message);
+};
+
+class SenderTo : public virtual Socket {
+public:
+  /**
+   * @return true if the message was completely sent
+   * @param[in] the message to send
+   */
+  bool sendTo(const Buffer &message, const Address &recipient);
+};
+} // namespace MinimalSocket

@@ -12,9 +12,9 @@
 #endif
 
 #include "Commons.h"
-#include <SynchSocket/Error.h>
+#include <MinimalSocket/Error.h>
 
-namespace MinCppSock {
+namespace MinimalSocket {
 int getLastErrorCode() {
 #ifdef _WIN32
   return WSAGetLastError();
@@ -157,9 +157,9 @@ void Channel::SocketHandlerFactory::afterClose() {
 }
 #endif
 
-SocketHandler::~SocketHandler() { close(); }
+SocketIdWrapper::~SocketIdWrapper() { close(); }
 
-void SocketHandler::reset(const SocketHandlerType &hndl) {
+void SocketIdWrapper::reset(const SocketID &hndl) {
   if (socket_id != SCK_INVALID_SOCKET) {
     close();
   }
@@ -179,7 +179,8 @@ int to_int(const AddressFamily &family) {
 }
 } // namespace
 
-void SocketHandler::reset(const Protocol &type, const AddressFamily &family) {
+void SocketIdWrapper::reset(const SocketType &type,
+                            const AddressFamily &family) {
   if (socket_id != SCK_INVALID_SOCKET) {
     close();
   }
@@ -189,14 +190,14 @@ void SocketHandler::reset(const Protocol &type, const AddressFamily &family) {
 #endif
 
   switch (type) {
-  case Protocol::TCP:
+  case SocketType::TCP:
     this->socket_id = ::socket(to_int(family), SOCK_STREAM, 0);
     if (this->socket_id == SCK_INVALID_SOCKET) {
       this->close();
       throwWithLastErrorCode("Stream socket could not be created");
     }
     break;
-  case Protocol::UDP:
+  case SocketType::UDP:
     this->socket_id = ::socket(to_int(family), SOCK_DGRAM, 0);
     if (this->socket_id == SCK_INVALID_SOCKET) {
       this->close();
@@ -208,7 +209,7 @@ void SocketHandler::reset(const Protocol &type, const AddressFamily &family) {
   }
 }
 
-void SocketHandler::close() {
+void SocketIdWrapper::close() {
   if (socket_id == SCK_INVALID_SOCKET) {
     return;
   }
@@ -224,4 +225,4 @@ void SocketHandler::close() {
   SocketHandlerFactory::afterClose();
 #endif
 }
-} // namespace MinCppSock
+} // namespace MinimalSocket

@@ -1,6 +1,11 @@
-add_subdirectory(SynchSocket)
+set(PROJECT_SHORTNAME "MinimalSocket")
 
-# option(COMPILE_ASYNCH "Compile the asynchronous cross socket package" ON)
-# if(COMPILE_ASYNCH)
-# add_subdirectory(AsynchSocket)
-# endif()
+MakeLibrary(${PROJECT_SHORTNAME} header)
+
+if(WIN32)
+  target_link_libraries(${PROJECT_SHORTNAME} PRIVATE wsock32 ws2_32)
+endif()
+
+# find_package(Threads)
+# target_link_libraries(${PROJECT_SHORTNAME} PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+
