@@ -132,4 +132,96 @@ Address make_address(const SocketIp &address) {
   }
   return Address{ip, port};
 }
+
+#ifdef _WIN32
+std::size_t Channel::SocketHandlerFactory::handlerCounter = 0;
+std::mutex Channel::SocketHandlerFactory::handlerCounterMtx;
+
+void Channel::SocketHandlerFactory::beforeOpen() {
+  std::lock_guard<std::mutex> hndLck(handlerCounterMtx);
+  ++handlerCounter;
+  if (1 == handlerCounter) {
+    // first socket opened
+    WSADATA wsa;
+    WSAStartup(MAKEWORD(2, 0), &wsa);
+  }
+}
+
+void Channel::SocketHandlerFactory::afterClose() {
+  std::lock_guard<std::mutex> hndLck(handlerCounterMtx);
+  --handlerCounter;
+  if (0 == handlerCounter) {
+    // last socket closed
+    WSACleanup();
+  }
+}
+#endif
+
+SocketHandler::~SocketHandler() { close(); }
+
+void SocketHandler::reset(const SocketHandlerType &hndl) {
+  if (socket_id != SCK_INVALID_SOCKET) {
+    close();
+  }
+
+  this->socket_id = hndl;
+}
+
+namespace {
+int to_int(const AddressFamily &family) {
+  switch (family) {
+  case AddressFamily::IP_V4:
+    return static_cast<int>(AF_INET);
+  case AddressFamily::IP_V6:
+    return static_cast<int>(AF_INET6);
+  }
+  throw Error("unknown address family type");
+}
+} // namespace
+
+void SocketHandler::reset(const Protocol &type, const AddressFamily &family) {
+  if (socket_id != SCK_INVALID_SOCKET) {
+    close();
+  }
+
+#ifdef _WIN32
+  SocketHandlerFactory::beforeOpen();
+#endif
+
+  switch (type) {
+  case Protocol::TCP:
+    this->socket_id = ::socket(to_int(family), SOCK_STREAM, 0);
+    if (this->socket_id == SCK_INVALID_SOCKET) {
+      this->close();
+      throwWithLastErrorCode("Stream socket could not be created");
+    }
+    break;
+  case Protocol::UDP:
+    this->socket_id = ::socket(to_int(family), SOCK_DGRAM, 0);
+    if (this->socket_id == SCK_INVALID_SOCKET) {
+      this->close();
+      throwWithLastErrorCode("DataGram socket could not be created");
+    }
+    break;
+  default:
+    throw Error("unknown protocol type");
+  }
+}
+
+void SocketHandler::close() {
+  if (socket_id == SCK_INVALID_SOCKET) {
+    return;
+  }
+#ifdef _WIN32
+  shutdown(this->socket_id, 2);
+  closesocket(this->socket_id);
+#else
+  ::shutdown(this->socket_id, SHUT_RDWR);
+  ::close(this->socket_id);
+#endif
+  this->socket_id = SCK_INVALID_SOCKET;
+#ifdef _WIN32
+  SocketHandlerFactory::afterClose();
+#endif
+}
 } // namespace MinCppSock

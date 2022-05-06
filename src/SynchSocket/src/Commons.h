@@ -8,7 +8,9 @@
 #pragma once
 
 #include <SynchSocket/Address.h>
+#include <SynchSocket/detail/Socket.h>
 
+#include <atomic>
 #include <optional>
 
 #ifdef _WIN32
@@ -29,14 +31,6 @@
 #endif
 
 namespace MinCppSock {
-/**
- * socket handle
- */
-#ifdef _WIN32
-using SocketHandler = SOCKET;
-#else
-using SocketHandler = int;
-#endif
 /**
  * @brief representation of a generic socket address
  */
@@ -88,4 +82,71 @@ std::optional<SocketIp6> makeSocketIp6(const std::string &raw_address,
  * deducing the family.
  */
 Address make_address(const SocketIp &address);
+
+/**
+ * socket handle
+ */
+#ifdef _WIN32
+using SocketHandlerType = SOCKET;
+#else
+using SocketHandlerType = int;
+#endif
+
+/**
+ * An object storing a socket API handler and containing the minimal
+ * functionalities for interacting with it.
+ */
+class SocketHandler {
+public:
+  SocketHandler(const SocketHandler &) = delete;
+  SocketHandler &operator=(const SocketHandler &) = delete;
+
+  /**
+   * @brief a closed socket is created
+   */
+  SocketHandler() = default;
+
+  ~SocketHandler();
+
+  bool empty() const { return socket_id == SCK_INVALID_SOCKET; }
+
+  /**
+   * @brief internally creates a new socket
+   */
+  void reset(const Protocol &type, const AddressFamily &family);
+
+  /**
+   * @brief the passed handler should be already created externally
+   * by the socket api
+   */
+  void reset(const SocketHandlerType &hndl);
+
+  /**
+   * @brief close and shutdown the current socket
+   */
+  void close();
+
+  const SocketHandlerType &access() const { return socket_id; };
+
+private:
+  SocketHandlerType socket_id = SCK_INVALID_SOCKET;
+
+#ifdef _WIN32
+  class SocketHandlerFactory {
+  public:
+    /**
+     * @brief If we are about to open the first socket, WSAStartup() is invoked
+     */
+    static void beforeOpen();
+    /**
+     * @brief If we are closing the last socket, WSACleanup() is invoked
+     */
+    static void afterClose();
+
+  private:
+    static std::mutex handlerCounterMtx;
+    static std::size_t handlerCounter;
+  };
+#endif
+};
 } // namespace MinCppSock
