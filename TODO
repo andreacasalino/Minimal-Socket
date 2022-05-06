@@ -1,0 +1,3 @@
+use inet_pton also in windows
+
+    replace all std::uint16_t with Port
