@@ -5,10 +5,10 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <MinimalSocket/Address.h>
 #include <MinimalSocket/Error.h>
+#include <MinimalSocket/core/Address.h>
 
-#include "Commons.h"
+#include "../Commons.h"
 
 #include <sstream>
 

@@ -7,7 +7,9 @@
 
 #pragma once
 
-#include <MiminalSocket/core/Socket.h>
+#include <MinimalSocket/core/Address.h>
+#include <MinimalSocket/core/Socket.h>
+#include <mutex>
 
 namespace MinimalSocket {
 class Sender : public virtual Socket {
@@ -17,6 +19,9 @@ public:
    * @param[in] the message to send
    */
   bool send(const Buffer &message);
+
+private:
+  std::mutex send_mtx;
 };
 
 class SenderTo : public virtual Socket {
@@ -26,5 +31,8 @@ public:
    * @param[in] the message to send
    */
   bool sendTo(const Buffer &message, const Address &recipient);
+
+private:
+  std::mutex send_mtx;
 };
 } // namespace MinimalSocket
