@@ -13,6 +13,8 @@
 namespace MinimalSocket {
 using Buffer = std::string;
 
+void setZeros(Buffer &subject);
+
 class SocketIdWrapper;
 class Socket {
 public:
@@ -26,8 +28,8 @@ protected:
 
   void stealIDWrapper(Socket &o);
 
-  const SocketIdWrapper &getIDWrapper() const { return *socket_id_wrapper; };
-  SocketIdWrapper &getIDWrapper() { return *socket_id_wrapper; };
+  const SocketIdWrapper &getIDWrapper() const;
+  SocketIdWrapper &getIDWrapper();
 
 private:
   std::unique_ptr<SocketIdWrapper> socket_id_wrapper;

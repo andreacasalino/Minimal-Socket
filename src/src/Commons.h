@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <MinimalSocket/Address.h>
+#include <MinimalSocket/core/Address.h>
 
 #include <atomic>
 #include <optional>
