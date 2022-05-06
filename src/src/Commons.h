@@ -7,8 +7,7 @@
 
 #pragma once
 
-#include <SynchSocket/Address.h>
-#include <SynchSocket/detail/Socket.h>
+#include <MinimalSocket/Address.h>
 
 #include <atomic>
 #include <optional>
@@ -30,7 +29,7 @@
 #define SCK_SOCKET_ERROR -1
 #endif
 
-namespace MinCppSock {
+namespace MinimalSocket {
 /**
  * @brief representation of a generic socket address
  */
@@ -87,49 +86,51 @@ Address make_address(const SocketIp &address);
  * socket handle
  */
 #ifdef _WIN32
-using SocketHandlerType = SOCKET;
+using SocketID = SOCKET;
 #else
-using SocketHandlerType = int;
+using SocketID = int;
 #endif
+
+enum SocketType { UDP, TCP };
 
 /**
  * An object storing a socket API handler and containing the minimal
  * functionalities for interacting with it.
  */
-class SocketHandler {
+class SocketIdWrapper {
 public:
-  SocketHandler(const SocketHandler &) = delete;
-  SocketHandler &operator=(const SocketHandler &) = delete;
+  SocketIdWrapper(const SocketIdWrapper &) = delete;
+  SocketIdWrapper &operator=(const SocketIdWrapper &) = delete;
 
   /**
    * @brief a closed socket is created
    */
-  SocketHandler() = default;
+  SocketIdWrapper() = default;
 
-  ~SocketHandler();
+  ~SocketIdWrapper();
 
   bool empty() const { return socket_id == SCK_INVALID_SOCKET; }
 
   /**
    * @brief internally creates a new socket
    */
-  void reset(const Protocol &type, const AddressFamily &family);
+  void reset(const SocketType &type, const AddressFamily &family);
 
   /**
    * @brief the passed handler should be already created externally
    * by the socket api
    */
-  void reset(const SocketHandlerType &hndl);
+  void reset(const SocketID &hndl);
 
   /**
    * @brief close and shutdown the current socket
    */
   void close();
 
-  const SocketHandlerType &access() const { return socket_id; };
+  const SocketID &access() const { return socket_id; };
 
 private:
-  SocketHandlerType socket_id = SCK_INVALID_SOCKET;
+  SocketID socket_id = SCK_INVALID_SOCKET;
 
 #ifdef _WIN32
   class SocketHandlerFactory {
@@ -149,4 +150,4 @@ private:
   };
 #endif
 };
-} // namespace MinCppSock
+} // namespace MinimalSocket

@@ -10,10 +10,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace MinCppSock {
-/**
- * @brief A runtime error that can be raised when using any object in sck::
- */
+namespace MinimalSocket {
 class Error : public std::runtime_error {
 public:
   Error(const std::string &what) : std::runtime_error(what){};
@@ -39,4 +36,4 @@ private:
     stream << back;
   };
 };
-} // namespace MinCppSock
+} // namespace MinimalSocket

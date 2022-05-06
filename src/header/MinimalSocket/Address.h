@@ -10,7 +10,7 @@
 #include <optional>
 #include <string>
 
-namespace MinCppSock {
+namespace MinimalSocket {
 /**
  * @brief The address family. Refer to
  * https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_73/rzab6/address.htm
@@ -54,4 +54,13 @@ private:
 };
 
 std::string to_string(const Address &subject);
-} // namespace MinCppSock
+
+/**
+ * @return nullopt in case the address in invalid
+ */
+std::optional<AddressFamily>
+deduceAddressFamily(const std::string &host_address);
+
+bool isValidAddress(const std::string &host_address);
+
+} // namespace MinimalSocket
