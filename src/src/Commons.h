@@ -151,4 +151,8 @@ private:
   };
 #endif
 };
+
+void bind(const SocketID &socket_id, const Port &port);
+
+void connect(const SocketID &socket_id, const Address &remote_address);
 } // namespace MinimalSocket
