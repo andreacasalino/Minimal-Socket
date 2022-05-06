@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace MinimalSocket {
 using Buffer = std::string;

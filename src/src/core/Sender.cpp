@@ -20,4 +20,30 @@ bool Sender::send(const Buffer &message) {
   }
   return (sentBytes == static_cast<int>(message.size()));
 }
+
+bool SenderTo::sendTo(const Buffer &message, const Address &recipient) {
+  std::scoped_lock lock(send_mtx);
+  int sentBytes;
+  switch (recipient.getFamily()) {
+  case AddressFamily::IP_V4: {
+    auto socketIp4 = makeSocketIp4(recipient.getHost(), recipient.getPort());
+    sentBytes = ::sendto(getIDWrapper().access(), message.data(),
+                         static_cast<int>(message.size()), 0,
+                         reinterpret_cast<const SocketIp *>(&socketIp4.value()),
+                         sizeof(SocketIp4));
+  } break;
+  case AddressFamily::IP_V6: {
+    auto socketIp6 = makeSocketIp6(recipient.getHost(), recipient.getPort());
+    sentBytes = ::sendto(getIDWrapper().access(), message.data(),
+                         static_cast<int>(message.size()), 0,
+                         reinterpret_cast<const SocketIp *>(&socketIp6.value()),
+                         sizeof(SocketIp6));
+  } break;
+  }
+  if (sentBytes == SCK_SOCKET_ERROR) {
+    sentBytes = 0;
+    throwWithLastErrorCode("send to failed");
+  }
+  return (sentBytes == static_cast<int>(message.size()));
+}
 } // namespace MinimalSocket

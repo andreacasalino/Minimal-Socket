@@ -9,6 +9,7 @@
 
 #include <MinimalSocket/core/Address.h>
 #include <MinimalSocket/core/Socket.h>
+
 #include <mutex>
 
 namespace MinimalSocket {
