@@ -76,6 +76,7 @@ std::optional<SocketIp4> makeSocketIp4(const std::string &raw_address,
  */
 std::optional<SocketIp6> makeSocketIp6(const std::string &raw_address,
                                        const Port &port);
+
 /**
  * @brief Convert a SocketAddress_t into an Address, internally
  * deducing the family.

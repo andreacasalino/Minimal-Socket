@@ -7,13 +7,25 @@
 
 #pragma once
 
-#include <MiminalSocket/core/Socket.h>
-#include <MinimalSocket/Address.h>
+#include <MinimalSocket/core/Address.h>
+#include <MinimalSocket/core/Socket.h>
 
 #include <chrono>
 #include <mutex>
 
 namespace MinimalSocket {
+using ReceiveTimeout = std::chrono::milliseconds;
+
+static constexpr ReceiveTimeout NULL_TIMEOUT = ReceiveTimeout{0};
+
+class ReceiveTimeOutAware : public virtual Socket {
+protected:
+  void lazyUpdateReceiveTimeout(const ReceiveTimeout &timeout);
+
+private:
+  ReceiveTimeout receive_timeout = NULL_TIMEOUT;
+};
+
 class Receiver : public virtual Socket {
 public:
   /**
@@ -26,8 +38,7 @@ public:
    * @return the number of received bytes actually received and copied into
    * message (can be also less than the buffer size)
    */
-  std::size_t receive(const Buffer &message,
-                      const std::chrono::milliseconds &timeout);
+  void receive(Buffer &message, const ReceiveTimeout &timeout = NULL_TIMEOUT);
 
 private:
   std::mutex receive_mtx;
@@ -45,12 +56,8 @@ public:
    * @return the number of received bytes actually received and copied into
    * message (can be also less than the buffer size)
    */
-  struct ReceivedResult {
-    std::size_t got_bytes;
-    Address sender;
-  };
-  ReceivedResult receive(const Buffer &message,
-                         const std::chrono::milliseconds &timeout);
+  Address receive(Buffer &message,
+                  const ReceiveTimeout &timeout = NULL_TIMEOUT);
 
 private:
   std::mutex receive_mtx;
