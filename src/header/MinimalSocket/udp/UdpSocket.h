@@ -7,10 +7,9 @@
 
 #pragma once
 
-#include <MinimalSocket/core/BindedPortAware.h>
 #include <MinimalSocket/core/Receiver.h>
-#include <MinimalSocket/core/RemoteAddressAware.h>
 #include <MinimalSocket/core/Sender.h>
+#include <MinimalSocket/core/SocketContext.h>
 
 namespace MinimalSocket::udp {
 /**
@@ -24,56 +23,56 @@ class UdpBindable;
 class UdpConnectable;
 
 // can only send as no port was reserved
-class UdpSender : public SenderTo {
+class UdpSender : public SenderTo, public RemoteAddressFamilyAware {
 public:
   UdpSender(UdpSender &&o);
   UdpSender &operator=(UdpSender &&o);
 
-  UdpSender();
+  UdpSender(
+      const AddressFamily &accepted_connection_family = AddressFamily::IP_V4);
 
-  UdpBindable bind(const Port &port);
+  UdpBindable bind(const Port port_to_bind);
 };
 
 // can send and receive (from anyonw hitting it) as a port was reserved
 class UdpBindable : public SenderTo,
                     public ReceiverUnkownSender,
-                    public BindedPortAware,
+                    public PortToBindAware,
+                    public RemoteAddressFamilyAware,
                     public Openable {
 public:
   UdpBindable(UdpBindable &&o);
   UdpBindable &operator=(UdpBindable &&o);
 
-  UdpBindable(const Port &port);
-  UdpBindable(UdpSender &&previous_phase, const Port &port);
+  UdpBindable(
+      const Port port_to_bind,
+      const AddressFamily &accepted_connection_family = AddressFamily::IP_V4);
 
-  UdpConnectable connect(); // to first sending 1 byte
+  // throw in case address family is inconsistent
   UdpConnectable connect(const Address &remote_address);
 
+  UdpConnectable connect(); // to first sending 1 byte
+
 protected:
-  bool open_() override;
+  void open_() override;
 };
 
 // can send and receive only from the specific remote address the socket was
 // connected to
 class UdpConnectable : public Sender,
                        public Receiver,
-                       public BindedPortAware,
+                       public PortToBindAware,
                        public RemoteAddressAware,
                        public Openable {
 public:
   UdpConnectable(UdpConnectable &&o);
   UdpConnectable &operator=(UdpConnectable &&o);
 
-  UdpConnectable(const Port &port); // to first sending 1 byte
   UdpConnectable(const Port &port, const Address &remote_address);
-  UdpConnectable(UdpBindable &&previous_phase,
-                 const Port &port); // to first sending 1 byte
-  UdpConnectable(UdpBindable &&previous_phase, const Port &port,
-                 const Address &remote_address);
 
   UdpBindable disconnect();
 
 protected:
-  bool open_() override;
+  void open_() override;
 };
 } // namespace MinimalSocket::udp

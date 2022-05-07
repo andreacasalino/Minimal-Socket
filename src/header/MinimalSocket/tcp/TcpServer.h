@@ -7,10 +7,9 @@
 
 #pragma once
 
-#include <MinimalSocket/core/BindedPortAware.h>
 #include <MinimalSocket/core/Receiver.h>
-#include <MinimalSocket/core/RemoteAddressAware.h>
 #include <MinimalSocket/core/Sender.h>
+#include <MinimalSocket/core/SocketContext.h>
 
 namespace MinimalSocket::tcp {
 class TcpServer;
@@ -28,20 +27,20 @@ private:
   TcpConnection(const Address &remote_address);
 };
 
-class TcpServer : public BindedPortAware, public Socket, public Openable {
+class TcpServer : public PortToBindAware,
+                  public RemoteAddressFamilyAware,
+                  public virtual Socket,
+                  public Openable {
 public:
   TcpServer(TcpServer &&o);
   TcpServer &operator=(TcpServer &&o);
 
-  TcpServer(const Port &port,
-            const AddressFamily &kind_of_client = AddressFamily::IP_V4);
+  TcpServer(const Port port_to_bind,
+            const AddressFamily &accepted_client_family = AddressFamily::IP_V4);
 
   TcpConnection acceptNewClient();
 
 protected:
-  bool open_() override;
-
-private:
-  AddressFamily kind_of_client_to_accept;
+  void open_() override;
 };
 } // namespace MinimalSocket::tcp

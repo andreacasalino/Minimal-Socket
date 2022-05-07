@@ -33,8 +33,14 @@ bool Openable::open() {
   if (opened) {
     throw Error{"Already opened"};
   }
-  const bool success = open_();
-  opened = success;
+  std::scoped_lock lock(open_procedure_mtx);
+  bool success = true;
+  try {
+    this->open_();
+  } catch (const Error &) {
+    getIDWrapper().close();
+    success = false;
+  }
   return success;
 }
 } // namespace MinimalSocket

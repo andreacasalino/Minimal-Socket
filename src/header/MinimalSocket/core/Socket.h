@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <utility>
 
@@ -46,19 +47,18 @@ bool operator==(const Socket &subject, std::nullptr_t) {
   return subject.isNull();
 }
 
-class Openable {
+class Openable : public virtual Socket {
 public:
-  virtual ~Openable() = default;
-
   bool wasOpened() const { return opened; }
   bool open();
 
 protected:
   Openable() = default;
 
-  virtual bool open_() = 0;
+  virtual void open_() = 0;
 
 private:
+  std::mutex open_procedure_mtx;
   std::atomic_bool opened = false;
 };
 } // namespace MinimalSocket
