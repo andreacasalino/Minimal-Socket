@@ -20,8 +20,8 @@ namespace MinimalSocket::udp {
 static constexpr std::size_t MAX_UDP_RECV_MESSAGE = 65507;
 
 class UdpSender;
-class UdpBinded;
-class UdpConnected;
+class UdpBindable;
+class UdpConnectable;
 
 // can only send as no port was reserved
 class UdpSender : public SenderTo {
@@ -31,23 +31,23 @@ public:
 
   UdpSender();
 
-  UdpBinded bind(const Port &port);
+  UdpBindable bind(const Port &port);
 };
 
 // can send and receive (from anyonw hitting it) as a port was reserved
-class UdpBinded : public SenderTo,
-                  public ReceiverUnkownSender,
-                  public BindedPortAware,
-                  public Openable {
+class UdpBindable : public SenderTo,
+                    public ReceiverUnkownSender,
+                    public BindedPortAware,
+                    public Openable {
 public:
-  UdpBinded(UdpBinded &&o);
-  UdpBinded &operator=(UdpBinded &&o);
+  UdpBindable(UdpBindable &&o);
+  UdpBindable &operator=(UdpBindable &&o);
 
-  UdpBinded(const Port &port);
-  UdpBinded(UdpSender &&previous_phase, const Port &port);
+  UdpBindable(const Port &port);
+  UdpBindable(UdpSender &&previous_phase, const Port &port);
 
-  UdpConnected connect(); // to first sending 1 byte
-  UdpConnected connect(const Address &remote_address);
+  UdpConnectable connect(); // to first sending 1 byte
+  UdpConnectable connect(const Address &remote_address);
 
 protected:
   bool open_() override;
@@ -55,23 +55,23 @@ protected:
 
 // can send and receive only from the specific remote address the socket was
 // connected to
-class UdpConnected : public Sender,
-                     public Receiver,
-                     public BindedPortAware,
-                     public RemoteAddressAware,
-                     public Openable {
+class UdpConnectable : public Sender,
+                       public Receiver,
+                       public BindedPortAware,
+                       public RemoteAddressAware,
+                       public Openable {
 public:
-  UdpConnected(UdpConnected &&o);
-  UdpConnected &operator=(UdpConnected &&o);
+  UdpConnectable(UdpConnectable &&o);
+  UdpConnectable &operator=(UdpConnectable &&o);
 
-  UdpConnected(const Port &port); // to first sending 1 byte
-  UdpConnected(const Port &port, const Address &remote_address);
-  UdpConnected(UdpBinded &&previous_phase,
-               const Port &port); // to first sending 1 byte
-  UdpConnected(UdpBinded &&previous_phase, const Port &port,
-               const Address &remote_address);
+  UdpConnectable(const Port &port); // to first sending 1 byte
+  UdpConnectable(const Port &port, const Address &remote_address);
+  UdpConnectable(UdpBindable &&previous_phase,
+                 const Port &port); // to first sending 1 byte
+  UdpConnectable(UdpBindable &&previous_phase, const Port &port,
+                 const Address &remote_address);
 
-  UdpBinded disconnect();
+  UdpBindable disconnect();
 
 protected:
   bool open_() override;
