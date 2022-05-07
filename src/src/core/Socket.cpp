@@ -19,9 +19,9 @@ bool Socket::isNull() const {
   return socket_id_wrapper->access() == SCK_INVALID_SOCKET;
 }
 
-void Socket::stealIDWrapper(Socket &o) {
-  this->socket_id_wrapper = std::move(o.socket_id_wrapper);
-  o.socket_id_wrapper = std::make_unique<SocketIdWrapper>();
+void Socket::transferIDWrapper(Socket &giver, Socket &recipient) {
+  recipient.socket_id_wrapper = std::move(giver.socket_id_wrapper);
+  giver.socket_id_wrapper = std::make_unique<SocketIdWrapper>();
 }
 
 const SocketIdWrapper &Socket::getIDWrapper() const {
