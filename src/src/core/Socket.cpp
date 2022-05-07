@@ -19,11 +19,11 @@ bool Socket::isNull() const {
   return socket_id_wrapper->access() == SCK_INVALID_SOCKET;
 }
 
-bool operator==(std::nullptr_t, const Socket& subject) {
-    return subject.isNull();
+bool operator==(std::nullptr_t, const Socket &subject) {
+  return subject.isNull();
 }
-bool operator==(const Socket& subject, std::nullptr_t) {
-    return subject.isNull();
+bool operator==(const Socket &subject, std::nullptr_t) {
+  return subject.isNull();
 }
 
 void Socket::transferIDWrapper(Socket &giver, Socket &recipient) {
@@ -44,6 +44,7 @@ bool Openable::open() {
   bool success = true;
   try {
     this->open_();
+    opened = true;
   } catch (const Error &) {
     getIDWrapper().close();
     success = false;

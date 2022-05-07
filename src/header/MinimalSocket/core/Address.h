@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -25,12 +26,13 @@ using Port = std::uint16_t;
 class Address {
 public:
   /**
-   * @brief Internally the protocol Family is deduced according to the hostIp
-   * content.
-   * @return nullptr if the host is invalid, otherwise a smart pointer storing a
-   * usable ip
+   * @brief Internally the protocol Family is deduced according to the
+   * hostIp content.
+   * @return nullptr if the host is invalid, otherwise a smart pointer
+   * storing a usable ip
    */
-  Address(const std::string &hostIp, const Port &port);
+  static std::unique_ptr<Address> makeAddress(const std::string &hostIp,
+                                              const Port &port);
 
   /**
    * @return an ipv4 or ipv6 with localhost as host and the passed port
@@ -44,6 +46,9 @@ public:
   const AddressFamily &getFamily() const { return this->family; };
 
   bool operator==(const Address &o) const;
+
+  Address(const Address &) = default;
+  Address &operator=(const Address &) = default;
 
 private:
   Address() = default;

@@ -13,21 +13,24 @@
 #include <sstream>
 
 namespace MinimalSocket {
-Address::Address(const std::string &hostIp, const Port &port) {
-  this->host = hostIp;
-  this->port = port;
+std::unique_ptr<Address> Address::makeAddress(const std::string &hostIp,
+                                              const Port &port) {
+  std::unique_ptr<Address> result;
+  result.reset(new Address{});
+  result->host = hostIp;
+  result->port = port;
 
-  if (std::nullopt != makeSocketIp4(host, port)) {
-    this->family = AddressFamily::IP_V4;
-    return;
+  if (std::nullopt != makeSocketIp4(hostIp, port)) {
+    result->family = AddressFamily::IP_V4;
+    return result;
   }
 
-  if (std::nullopt != makeSocketIp6(host, port)) {
-    this->family = AddressFamily::IP_V6;
-    return;
+  if (std::nullopt != makeSocketIp6(hostIp, port)) {
+    result->family = AddressFamily::IP_V6;
+    return result;
   }
 
-  throw Error{hostIp, " is a not recognized address"};
+  return nullptr;
 }
 
 namespace {
@@ -59,12 +62,11 @@ std::string to_string(const Address &subject) {
 
 std::optional<AddressFamily>
 deduceAddressFamily(const std::string &host_address) {
-  try {
-    Address temp(host_address, 0);
-    return temp.getFamily();
-  } catch (...) {
+  auto temp = Address::makeAddress(host_address, 0);
+  if (nullptr == temp) {
+    return std::nullopt;
   }
-  return std::nullopt;
+  return temp->getFamily();
 }
 
 bool isValidAddress(const std::string &host_address) {
