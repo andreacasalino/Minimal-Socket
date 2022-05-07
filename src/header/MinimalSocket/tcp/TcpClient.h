@@ -8,8 +8,8 @@
 #pragma once
 
 #include <MinimalSocket/core/Receiver.h>
-#include <MinimalSocket/core/RemoteAddressAware.h>
 #include <MinimalSocket/core/Sender.h>
+#include <MinimalSocket/core/SocketContext.h>
 
 namespace MinimalSocket::tcp {
 class TcpClient : public Openable,
@@ -23,6 +23,6 @@ public:
   TcpClient(const Address &server_address);
 
 protected:
-  bool open_() override;
+  void open_() override;
 };
 } // namespace MinimalSocket::tcp

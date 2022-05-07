@@ -11,31 +11,29 @@
 #include "../Commons.h"
 
 namespace MinimalSocket::tcp {
-TcpServer::TcpServer(TcpServer &&o) : BindedPortAware(o) {
+TcpServer::TcpServer(TcpServer &&o)
+    : PortToBindAware(o), RemoteAddressFamilyAware(o) {
   Socket::transferIDWrapper(o, *this);
 }
 TcpServer &TcpServer::operator=(TcpServer &&o) {
-  static_cast<BindedPortAware &>(*this) = o;
+  static_cast<PortToBindAware &>(*this) = o;
+  static_cast<RemoteAddressFamilyAware &>(*this) = o;
   Socket::transferIDWrapper(o, *this);
   return *this;
 }
 
-TcpServer::TcpServer(const Port &port, const AddressFamily &kind_of_client)
-    : BindedPortAware(port), kind_of_client_to_accept(kind_of_client) {}
+TcpServer::TcpServer(const Port port_to_bind,
+                     const AddressFamily &accepted_client_family)
+    : PortToBindAware(port_to_bind),
+      RemoteAddressFamilyAware(accepted_client_family) {}
 
-bool TcpServer::open_() {
+void TcpServer::open_() {
   auto &socket = getIDWrapper();
   const auto port = getPortToBind();
-  bool success = true;
-  try {
-    socket.reset(TCP, kind_of_client_to_accept);
-    bind(socket.access(), kind_of_client_to_accept, port);
-    listen(socket.access());
-  } catch (const Error &) {
-    socket.close();
-    success = false;
-  }
-  return success;
+  const auto family = getRemoteAddressFamily();
+  socket.reset(TCP, family);
+  bind(socket.access(), family, port);
+  listen(socket.access());
 }
 
 TcpConnection TcpServer::acceptNewClient() {

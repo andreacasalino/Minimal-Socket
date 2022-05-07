@@ -23,17 +23,10 @@ TcpClient &TcpClient::operator=(TcpClient &&o) {
 TcpClient::TcpClient(const Address &server_address)
     : RemoteAddressAware(server_address) {}
 
-bool TcpClient::open_() {
+void TcpClient::open_() {
   auto &socket = getIDWrapper();
-  const auto &remote_address = getRemoteAddress();
-  bool success = true;
-  try {
-    socket.reset(TCP, remote_address.getFamily());
-    connect(socket.access(), remote_address);
-  } catch (const Error &) {
-    socket.close();
-    success = false;
-  }
-  return success;
+  const auto remote_address = getRemoteAddress();
+  socket.reset(TCP, remote_address.getFamily());
+  connect(socket.access(), remote_address);
 }
 } // namespace MinimalSocket::tcp
