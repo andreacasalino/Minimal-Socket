@@ -40,15 +40,10 @@ Address Address::makeLocalHost(const std::uint16_t &port,
   Address result;
   result.port = port;
   result.family = family;
-  switch (family) {
-  case AddressFamily::IP_V4:
-    result.host = LOCALHOST_IPv4;
-    return result;
-  case AddressFamily::IP_V6:
-    result.host = LOCALHOST_IPv6;
-    return result;
-  }
-  throw Error{"unrecognized family address"};
+  address_case(
+      family, [&result]() { result.host = LOCALHOST_IPv4; },
+      [&result]() { result.host = LOCALHOST_IPv6; });
+  return result;
 }
 
 bool Address::operator==(const Address &o) const {
