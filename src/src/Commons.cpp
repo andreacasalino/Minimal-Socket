@@ -130,7 +130,11 @@ Address make_address(const SocketIp &address) {
     ip = std::string(temp, INET6_ADDRSTRLEN);
     port = ntohs(reinterpret_cast<const SocketIp6 *>(&address)->sin6_port);
   }
-  return Address{ip, port};
+  auto result = Address::makeAddress(ip, port);
+  if (nullptr == result) {
+    throw Error{"Invalid address"};
+  }
+  return *result;
 }
 
 void address_case(const AddressFamily &family,
@@ -184,7 +188,7 @@ void SocketIdWrapper::reset(const SocketID &hndl) {
 }
 
 namespace {
-int to_int(const AddressFamily &family) {
+int domain_number(const AddressFamily &family) {
   int result;
   address_case(
       family, [&]() { result = static_cast<int>(AF_INET); },
@@ -205,14 +209,14 @@ void SocketIdWrapper::reset(const SocketType &type,
 
   switch (type) {
   case SocketType::TCP:
-    this->socket_id = ::socket(to_int(family), SOCK_STREAM, 0);
+    this->socket_id = ::socket(domain_number(family), SOCK_STREAM, 0);
     if (this->socket_id == SCK_INVALID_SOCKET) {
       this->close();
       throwWithLastErrorCode("Stream socket could not be created");
     }
     break;
   case SocketType::UDP:
-    this->socket_id = ::socket(to_int(family), SOCK_DGRAM, 0);
+    this->socket_id = ::socket(domain_number(family), SOCK_DGRAM, 0);
     if (this->socket_id == SCK_INVALID_SOCKET) {
       this->close();
       throwWithLastErrorCode("DataGram socket could not be created");

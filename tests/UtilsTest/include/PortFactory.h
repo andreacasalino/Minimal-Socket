@@ -13,12 +13,10 @@
 namespace MinimalSocket::test {
 class PortFactory {
 public:
-  PortFactory();
-
-  Port makePort();
+  static Port makePort();
 
 private:
-  std::mutex port_mtx;
-  Port port;
+  static std::mutex port_mtx;
+  static Port port;
 };
 } // namespace MinimalSocket::test
