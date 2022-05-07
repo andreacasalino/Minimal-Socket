@@ -12,6 +12,7 @@
 #include <atomic>
 #include <functional>
 #include <optional>
+#include <mutex>
 
 #ifdef _WIN32
 #include <stdio.h>
@@ -137,7 +138,7 @@ private:
   SocketID socket_id = SCK_INVALID_SOCKET;
 
 #ifdef _WIN32
-  class SocketHandlerFactory {
+  class SocketIDFactory {
   public:
     /**
      * @brief If we are about to open the first socket, WSAStartup() is invoked
