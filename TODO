@@ -9,3 +9,13 @@ support for bluetooth connection
 variant per vari stati di udp connection
 
 add timeout per udp connect
+
+in receive from, resize buffer a max size udp message
+
+open connection with timeout
+
+usare noexpect keyword in c'tors?
+
+pass number of max clients tcp server should accept
+
+mettere tutti constexpr static

@@ -10,6 +10,7 @@
 #include <MinimalSocket/core/Address.h>
 
 #include <atomic>
+#include <functional>
 #include <optional>
 
 #ifdef _WIN32
@@ -83,6 +84,10 @@ std::optional<SocketIp6> makeSocketIp6(const std::string &raw_address,
  */
 Address make_address(const SocketIp &address);
 
+void address_case(const AddressFamily &family,
+                  const std::function<void()> &ipv4_case,
+                  const std::function<void()> &ipv6_case);
+
 /**
  * socket handle
  */
@@ -109,8 +114,6 @@ public:
   SocketIdWrapper() = default;
 
   ~SocketIdWrapper();
-
-  bool empty() const { return socket_id == SCK_INVALID_SOCKET; }
 
   /**
    * @brief internally creates a new socket
@@ -152,7 +155,10 @@ private:
 #endif
 };
 
-void bind(const SocketID &socket_id, const Port &port);
+void bind(const SocketID &socket_id, const AddressFamily &family,
+          const Port &port);
+
+void listen(const SocketID &socket_id);
 
 void connect(const SocketID &socket_id, const Address &remote_address);
 } // namespace MinimalSocket

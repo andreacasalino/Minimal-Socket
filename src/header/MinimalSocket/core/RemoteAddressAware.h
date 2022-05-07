@@ -14,10 +14,13 @@ class RemoteAddressAware {
 public:
   const Address &getRemoteAddress() const { return remote_address; }
 
+  RemoteAddressAware(const RemoteAddressAware &) = default;
+  RemoteAddressAware &operator=(const RemoteAddressAware &) = default;
+
 protected:
   RemoteAddressAware(const Address &address) : remote_address(address){};
 
 private:
-  const Address remote_address;
+  Address remote_address;
 };
 } // namespace MinimalSocket

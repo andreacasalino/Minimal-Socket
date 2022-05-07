@@ -12,11 +12,17 @@
 #include <MinimalSocket/core/Sender.h>
 
 namespace MinimalSocket::tcp {
-class TcpClient : public Sender, public Receiver, public RemoteAddressAware {
+class TcpClient : public Openable,
+                  public Sender,
+                  public Receiver,
+                  public RemoteAddressAware {
 public:
   TcpClient(TcpClient &&o);
   TcpClient &operator=(TcpClient &&o);
 
   TcpClient(const Address &server_address);
+
+protected:
+  bool open_() override;
 };
 } // namespace MinimalSocket::tcp

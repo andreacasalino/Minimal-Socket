@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <utility>
@@ -24,6 +25,8 @@ public:
   Socket(const Socket &) = delete;
   Socket &operator=(const Socket &) = delete;
 
+  bool isNull() const;
+
 protected:
   Socket();
 
@@ -34,5 +37,28 @@ protected:
 
 private:
   std::unique_ptr<SocketIdWrapper> socket_id_wrapper;
+};
+
+bool operator==(std::nullptr_t, const Socket &subject) {
+  return subject.isNull();
+}
+bool operator==(const Socket &subject, std::nullptr_t) {
+  return subject.isNull();
+}
+
+class Openable {
+public:
+  virtual ~Openable() = default;
+
+  bool wasOpened() const { return opened; }
+  bool open();
+
+protected:
+  Openable() = default;
+
+  virtual bool open_() = 0;
+
+private:
+  std::atomic_bool opened = false;
 };
 } // namespace MinimalSocket

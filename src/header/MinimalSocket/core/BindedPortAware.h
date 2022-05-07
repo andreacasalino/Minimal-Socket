@@ -12,12 +12,15 @@
 namespace MinimalSocket {
 class BindedPortAware {
 public:
-  Port getBindedPort() const { return binded_port; }
+  Port getPortToBind() const { return binded_port; }
+
+  BindedPortAware(const BindedPortAware &) = default;
+  BindedPortAware &operator=(const BindedPortAware &) = default;
 
 protected:
   BindedPortAware(const Port &port) : binded_port(port){};
 
 private:
-  const Port binded_port;
+  Port binded_port;
 };
 } // namespace MinimalSocket

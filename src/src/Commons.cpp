@@ -133,6 +133,22 @@ Address make_address(const SocketIp &address) {
   return Address{ip, port};
 }
 
+void address_case(const AddressFamily &family,
+                  const std::function<void()> &ipv4_case,
+                  const std::function<void()> &ipv6_case) {
+  switch (family) {
+  case AddressFamily::IP_V4:
+    ipv4_case();
+    break;
+  case AddressFamily::IP_V6:
+    ipv6_case();
+    break;
+  default:
+    throw Error{"Unrecognized AddressFamily"};
+    break;
+  }
+}
+
 #ifdef _WIN32
 std::size_t Channel::SocketHandlerFactory::handlerCounter = 0;
 std::mutex Channel::SocketHandlerFactory::handlerCounterMtx;
@@ -169,13 +185,11 @@ void SocketIdWrapper::reset(const SocketID &hndl) {
 
 namespace {
 int to_int(const AddressFamily &family) {
-  switch (family) {
-  case AddressFamily::IP_V4:
-    return static_cast<int>(AF_INET);
-  case AddressFamily::IP_V6:
-    return static_cast<int>(AF_INET6);
-  }
-  throw Error("unknown address family type");
+  int result;
+  address_case(
+      family, [&]() { result = static_cast<int>(AF_INET); },
+      [&]() { result = static_cast<int>(AF_INET6); });
+  return result;
 }
 } // namespace
 
@@ -224,5 +238,104 @@ void SocketIdWrapper::close() {
 #ifdef _WIN32
   SocketHandlerFactory::afterClose();
 #endif
+}
+
+namespace {
+#ifdef _WIN32
+#define REBIND_OPTION SO_REUSEADDR
+#else
+#define REBIND_OPTION SO_REUSEPORT
+#endif
+} // namespace
+
+void bind(const SocketID &socket_id, const AddressFamily &family,
+          const Port &port) {
+  int reusePortOptVal = 1;
+  ::setsockopt(socket_id, SOL_SOCKET, REBIND_OPTION,
+               reinterpret_cast<const
+#ifdef _WIN32
+                                char * // not sure it would work with void* also
+                                       // in Windows
+#else
+                                void *
+#endif
+                                >(&reusePortOptVal),
+               sizeof(int));
+
+  // bind the socket to the port
+  address_case(
+      family,
+      [&]() {
+        SocketIp4 addr;
+        ::memset(&addr, 0, sizeof(SocketIp4));
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(port);
+#ifdef _WIN32
+        addr.sin_addr.s_addr = ADDR_ANY;
+#else
+        addr.sin_addr.s_addr = htonl(INADDR_ANY);
+#endif
+        if (::bind(socket_id, reinterpret_cast<SocketIp *>(&addr),
+                   sizeof(SocketIp4)) == SCK_SOCKET_ERROR) {
+          throwWithLastErrorCode("can't bind localhost on port: " +
+                                 std::to_string(port));
+        }
+      },
+      [&]() {
+        SocketIp6 addr;
+        ::memset(&addr, 0, sizeof(SocketIp6));
+        addr.sin6_family = AF_INET6;
+        addr.sin6_flowinfo = 0;
+        addr.sin6_addr =
+            IN6ADDR_ANY_INIT; // apparently, there is no such a
+                              // cross-system define for ipv6 addresses
+        addr.sin6_port = htons(port);
+        if (::bind(socket_id, reinterpret_cast<SocketIp *>(&addr),
+                   sizeof(SocketIp6)) == SCK_SOCKET_ERROR) {
+          throwWithLastErrorCode("can't bind localhost on port: " +
+                                 std::to_string(port));
+        }
+      });
+}
+
+namespace {
+static constexpr std::size_t LISTEN_BACKLOG = 50;
+}
+
+void listen(const SocketID &socket_id) {
+  if (::listen(socket_id, LISTEN_BACKLOG) == SCK_SOCKET_ERROR) {
+    throwWithLastErrorCode("Error: listening on reserved port");
+  }
+}
+
+void connect(const SocketID &socket_id, const Address &remote_address) {
+  address_case(
+      remote_address.getFamily(),
+      [&]() {
+        // v4 family
+        auto addr =
+            makeSocketIp4(remote_address.getHost(), remote_address.getPort());
+        if (!addr) {
+          throw Error(to_string(remote_address),
+                      " is an invalid server address");
+        }
+        if (::connect(socket_id, reinterpret_cast<SocketIp *>(&(*addr)),
+                      sizeof(SocketIp4)) == SCK_SOCKET_ERROR) {
+          throwWithLastErrorCode("Connection can't be established");
+        }
+      },
+      [&]() {
+        // v6 family
+        auto addr =
+            makeSocketIp6(remote_address.getHost(), remote_address.getPort());
+        if (!addr) {
+          throw Error(to_string(remote_address),
+                      " is an invalid server address");
+        }
+        if (::connect(socket_id, reinterpret_cast<SocketIp *>(&(*addr)),
+                      sizeof(SocketIp6)) == SCK_SOCKET_ERROR) {
+          throwWithLastErrorCode("Connection can't be established");
+        }
+      });
 }
 } // namespace MinimalSocket
