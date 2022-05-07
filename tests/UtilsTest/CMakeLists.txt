@@ -4,9 +4,8 @@ MakeLibrary(${PROJECT_SHORTNAME} include)
 
 find_package(OpenMP)	
 	
-target_link_libraries(${PROJECT_SHORTNAME}
-  PUBLIC
-	Synch-Cross-Socket
+target_link_libraries(${PROJECT_SHORTNAME} PUBLIC
+	MinimalSocket
 	gtest
 	OpenMP::OpenMP_CXX
 )
