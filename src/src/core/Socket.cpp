@@ -19,6 +19,13 @@ bool Socket::isNull() const {
   return socket_id_wrapper->access() == SCK_INVALID_SOCKET;
 }
 
+bool operator==(std::nullptr_t, const Socket& subject) {
+    return subject.isNull();
+}
+bool operator==(const Socket& subject, std::nullptr_t) {
+    return subject.isNull();
+}
+
 void Socket::transferIDWrapper(Socket &giver, Socket &recipient) {
   recipient.socket_id_wrapper = std::move(giver.socket_id_wrapper);
   giver.socket_id_wrapper = std::make_unique<SocketIdWrapper>();

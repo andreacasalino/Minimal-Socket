@@ -150,10 +150,10 @@ void address_case(const AddressFamily &family,
 }
 
 #ifdef _WIN32
-std::size_t Channel::SocketHandlerFactory::handlerCounter = 0;
-std::mutex Channel::SocketHandlerFactory::handlerCounterMtx;
+std::size_t SocketIdWrapper::SocketIDFactory::handlerCounter = 0;
+std::mutex SocketIdWrapper::SocketIDFactory::handlerCounterMtx;
 
-void Channel::SocketHandlerFactory::beforeOpen() {
+void SocketIdWrapper::SocketIDFactory::beforeOpen() {
   std::lock_guard<std::mutex> hndLck(handlerCounterMtx);
   ++handlerCounter;
   if (1 == handlerCounter) {
@@ -163,7 +163,7 @@ void Channel::SocketHandlerFactory::beforeOpen() {
   }
 }
 
-void Channel::SocketHandlerFactory::afterClose() {
+void SocketIdWrapper::SocketIDFactory::afterClose() {
   std::lock_guard<std::mutex> hndLck(handlerCounterMtx);
   --handlerCounter;
   if (0 == handlerCounter) {
@@ -200,7 +200,7 @@ void SocketIdWrapper::reset(const SocketType &type,
   }
 
 #ifdef _WIN32
-  SocketHandlerFactory::beforeOpen();
+  SocketIDFactory::beforeOpen();
 #endif
 
   switch (type) {
@@ -236,7 +236,7 @@ void SocketIdWrapper::close() {
 #endif
   this->socket_id = SCK_INVALID_SOCKET;
 #ifdef _WIN32
-  SocketHandlerFactory::afterClose();
+  SocketIDFactory::afterClose();
 #endif
 }
 

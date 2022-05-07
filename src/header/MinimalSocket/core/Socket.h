@@ -40,12 +40,8 @@ private:
   std::unique_ptr<SocketIdWrapper> socket_id_wrapper;
 };
 
-bool operator==(std::nullptr_t, const Socket &subject) {
-  return subject.isNull();
-}
-bool operator==(const Socket &subject, std::nullptr_t) {
-  return subject.isNull();
-}
+bool operator==(std::nullptr_t, const Socket& subject);
+bool operator==(const Socket& subject, std::nullptr_t);
 
 class Openable : public virtual Socket {
 public:
