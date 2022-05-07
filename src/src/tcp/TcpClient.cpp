@@ -12,11 +12,11 @@
 
 namespace MinimalSocket::tcp {
 TcpClient::TcpClient(TcpClient &&o) : RemoteAddressAware(o) {
-  stealIDWrapper(o);
+  Socket::transferIDWrapper(o, *this);
 }
 TcpClient &TcpClient::operator=(TcpClient &&o) {
   static_cast<RemoteAddressAware &>(*this) = o;
-  stealIDWrapper(o);
+  Socket::transferIDWrapper(o, *this);
   return *this;
 }
 

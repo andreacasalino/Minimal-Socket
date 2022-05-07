@@ -11,10 +11,12 @@
 #include "../Commons.h"
 
 namespace MinimalSocket::tcp {
-TcpServer::TcpServer(TcpServer &&o) : BindedPortAware(o) { stealIDWrapper(o); }
+TcpServer::TcpServer(TcpServer &&o) : BindedPortAware(o) {
+  Socket::transferIDWrapper(o, *this);
+}
 TcpServer &TcpServer::operator=(TcpServer &&o) {
   static_cast<BindedPortAware &>(*this) = o;
-  stealIDWrapper(o);
+  Socket::transferIDWrapper(o, *this);
   return *this;
 }
 
@@ -65,11 +67,11 @@ TcpConnection::TcpConnection(const Address &remote_address)
     : RemoteAddressAware(remote_address) {}
 
 TcpConnection::TcpConnection(TcpConnection &&o) : RemoteAddressAware(o) {
-  stealIDWrapper(o);
+  Socket::transferIDWrapper(o, *this);
 }
 TcpConnection &TcpConnection::operator=(TcpConnection &&o) {
   static_cast<RemoteAddressAware &>(*this) = o;
-  stealIDWrapper(o);
+  Socket::transferIDWrapper(o, *this);
   return *this;
 }
 } // namespace MinimalSocket::tcp

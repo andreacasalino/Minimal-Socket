@@ -29,7 +29,7 @@ public:
   UdpSender(UdpSender &&o);
   UdpSender &operator=(UdpSender &&o);
 
-  UdpSender() = default;
+  UdpSender();
 
   UdpBinded bind(const Port &port);
 };
@@ -37,7 +37,8 @@ public:
 // can send and receive (from anyonw hitting it) as a port was reserved
 class UdpBinded : public SenderTo,
                   public ReceiverUnkownSender,
-                  public BindedPortAware {
+                  public BindedPortAware,
+                  public Openable {
 public:
   UdpBinded(UdpBinded &&o);
   UdpBinded &operator=(UdpBinded &&o);
@@ -47,6 +48,9 @@ public:
 
   UdpConnected connect(); // to first sending 1 byte
   UdpConnected connect(const Address &remote_address);
+
+protected:
+  bool open_() override;
 };
 
 // can send and receive only from the specific remote address the socket was
@@ -54,7 +58,8 @@ public:
 class UdpConnected : public Sender,
                      public Receiver,
                      public BindedPortAware,
-                     public RemoteAddressAware {
+                     public RemoteAddressAware,
+                     public Openable {
 public:
   UdpConnected(UdpConnected &&o);
   UdpConnected &operator=(UdpConnected &&o);
@@ -67,5 +72,8 @@ public:
                const Address &remote_address);
 
   UdpBinded disconnect();
+
+protected:
+  bool open_() override;
 };
 } // namespace MinimalSocket::udp

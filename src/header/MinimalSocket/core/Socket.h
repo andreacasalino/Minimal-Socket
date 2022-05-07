@@ -30,7 +30,7 @@ public:
 protected:
   Socket();
 
-  void stealIDWrapper(Socket &o);
+  static void transferIDWrapper(Socket &giver, Socket &recipient);
 
   const SocketIdWrapper &getIDWrapper() const;
   SocketIdWrapper &getIDWrapper();
