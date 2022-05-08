@@ -11,16 +11,17 @@
 #include "../SocketAddress.h"
 #include "../SocketError.h"
 #include "../SocketFunctions.h"
+#include "../Utils.h"
 
 namespace MinimalSocket::tcp {
 TcpServer::TcpServer(TcpServer &&o)
     : PortToBindAware(o), RemoteAddressFamilyAware(o) {
-  Socket::transferIDWrapper(o, *this);
+  Openable::transfer(*this, o);
 }
 TcpServer &TcpServer::operator=(TcpServer &&o) {
-  static_cast<PortToBindAware &>(*this) = o;
-  static_cast<RemoteAddressFamilyAware &>(*this) = o;
-  Socket::transferIDWrapper(o, *this);
+  Openable::transfer(*this, o);
+  copy_as<PortToBindAware>(*this, o);
+  copy_as<RemoteAddressFamilyAware>(*this, o);
   return *this;
 }
 
@@ -68,11 +69,11 @@ TcpConnection::TcpConnection(const Address &remote_address)
     : RemoteAddressAware(remote_address) {}
 
 TcpConnection::TcpConnection(TcpConnection &&o) : RemoteAddressAware(o) {
-  Socket::transferIDWrapper(o, *this);
+  Socket::transfer(*this, o);
 }
 TcpConnection &TcpConnection::operator=(TcpConnection &&o) {
-  static_cast<RemoteAddressAware &>(*this) = o;
-  Socket::transferIDWrapper(o, *this);
+  copy_as<RemoteAddressAware>(*this, o);
+  Socket::transfer(*this, o);
   return *this;
 }
 } // namespace MinimalSocket::tcp

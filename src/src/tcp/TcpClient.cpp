@@ -9,14 +9,15 @@
 #include <MinimalSocket/tcp/TcpClient.h>
 
 #include "../SocketFunctions.h"
+#include "../Utils.h"
 
 namespace MinimalSocket::tcp {
 TcpClient::TcpClient(TcpClient &&o) : RemoteAddressAware(o) {
-  Socket::transferIDWrapper(o, *this);
+  Openable::transfer(*this, o);
 }
 TcpClient &TcpClient::operator=(TcpClient &&o) {
-  static_cast<RemoteAddressAware &>(*this) = o;
-  Socket::transferIDWrapper(o, *this);
+  Openable::transfer(*this, o);
+  copy_as<RemoteAddressAware>(*this, o);
   return *this;
 }
 

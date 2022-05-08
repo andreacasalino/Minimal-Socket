@@ -35,7 +35,7 @@ public:
 protected:
   Socket();
 
-  static void transferIDWrapper(Socket &giver, Socket &recipient);
+  static void transfer(Socket &receiver, Socket &giver);
 
   const SocketIdWrapper &getIDWrapper() const;
   SocketIdWrapper &getIDWrapper();
@@ -55,6 +55,9 @@ public:
 
 protected:
   Openable() = default;
+
+  static void transfer(Openable &receiver,
+                       Openable &giver); // Socket::transfer(...) is also called
 
   virtual void open_() = 0;
 

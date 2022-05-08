@@ -9,6 +9,7 @@
 #include <MinimalSocket/core/Socket.h>
 
 #include "../SocketId.h"
+#include "../Utils.h"
 
 namespace MinimalSocket {
 Socket::~Socket() = default;
@@ -30,15 +31,16 @@ bool operator==(const Socket &subject, std::nullptr_t) {
   return subject.empty();
 }
 
-void Socket::transferIDWrapper(Socket &giver, Socket &recipient) {
-  recipient.socket_id_wrapper = std::move(giver.socket_id_wrapper);
-  // giver.socket_id_wrapper = std::make_unique<SocketIdWrapper>();
+void Socket::transfer(Socket &receiver, Socket &giver) {
+  receiver.socket_id_wrapper = std::move(giver.socket_id_wrapper);
 }
 
 const SocketIdWrapper &Socket::getIDWrapper() const {
   return *socket_id_wrapper;
 }
 SocketIdWrapper &Socket::getIDWrapper() { return *socket_id_wrapper; }
+
+void Socket::destroyIDWrapper() { socket_id_wrapper.reset(); }
 
 bool Openable::open() {
   if (opened) {
@@ -58,4 +60,13 @@ bool Openable::open() {
   }
   return success;
 }
+
+void Openable::transfer(Openable &receiver, Openable &giver) {
+  std::scoped_lock lock(receiver.open_procedure_mtx, giver.open_procedure_mtx);
+  const bool o_value = giver.opened;
+  receiver.opened = o_value;
+  giver.opened = false;
+  Socket::transfer(receiver, giver);
+}
+
 } // namespace MinimalSocket
