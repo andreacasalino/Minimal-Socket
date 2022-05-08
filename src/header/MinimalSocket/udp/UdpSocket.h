@@ -31,7 +31,7 @@ public:
   UdpSender(
       const AddressFamily &accepted_connection_family = AddressFamily::IP_V4);
 
-  UdpBindable bind(const Port port_to_bind);
+  UdpBindable bind(const Port port_to_bind = ANY_PORT);
 };
 
 // can send and receive (from anyonw hitting it) as a port was reserved
@@ -45,7 +45,7 @@ public:
   UdpBindable &operator=(UdpBindable &&o);
 
   UdpBindable(
-      const Port port_to_bind,
+      const Port port_to_bind = ANY_PORT,
       const AddressFamily &accepted_connection_family = AddressFamily::IP_V4);
 
   // throw in case address family is inconsistent
@@ -68,7 +68,7 @@ public:
   UdpConnectable(UdpConnectable &&o);
   UdpConnectable &operator=(UdpConnectable &&o);
 
-  UdpConnectable(const Port &port, const Address &remote_address);
+  UdpConnectable(const Address &remote_address, const Port &port = ANY_PORT);
 
   UdpBindable disconnect();
 

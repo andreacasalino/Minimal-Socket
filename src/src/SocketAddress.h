@@ -18,6 +18,13 @@ using SocketAddress = SOCKADDR;
 #else
 using SocketAddress = sockaddr;
 #endif
+
+#ifdef _WIN32
+using SocketAddressLength = int;
+#else
+using SocketAddressLength = unsigned int;
+#endif
+
 /**
  * @brief representation of an ipv4 socket address
  */

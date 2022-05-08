@@ -51,15 +51,16 @@ UdpBindable &UdpBindable::operator=(UdpBindable &&o) {
 
 void UdpBindable::open_() {
   getIDWrapper().reset(UDP, getRemoteAddressFamily());
-  MinimalSocket::bind(getIDWrapper().accessId(), getRemoteAddressFamily(),
-                      getPortToBind());
+  auto binded_port = MinimalSocket::bind(
+      getIDWrapper().accessId(), getRemoteAddressFamily(), getPortToBind());
+  setPort(binded_port);
 }
 
 UdpConnectable UdpBindable::connect(const Address &remote_address) {
   if (remote_address.getFamily() != getRemoteAddressFamily()) {
     throw Error{"Passed address has invalid family"};
   }
-  UdpConnectable result(getPortToBind(), remote_address);
+  UdpConnectable result(remote_address, getPortToBind());
   if (wasOpened()) {
     MinimalSocket::connect(getIDWrapper().accessId(), remote_address);
   }
@@ -74,7 +75,7 @@ UdpConnectable UdpBindable::connect() {
   return connect(sender_address);
 }
 
-UdpConnectable::UdpConnectable(const Port &port, const Address &remote_address)
+UdpConnectable::UdpConnectable(const Address &remote_address, const Port &port)
     : PortToBindAware(port), RemoteAddressAware(remote_address) {}
 
 UdpConnectable::UdpConnectable(UdpConnectable &&o)
@@ -92,7 +93,9 @@ void UdpConnectable::open_() {
   const auto &socket_id = getIDWrapper().accessId();
   const auto &remote_address = getRemoteAddress();
   getIDWrapper().reset(UDP, remote_address.getFamily());
-  MinimalSocket::bind(socket_id, remote_address.getFamily(), getPortToBind());
+  auto binded_port = MinimalSocket::bind(socket_id, remote_address.getFamily(),
+                                         getPortToBind());
+  setPort(binded_port);
   MinimalSocket::connect(socket_id, remote_address);
 }
 

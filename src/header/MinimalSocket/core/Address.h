@@ -19,6 +19,8 @@ enum AddressFamily { IP_V4, IP_V6 };
 
 using Port = std::uint16_t;
 
+static constexpr Port ANY_PORT = 0;
+
 /**
  * @brief representation of a network ip address
  */

@@ -34,6 +34,8 @@ public:
 protected:
   PortToBindAware(const Port &port) : port_to_bind(port){};
 
+  void setPort(const Port &port) { port_to_bind = port; };
+
 private:
   Port port_to_bind;
 };

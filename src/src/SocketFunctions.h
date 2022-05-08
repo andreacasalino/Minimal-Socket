@@ -10,7 +10,8 @@
 #include "SocketId.h"
 
 namespace MinimalSocket {
-void bind(const SocketID &socket_id, const AddressFamily &family,
+// return port actually binded (you can pass to the function also AnyPort)
+Port bind(const SocketID &socket_id, const AddressFamily &family,
           const Port &port);
 
 void listen(const SocketID &socket_id);
