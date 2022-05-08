@@ -55,9 +55,7 @@ void send_response(const SenderReceiver &requester,
 
 TEST_CASE("Establish tcp connection", "[tcp]") {
   const auto port = PortFactory::makePort();
-
-  auto v4_or_v6 = true; // GENERATE(true, false);
-  const auto family = v4_or_v6 ? IP_V4 : IP_V6;
+  const auto family = IP_V4; // GENERATE(IP_V4, IP_V6);
 
   std::unique_ptr<TcpConnection> server_side;
   std::unique_ptr<TcpClient> client_side;
@@ -103,9 +101,7 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
 
 TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
   const auto port = PortFactory::makePort();
-
-  auto v4_or_v6 = true; // GENERATE(true, false);
-  const auto family = v4_or_v6 ? IP_V4 : IP_V6;
+  const auto family = IP_V4; // GENERATE(IP_V4, IP_V6);
 
   TcpServer server(port, family);
   server.open();
@@ -150,9 +146,7 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
 
 TEST_CASE("Open multiple times tcp clients", "[tcp]") {
   const auto port = PortFactory::makePort();
-
-  auto v4_or_v6 = true; // GENERATE(true, false);
-  const auto family = v4_or_v6 ? IP_V4 : IP_V6;
+  const auto family = IP_V4; // GENERATE(IP_V4, IP_V6);
 
   TcpServer server(port, family);
   server.open();

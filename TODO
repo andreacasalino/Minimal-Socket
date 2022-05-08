@@ -17,3 +17,5 @@ usare noexpect keyword in c'tors?
 pass number of max clients tcp server should accept
 
 e' thread safety assicurata nelle varie funzioni?
+
+check in c'tor passed address is not null (is valid)
