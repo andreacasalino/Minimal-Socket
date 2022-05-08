@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <memory>
 #include <optional>
 #include <string>
 
@@ -31,8 +30,7 @@ public:
    * @return nullptr if the host is invalid, otherwise a smart pointer
    * storing a usable ip
    */
-  static std::unique_ptr<Address> makeAddress(const std::string &hostIp,
-                                              const Port &port);
+  Address(const std::string &hostIp, const Port &port);
 
   /**
    * @return an ipv4 or ipv6 with localhost as host and the passed port
@@ -66,6 +64,8 @@ std::string to_string(const Address &subject);
 std::optional<AddressFamily>
 deduceAddressFamily(const std::string &host_address);
 
-bool isValidAddress(const std::string &host_address);
+bool operator==(std::nullptr_t, const Address &subject);
+bool operator==(const Address &subject, std::nullptr_t);
 
+bool isValidHost(const std::string &host_address);
 } // namespace MinimalSocket

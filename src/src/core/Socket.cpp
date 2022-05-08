@@ -19,6 +19,10 @@ bool Socket::isNull() const {
   return socket_id_wrapper->access() == SCK_INVALID_SOCKET;
 }
 
+int Socket::accessSocketID() const {
+  return static_cast<int>(getIDWrapper().access());
+}
+
 bool operator==(std::nullptr_t, const Socket &subject) {
   return subject.isNull();
 }

@@ -119,9 +119,8 @@ TEST(Tcp, SendReceive) {
       if (0 == omp_get_thread_num()) {
         for (std::size_t c = 0; c < cycles; ++c) {
           std::string buffer;
-          buffer.resize(message.size() * 2);
+          buffer.resize(message.size());
           server.receive(buffer);
-          EXPECT_EQ(buffer.size(), message.size());
           EXPECT_EQ(buffer, message);
         }
       } else {
@@ -139,9 +138,8 @@ TEST(Tcp, SendReceive) {
       if (0 == omp_get_thread_num()) {
         for (std::size_t c = 0; c < cycles; ++c) {
           std::string buffer;
-          buffer.resize(message.size() * 2);
+          buffer.resize(message.size());
           client.receive(buffer);
-          EXPECT_EQ(buffer.size(), message.size());
           EXPECT_EQ(buffer, message);
         }
       } else {
