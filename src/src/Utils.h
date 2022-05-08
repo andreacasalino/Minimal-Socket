@@ -10,19 +10,16 @@
 #include "SocketId.h"
 
 #include <functional>
+#include <type_traits>
 
 namespace MinimalSocket {
 void visitAddress(const AddressFamily &family,
                   const std::function<void()> &ipv4_case,
                   const std::function<void()> &ipv6_case);
 
-template <typename T, typename Giver, typename Receiver>
-void move_as(Giver &giver, Receiver &receiver) {
-  static_cast<T &>(receiver) = std::move(static_cast<T &>(giver));
-}
-
-template <typename T, typename Giver, typename Receiver>
-void copy_as(const Giver &giver, Receiver &receiver) {
-  static_cast<T &>(receiver) = static_cast<const T &>(giver);
+template <typename T, typename U> void copy_as(U &receiver, const U &giver) {
+  T &receiver_ref = receiver;
+  const T &giver_ref = giver;
+  receiver_ref = giver_ref;
 }
 } // namespace MinimalSocket
