@@ -28,6 +28,8 @@ public:
 
   bool isNull() const;
 
+  int accessSocketID() const;
+
 protected:
   Socket();
 
@@ -40,8 +42,8 @@ private:
   std::unique_ptr<SocketIdWrapper> socket_id_wrapper;
 };
 
-bool operator==(std::nullptr_t, const Socket& subject);
-bool operator==(const Socket& subject, std::nullptr_t);
+bool operator==(std::nullptr_t, const Socket &subject);
+bool operator==(const Socket &subject, std::nullptr_t);
 
 class Openable : public virtual Socket {
 public:

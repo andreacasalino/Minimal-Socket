@@ -13,24 +13,21 @@
 #include <sstream>
 
 namespace MinimalSocket {
-std::unique_ptr<Address> Address::makeAddress(const std::string &hostIp,
-                                              const Port &port) {
-  std::unique_ptr<Address> result;
-  result.reset(new Address{});
-  result->host = hostIp;
-  result->port = port;
+Address::Address(const std::string &hostIp, const Port &port) {
+  this->host = hostIp;
+  this->port = port;
 
   if (std::nullopt != makeSocketIp4(hostIp, port)) {
-    result->family = AddressFamily::IP_V4;
-    return result;
+    this->family = AddressFamily::IP_V4;
+    return;
   }
 
   if (std::nullopt != makeSocketIp6(hostIp, port)) {
-    result->family = AddressFamily::IP_V6;
-    return result;
+    this->family = AddressFamily::IP_V6;
+    return;
   }
 
-  return nullptr;
+  this->host.clear();
 }
 
 namespace {
@@ -54,6 +51,14 @@ bool Address::operator==(const Address &o) const {
          (this->family == o.family);
 }
 
+bool operator==(std::nullptr_t, const Address &subject) {
+  return subject.getHost().empty();
+}
+
+bool operator==(const Address &subject, std::nullptr_t) {
+  return subject.getHost().empty();
+}
+
 std::string to_string(const Address &subject) {
   std::stringstream stream;
   stream << subject.getHost() << ':' << subject.getPort();
@@ -62,11 +67,11 @@ std::string to_string(const Address &subject) {
 
 std::optional<AddressFamily>
 deduceAddressFamily(const std::string &host_address) {
-  auto temp = Address::makeAddress(host_address, 0);
+  Address temp(host_address, 0);
   if (nullptr == temp) {
     return std::nullopt;
   }
-  return temp->getFamily();
+  return temp.getFamily();
 }
 
 bool isValidAddress(const std::string &host_address) {
