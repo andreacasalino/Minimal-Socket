@@ -21,7 +21,7 @@ namespace {
 #endif
 } // namespace
 
-void bind(const SocketID &socket_id, const AddressFamily &family,
+Port bind(const SocketID &socket_id, const AddressFamily &family,
           const Port &port) {
   int reusePortOptVal = 1;
   ::setsockopt(socket_id, SOL_SOCKET, REBIND_OPTION,
@@ -69,6 +69,24 @@ void bind(const SocketID &socket_id, const AddressFamily &family,
                                  std::to_string(port));
         }
       });
+
+  Port binded_port = port;
+  if (ANY_PORT == port) {
+    SocketAddress binded_address;
+    SocketAddressLength binded_address_length;
+    if (::getsockname(socket_id, &binded_address, &binded_address_length) ==
+        SCK_SOCKET_ERROR) {
+      throwWithLastErrorCode("Wasn't able to deduce the binded port");
+    }
+    if (AF_INET == binded_address.sa_family) {
+      binded_port =
+          reinterpret_cast<const SocketAddressIpv4 &>(binded_address).sin_port;
+    } else {
+      binded_port =
+          reinterpret_cast<const SocketAddressIpv6 &>(binded_address).sin6_port;
+    }
+  }
+  return binded_port;
 }
 
 namespace {

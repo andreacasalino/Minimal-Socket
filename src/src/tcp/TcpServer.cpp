@@ -35,7 +35,8 @@ void TcpServer::open_() {
   const auto port = getPortToBind();
   const auto family = getRemoteAddressFamily();
   socket.reset(TCP, family);
-  MinimalSocket::bind(socket.accessId(), family, port);
+  auto binded_port = MinimalSocket::bind(socket.accessId(), family, port);
+  setPort(binded_port);
   MinimalSocket::listen(socket.accessId());
 }
 
@@ -44,12 +45,7 @@ TcpConnection TcpServer::acceptNewClient() {
     throw Error("Tcp server was not opened before starting to accept clients");
   }
   SocketAddress acceptedClientAddress;
-#ifdef _WIN32
-  int acceptedAddressLength
-#else
-  unsigned int acceptedAddressLength
-#endif
-      = sizeof(SocketAddress);
+  SocketAddressLength acceptedAddressLength = sizeof(SocketAddress);
   // accept: wait for a client to call connect and hit this server and get a
   // pointer to this client.
   SocketID accepted_client_socket_id =

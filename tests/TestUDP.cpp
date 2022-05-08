@@ -99,9 +99,9 @@ TEST_CASE("exchange messages between UdpConnectable and UdpConnectable",
   const Address sender_address = Address::makeLocalHost(sender_port);
   const Address receiver_address = Address::makeLocalHost(receiver_port);
 
-  UdpConnectable sender(sender_port, Address::makeLocalHost(family));
+  UdpConnectable sender(Address::makeLocalHost(family), sender_port);
   REQUIRE(sender.open());
-  UdpConnectable receiver(receiver_port, Address::makeLocalHost(family));
+  UdpConnectable receiver(Address::makeLocalHost(family), receiver_port);
   REQUIRE(receiver.open());
 
   const std::size_t cycles = 5;

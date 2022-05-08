@@ -35,7 +35,7 @@ public:
   TcpServer(TcpServer &&o);
   TcpServer &operator=(TcpServer &&o);
 
-  TcpServer(const Port port_to_bind,
+  TcpServer(const Port port_to_bind = ANY_PORT,
             const AddressFamily &accepted_client_family = AddressFamily::IP_V4);
 
   TcpConnection acceptNewClient();
