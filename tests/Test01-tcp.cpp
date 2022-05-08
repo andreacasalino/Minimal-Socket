@@ -56,13 +56,16 @@ void send_response(const SenderReceiver &requester,
 TEST_CASE("Establish tcp connection", "[tcp]") {
   const auto port = PortFactory::makePort();
 
+  auto v4_or_v6 = true; // GENERATE(true, false);
+  const auto family = v4_or_v6 ? IP_V4 : IP_V6;
+
   std::unique_ptr<TcpConnection> server_side;
   std::unique_ptr<TcpClient> client_side;
 
   parallel(
       [&]() {
         // server
-        TcpServer server(port);
+        TcpServer server(port, family);
         REQUIRE(server.open());
 #pragma omp barrier
         auto accepted = server.acceptNewClient();
@@ -71,7 +74,7 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
       },
       [&]() {
         // client
-        TcpClient client(Address::makeLocalHost(port));
+        TcpClient client(Address::makeLocalHost(port, family));
 #pragma omp barrier
         REQUIRE(client.open());
         REQUIRE_FALSE(nullptr == client);
@@ -101,7 +104,10 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
 TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
   const auto port = PortFactory::makePort();
 
-  TcpServer server(port);
+  auto v4_or_v6 = true; // GENERATE(true, false);
+  const auto family = v4_or_v6 ? IP_V4 : IP_V6;
+
+  TcpServer server(port, family);
   server.open();
 
   const std::size_t clients_numb = 5;
@@ -117,7 +123,8 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
         },
         [&]() {
           for (std::size_t c = 0; c < clients_numb; ++c) {
-            auto &client = clients.emplace_back(Address::makeLocalHost(port));
+            auto &client =
+                clients.emplace_back(Address::makeLocalHost(port, family));
             CHECK(client.open());
           }
         });
@@ -131,12 +138,32 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
       }
     });
     Task ask_connection = [&]() {
-      TcpClient client(Address::makeLocalHost(port));
+      TcpClient client(Address::makeLocalHost(port, family));
       CHECK(client.open());
     };
     for (std::size_t c = 0; c < clients_numb; ++c) {
       tasks.push_back(ask_connection);
     }
     parallel(tasks);
+  }
+}
+
+TEST_CASE("Open multiple times tcp clients", "[tcp]") {
+  const auto port = PortFactory::makePort();
+
+  auto v4_or_v6 = true; // GENERATE(true, false);
+  const auto family = v4_or_v6 ? IP_V4 : IP_V6;
+
+  TcpServer server(port, family);
+  server.open();
+
+  std::size_t cycles = 5;
+
+  TcpClient client(Address::makeLocalHost(family));
+
+  for (std::size_t c = 0; c < cycles; ++c) {
+    parallel([&]() { server.acceptNewClient(); },
+             [&]() { CHECK(client.open()); });
+    TcpClient{std::move(client)};
   }
 }
