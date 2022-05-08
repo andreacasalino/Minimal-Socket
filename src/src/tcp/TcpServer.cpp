@@ -8,7 +8,9 @@
 #include <MinimalSocket/Error.h>
 #include <MinimalSocket/tcp/TcpServer.h>
 
-#include "../Commons.h"
+#include "../SocketAddress.h"
+#include "../SocketError.h"
+#include "../SocketFunctions.h"
 
 namespace MinimalSocket::tcp {
 TcpServer::TcpServer(TcpServer &&o)
@@ -32,30 +34,31 @@ void TcpServer::open_() {
   const auto port = getPortToBind();
   const auto family = getRemoteAddressFamily();
   socket.reset(TCP, family);
-  bind(socket.access(), family, port);
-  listen(socket.access());
+  MinimalSocket::bind(socket.accessId(), family, port);
+  MinimalSocket::listen(socket.accessId());
 }
 
 TcpConnection TcpServer::acceptNewClient() {
   if (!this->wasOpened()) {
     throw Error("Tcp server was not opened before starting to accept clients");
   }
-  SocketIp acceptedClientAddress;
+  SocketAddress acceptedClientAddress;
 #ifdef _WIN32
   int acceptedAddressLength
 #else
   unsigned int acceptedAddressLength
 #endif
-      = sizeof(SocketIp);
+      = sizeof(SocketAddress);
   // accept: wait for a client to call connect and hit this server and get a
   // pointer to this client.
-  SocketID accepted_client_socket_id = ::accept(
-      getIDWrapper().access(), &acceptedClientAddress, &acceptedAddressLength);
+  SocketID accepted_client_socket_id =
+      ::accept(getIDWrapper().accessId(), &acceptedClientAddress,
+               &acceptedAddressLength);
   if (accepted_client_socket_id == SCK_INVALID_SOCKET) {
     throwWithLastErrorCode("Error: accepting new client");
   }
 
-  auto accepted_client_parsed_address = make_address(acceptedClientAddress);
+  auto accepted_client_parsed_address = toAddress(acceptedClientAddress);
   TcpConnection result(accepted_client_parsed_address);
   result.getIDWrapper().reset(accepted_client_socket_id);
   return std::move(result);

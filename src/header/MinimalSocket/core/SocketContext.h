@@ -18,7 +18,7 @@ public:
   RemoteAddressAware &operator=(const RemoteAddressAware &) = default;
 
 protected:
-  RemoteAddressAware(const Address &address) : remote_address(address){};
+  RemoteAddressAware(const Address &address);
 
 private:
   Address remote_address;

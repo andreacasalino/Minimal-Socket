@@ -7,7 +7,8 @@
 
 #include <MinimalSocket/core/Receiver.h>
 
-#include "../Commons.h"
+#include "../SocketError.h"
+#include "../SocketId.h"
 
 namespace MinimalSocket {
 void ReceiveTimeOutAware::lazyUpdateReceiveTimeout(
@@ -33,7 +34,7 @@ void ReceiveTimeOutAware::lazyUpdateReceiveTimeout(
         std::chrono::duration_cast<std::chrono::microseconds>(receive_timeout)
             .count();
   }
-  if (::setsockopt(getIDWrapper().access(), SOL_SOCKET, SO_RCVTIMEO,
+  if (::setsockopt(getIDWrapper().accessId(), SOL_SOCKET, SO_RCVTIMEO,
                    reinterpret_cast<const char *>(&tv),
                    sizeof(struct timeval)) < 0) {
 #endif
@@ -43,7 +44,7 @@ void ReceiveTimeOutAware::lazyUpdateReceiveTimeout(
 
 void Receiver::receive(Buffer &message, const ReceiveTimeout &timeout) {
   std::lock_guard<std::mutex> recvLock(receive_mtx);
-  int recvBytes = ::recv(getIDWrapper().access(), message.data(),
+  int recvBytes = ::recv(getIDWrapper().accessId(), message.data(),
                          static_cast<int>(message.size()), 0);
   if (recvBytes == SCK_SOCKET_ERROR) {
     recvBytes = 0;

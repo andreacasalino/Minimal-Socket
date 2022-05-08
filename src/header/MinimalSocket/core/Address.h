@@ -68,4 +68,5 @@ bool operator==(std::nullptr_t, const Address &subject);
 bool operator==(const Address &subject, std::nullptr_t);
 
 bool isValidHost(const std::string &host_address);
+
 } // namespace MinimalSocket

@@ -18,6 +18,8 @@ using Buffer = std::string;
 
 void setZeros(Buffer &subject);
 
+enum SocketType { UDP, TCP };
+
 class SocketIdWrapper;
 class Socket {
 public:
@@ -26,7 +28,7 @@ public:
   Socket(const Socket &) = delete;
   Socket &operator=(const Socket &) = delete;
 
-  bool isNull() const;
+  bool empty() const;
 
   int accessSocketID() const;
 
@@ -37,6 +39,7 @@ protected:
 
   const SocketIdWrapper &getIDWrapper() const;
   SocketIdWrapper &getIDWrapper();
+  void destroyIDWrapper();
 
 private:
   std::unique_ptr<SocketIdWrapper> socket_id_wrapper;

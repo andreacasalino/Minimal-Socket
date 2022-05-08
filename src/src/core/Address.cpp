@@ -8,7 +8,8 @@
 #include <MinimalSocket/Error.h>
 #include <MinimalSocket/core/Address.h>
 
-#include "../Commons.h"
+#include "../SocketAddress.h"
+#include "../Utils.h"
 
 #include <sstream>
 
@@ -17,12 +18,12 @@ Address::Address(const std::string &hostIp, const Port &port) {
   this->host = hostIp;
   this->port = port;
 
-  if (std::nullopt != makeSocketIp4(hostIp, port)) {
+  if (std::nullopt != toSocketAddressIpv4(hostIp, port)) {
     this->family = AddressFamily::IP_V4;
     return;
   }
 
-  if (std::nullopt != makeSocketIp6(hostIp, port)) {
+  if (std::nullopt != toSocketAddressIpv6(hostIp, port)) {
     this->family = AddressFamily::IP_V6;
     return;
   }
@@ -40,7 +41,7 @@ Address Address::makeLocalHost(const std::uint16_t &port,
   Address result;
   result.port = port;
   result.family = family;
-  address_case(
+  visitAddress(
       family, [&result]() { result.host = LOCALHOST_IPv4; },
       [&result]() { result.host = LOCALHOST_IPv6; });
   return result;
