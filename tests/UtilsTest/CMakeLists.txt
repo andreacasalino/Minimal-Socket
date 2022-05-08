@@ -6,6 +6,7 @@ find_package(OpenMP)
 	
 target_link_libraries(${PROJECT_SHORTNAME} PUBLIC
 	MinimalSocket
-	gtest
 	OpenMP::OpenMP_CXX
+	Catch2::Catch2
+	Catch2::Catch2WithMain
 )
