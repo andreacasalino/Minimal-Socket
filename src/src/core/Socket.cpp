@@ -11,6 +11,8 @@
 #include "../SocketId.h"
 #include "../Utils.h"
 
+#include <future>
+
 namespace MinimalSocket {
 Socket::~Socket() = default;
 
@@ -45,14 +47,24 @@ void Socket::resetIDWrapper() {
   socket_id_wrapper = std::make_unique<SocketIdWrapper>();
 }
 
-bool Openable::open() {
+bool Openable::open(const Timeout &timeout) {
   if (opened) {
     throw Error{"Already opened"};
   }
   std::scoped_lock lock(open_procedure_mtx);
   bool success = true;
   try {
-    this->open_();
+    if (NULL_TIMEOUT == timeout) {
+      this->open_();
+    } else {
+      auto open_task = std::async([&]() { this->open_(); });
+      auto open_task_status = open_task.wait_for(timeout);
+      if (open_task_status != std::future_status::ready) {
+        resetIDWrapper();
+        open_task.get(); // to force the exception throwing
+        success = false;
+      }
+    }
     opened = true;
   } catch (const Error &) {
     resetIDWrapper();

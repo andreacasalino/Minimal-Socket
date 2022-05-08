@@ -8,6 +8,7 @@
 #pragma once
 
 #include <atomic>
+#include <chrono>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -20,7 +21,12 @@ void setZeros(Buffer &subject);
 
 enum SocketType { UDP, TCP };
 
+using Timeout = std::chrono::milliseconds;
+
+static constexpr Timeout NULL_TIMEOUT = Timeout{0};
+
 class SocketIdWrapper;
+
 class Socket {
 public:
   virtual ~Socket();
@@ -51,7 +57,7 @@ bool operator==(const Socket &subject, std::nullptr_t);
 class Openable : public virtual Socket {
 public:
   bool wasOpened() const { return opened; }
-  bool open();
+  bool open(const Timeout &timeout = NULL_TIMEOUT);
 
 protected:
   Openable() = default;

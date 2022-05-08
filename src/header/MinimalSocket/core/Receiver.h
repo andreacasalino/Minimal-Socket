@@ -10,20 +10,15 @@
 #include <MinimalSocket/core/Address.h>
 #include <MinimalSocket/core/Socket.h>
 
-#include <chrono>
 #include <mutex>
 
 namespace MinimalSocket {
-using ReceiveTimeout = std::chrono::milliseconds;
-
-static constexpr ReceiveTimeout NULL_TIMEOUT = ReceiveTimeout{0};
-
 class ReceiveTimeOutAware : public virtual Socket {
 protected:
-  void lazyUpdateReceiveTimeout(const ReceiveTimeout &timeout);
+  void lazyUpdateReceiveTimeout(const Timeout &timeout);
 
 private:
-  ReceiveTimeout receive_timeout = NULL_TIMEOUT;
+  Timeout receive_timeout = NULL_TIMEOUT;
 };
 
 class Receiver : public virtual Socket {
