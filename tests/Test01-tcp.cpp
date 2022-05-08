@@ -63,7 +63,6 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
       [&]() {
         // server
         TcpServer server(port);
-        server.open();
         REQUIRE(server.open());
 #pragma omp barrier
         auto accepted = server.acceptNewClient();
