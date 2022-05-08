@@ -39,7 +39,7 @@ protected:
 
   const SocketIdWrapper &getIDWrapper() const;
   SocketIdWrapper &getIDWrapper();
-  void destroyIDWrapper();
+  void resetIDWrapper();
 
 private:
   std::unique_ptr<SocketIdWrapper> socket_id_wrapper;
