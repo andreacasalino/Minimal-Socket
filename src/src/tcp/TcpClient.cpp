@@ -8,7 +8,7 @@
 #include <MinimalSocket/Error.h>
 #include <MinimalSocket/tcp/TcpClient.h>
 
-#include "../Commons.h"
+#include "../SocketFunctions.h"
 
 namespace MinimalSocket::tcp {
 TcpClient::TcpClient(TcpClient &&o) : RemoteAddressAware(o) {
@@ -27,6 +27,6 @@ void TcpClient::open_() {
   auto &socket = getIDWrapper();
   const auto remote_address = getRemoteAddress();
   socket.reset(TCP, remote_address.getFamily());
-  connect(socket.access(), remote_address);
+  MinimalSocket::connect(socket.accessId(), remote_address);
 }
 } // namespace MinimalSocket::tcp

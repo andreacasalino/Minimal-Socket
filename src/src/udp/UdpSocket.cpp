@@ -8,7 +8,7 @@
 #include <MinimalSocket/Error.h>
 #include <MinimalSocket/udp/UdpSocket.h>
 
-#include "../Commons.h"
+#include "../SocketFunctions.h"
 
 namespace MinimalSocket::udp {
 UdpSender::UdpSender(const AddressFamily &accepted_connection_family)
@@ -41,7 +41,8 @@ UdpBindable::UdpBindable(const Port port_to_bind,
 }
 
 void UdpBindable::open_() {
-  bind(getIDWrapper().access(), getRemoteAddressFamily(), getPortToBind());
+  MinimalSocket::bind(getIDWrapper().accessId(), getRemoteAddressFamily(),
+                      getPortToBind());
 }
 
 UdpConnectable UdpBindable::connect(const Address &remote_address) {
@@ -50,7 +51,7 @@ UdpConnectable UdpBindable::connect(const Address &remote_address) {
   }
   UdpConnectable result(getPortToBind(), remote_address);
   Socket::transferIDWrapper(*this, result);
-  MinimalSocket::connect(getIDWrapper().access(), remote_address);
+  MinimalSocket::connect(getIDWrapper().accessId(), remote_address);
   return std::move(result);
 }
 
@@ -65,7 +66,7 @@ UdpConnectable::UdpConnectable(const Port &port, const Address &remote_address)
     : PortToBindAware(port), RemoteAddressAware(remote_address) {}
 
 UdpBindable UdpConnectable::disconnect() {
-  getIDWrapper().close();
+  destroyIDWrapper();
   UdpBindable result(getPortToBind(), getRemoteAddress().getFamily());
   result.open();
   return std::move(result);
@@ -83,9 +84,9 @@ UdpConnectable &UdpConnectable::operator=(UdpConnectable &&o) {
 }
 
 void UdpConnectable::open_() {
-  const auto &socket_id = getIDWrapper().access();
+  const auto &socket_id = getIDWrapper().accessId();
   const auto &remote_address = getRemoteAddress();
-  bind(socket_id, remote_address.getFamily(), getPortToBind());
-  connect(socket_id, remote_address);
+  MinimalSocket::bind(socket_id, remote_address.getFamily(), getPortToBind());
+  MinimalSocket::connect(socket_id, remote_address);
 }
 } // namespace MinimalSocket::udp

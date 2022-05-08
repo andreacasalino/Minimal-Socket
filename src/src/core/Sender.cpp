@@ -7,12 +7,14 @@
 
 #include <MinimalSocket/core/Sender.h>
 
-#include "../Commons.h"
+#include "../SocketAddress.h"
+#include "../SocketError.h"
+#include "../Utils.h"
 
 namespace MinimalSocket {
 bool Sender::send(const Buffer &message) {
   std::scoped_lock lock(send_mtx);
-  int sentBytes = ::send(getIDWrapper().access(), message.data(),
+  int sentBytes = ::send(getIDWrapper().accessId(), message.data(),
                          static_cast<int>(message.size()), 0);
   if (sentBytes == SCK_SOCKET_ERROR) {
     sentBytes = 0;
@@ -24,25 +26,25 @@ bool Sender::send(const Buffer &message) {
 bool SenderTo::sendTo(const Buffer &message, const Address &recipient) {
   std::scoped_lock lock(send_mtx);
   int sentBytes;
-  address_case(
+  visitAddress(
       recipient.getFamily(),
       [&]() {
         auto socketIp4 =
-            makeSocketIp4(recipient.getHost(), recipient.getPort());
-        sentBytes =
-            ::sendto(getIDWrapper().access(), message.data(),
-                     static_cast<int>(message.size()), 0,
-                     reinterpret_cast<const SocketIp *>(&socketIp4.value()),
-                     sizeof(SocketIp4));
+            toSocketAddressIpv4(recipient.getHost(), recipient.getPort());
+        sentBytes = ::sendto(
+            getIDWrapper().accessId(), message.data(),
+            static_cast<int>(message.size()), 0,
+            reinterpret_cast<const SocketAddress *>(&socketIp4.value()),
+            sizeof(SocketAddressIpv4));
       },
       [&]() {
         auto socketIp6 =
-            makeSocketIp6(recipient.getHost(), recipient.getPort());
-        sentBytes =
-            ::sendto(getIDWrapper().access(), message.data(),
-                     static_cast<int>(message.size()), 0,
-                     reinterpret_cast<const SocketIp *>(&socketIp6.value()),
-                     sizeof(SocketIp6));
+            toSocketAddressIpv6(recipient.getHost(), recipient.getPort());
+        sentBytes = ::sendto(
+            getIDWrapper().accessId(), message.data(),
+            static_cast<int>(message.size()), 0,
+            reinterpret_cast<const SocketAddress *>(&socketIp6.value()),
+            sizeof(SocketAddressIpv6));
       });
   if (sentBytes == SCK_SOCKET_ERROR) {
     sentBytes = 0;
