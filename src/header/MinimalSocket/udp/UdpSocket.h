@@ -18,40 +18,27 @@ namespace MinimalSocket::udp {
  */
 static constexpr std::size_t MAX_UDP_RECV_MESSAGE = 65507;
 
-class UdpSender;
-class UdpBindable;
-class UdpConnectable;
+class UdpConnected;
 
-// can only send as no port was reserved
-class UdpSender : public SenderTo, public RemoteAddressFamilyAware {
+// can send and receive (from anyone hitting this socket) as a port was reserved
+class UdpBinded : public SenderTo,
+                  public ReceiverUnkownSender,
+                  public PortToBindAware,
+                  public RemoteAddressFamilyAware,
+                  public Openable {
 public:
-  UdpSender(UdpSender &&o);
-  UdpSender &operator=(UdpSender &&o);
+  UdpBinded(UdpBinded &&o);
+  UdpBinded &operator=(UdpBinded &&o);
 
-  UdpSender(
-      const AddressFamily &accepted_connection_family = AddressFamily::IP_V4);
-
-  UdpBindable bind(const Port port_to_bind = ANY_PORT);
-};
-
-// can send and receive (from anyonw hitting it) as a port was reserved
-class UdpBindable : public SenderTo,
-                    public ReceiverUnkownSender,
-                    public PortToBindAware,
-                    public RemoteAddressFamilyAware,
-                    public Openable {
-public:
-  UdpBindable(UdpBindable &&o);
-  UdpBindable &operator=(UdpBindable &&o);
-
-  UdpBindable(
+  UdpBinded(
       const Port port_to_bind = ANY_PORT,
       const AddressFamily &accepted_connection_family = AddressFamily::IP_V4);
 
   // throw in case address family is inconsistent
-  UdpConnectable connect(const Address &remote_address);
+  // leave this socket empty after success
+  UdpConnected connect(const Address &remote_address);
 
-  std::optional<UdpConnectable>
+  std::optional<UdpConnected>
   connect(const Timeout &timeout); // to first sending 1 byte
 
 protected:
@@ -60,18 +47,19 @@ protected:
 
 // can send and receive only from the specific remote address the socket was
 // connected to
-class UdpConnectable : public Sender,
-                       public Receiver,
-                       public PortToBindAware,
-                       public RemoteAddressAware,
-                       public Openable {
+class UdpConnected : public Sender,
+                     public Receiver,
+                     public PortToBindAware,
+                     public RemoteAddressAware,
+                     public Openable {
 public:
-  UdpConnectable(UdpConnectable &&o);
-  UdpConnectable &operator=(UdpConnectable &&o);
+  UdpConnected(UdpConnected &&o);
+  UdpConnected &operator=(UdpConnected &&o);
 
-  UdpConnectable(const Address &remote_address, const Port &port = ANY_PORT);
+  UdpConnected(const Address &remote_address, const Port &port = ANY_PORT);
 
-  UdpBindable disconnect();
+  // leave this socket empty after success
+  UdpBinded disconnect();
 
 protected:
   void open_() override;

@@ -12,55 +12,34 @@
 #include "../Utils.h"
 
 namespace MinimalSocket::udp {
-UdpSender::UdpSender(const AddressFamily &accepted_connection_family)
-    : RemoteAddressFamilyAware(accepted_connection_family) {
-  getIDWrapper().reset(UDP, accepted_connection_family);
-}
-
-UdpSender::UdpSender(UdpSender &&o)
-    : RemoteAddressFamilyAware(o.getRemoteAddressFamily()) {
-  Socket::transfer(*this, o);
-}
-UdpSender &UdpSender::operator=(UdpSender &&o) {
-  copy_as<RemoteAddressFamilyAware>(*this, o);
-  Socket::transfer(*this, o);
-  return *this;
-}
-
-UdpBindable UdpSender::bind(const Port port_to_bind) {
-  UdpBindable result(port_to_bind, getRemoteAddressFamily());
-  result.open();
-  return std::move(result);
-}
-
-UdpBindable::UdpBindable(const Port port_to_bind,
-                         const AddressFamily &accepted_connection_family)
+UdpBinded::UdpBinded(const Port port_to_bind,
+                     const AddressFamily &accepted_connection_family)
     : PortToBindAware(port_to_bind),
       RemoteAddressFamilyAware(accepted_connection_family) {}
 
-UdpBindable::UdpBindable(UdpBindable &&o)
+UdpBinded::UdpBinded(UdpBinded &&o)
     : PortToBindAware(o), RemoteAddressFamilyAware(o) {
   Openable::transfer(*this, o);
 }
-UdpBindable &UdpBindable::operator=(UdpBindable &&o) {
+UdpBinded &UdpBinded::operator=(UdpBinded &&o) {
   copy_as<PortToBindAware>(*this, o);
   copy_as<RemoteAddressFamilyAware>(*this, o);
   Openable::transfer(*this, o);
   return *this;
 }
 
-void UdpBindable::open_() {
+void UdpBinded::open_() {
   getIDWrapper().reset(UDP, getRemoteAddressFamily());
   auto binded_port = MinimalSocket::bind(
       getIDWrapper().accessId(), getRemoteAddressFamily(), getPortToBind());
   setPort(binded_port);
 }
 
-UdpConnectable UdpBindable::connect(const Address &remote_address) {
+UdpConnected UdpBinded::connect(const Address &remote_address) {
   if (remote_address.getFamily() != getRemoteAddressFamily()) {
     throw Error{"Passed address has invalid family"};
   }
-  UdpConnectable result(remote_address, getPortToBind());
+  UdpConnected result(remote_address, getPortToBind());
   if (wasOpened()) {
     MinimalSocket::connect(getIDWrapper().accessId(), remote_address);
   }
@@ -68,7 +47,7 @@ UdpConnectable UdpBindable::connect(const Address &remote_address) {
   return std::move(result);
 }
 
-std::optional<UdpConnectable> UdpBindable::connect(const Timeout &timeout) {
+std::optional<UdpConnected> UdpBinded::connect(const Timeout &timeout) {
   auto maybe_received = this->receive(MAX_UDP_RECV_MESSAGE, timeout);
   if (!maybe_received) {
     return std::nullopt;
@@ -76,21 +55,21 @@ std::optional<UdpConnectable> UdpBindable::connect(const Timeout &timeout) {
   return connect(maybe_received->sender);
 }
 
-UdpConnectable::UdpConnectable(const Address &remote_address, const Port &port)
+UdpConnected::UdpConnected(const Address &remote_address, const Port &port)
     : PortToBindAware(port), RemoteAddressAware(remote_address) {}
 
-UdpConnectable::UdpConnectable(UdpConnectable &&o)
+UdpConnected::UdpConnected(UdpConnected &&o)
     : PortToBindAware(o), RemoteAddressAware(o) {
   Openable::transfer(*this, o);
 }
-UdpConnectable &UdpConnectable::operator=(UdpConnectable &&o) {
+UdpConnected &UdpConnected::operator=(UdpConnected &&o) {
   copy_as<PortToBindAware>(*this, o);
   copy_as<RemoteAddressAware>(*this, o);
   Openable::transfer(*this, o);
   return *this;
 }
 
-void UdpConnectable::open_() {
+void UdpConnected::open_() {
   const auto &socket_id = getIDWrapper().accessId();
   const auto &remote_address = getRemoteAddress();
   getIDWrapper().reset(UDP, remote_address.getFamily());
@@ -100,9 +79,9 @@ void UdpConnectable::open_() {
   MinimalSocket::connect(socket_id, remote_address);
 }
 
-UdpBindable UdpConnectable::disconnect() {
+UdpBinded UdpConnected::disconnect() {
   resetIDWrapper();
-  UdpBindable result(getPortToBind(), getRemoteAddress().getFamily());
+  UdpBinded result(getPortToBind(), getRemoteAddress().getFamily());
   result.open();
   return std::move(result);
 }
