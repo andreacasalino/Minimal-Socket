@@ -47,7 +47,7 @@ jobs:
     - name: Checkout submodules
       run:  git submodule update --init --recursive
     - name: CMake configure
-      run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_SAMPLES=OFF -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }} ${{ matrix.lib_opt }}
+      run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_MinimalCppSocket_SAMPLES=OFF -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }} ${{ matrix.lib_opt }}
     - name: build release
       run: cmake --build ./build --config Release
     - name: Install artifacts
