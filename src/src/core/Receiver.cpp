@@ -60,7 +60,17 @@ std::size_t Receiver::receive(Buffer &message, const Timeout &timeout) {
   return static_cast<std::size_t>(recvBytes);
 }
 
-ReceiverUnkownSender::ReceiveResult
+std::string Receiver::receive(std::size_t expected_max_bytes,
+                              const Timeout &timeout) {
+  std::string buffer;
+  buffer.resize(expected_max_bytes);
+  auto buffer_temp = makeStringBuffer(buffer);
+  auto recvBytes = receive(buffer_temp, timeout);
+  buffer.resize(recvBytes);
+  return buffer;
+}
+
+std::optional<ReceiverUnkownSender::ReceiveResult>
 ReceiverUnkownSender::receive(Buffer &message, const Timeout &timeout) {
   auto lock = lazyUpdateReceiveTimeout(timeout);
   SocketAddress sender_address;
@@ -72,14 +82,25 @@ ReceiverUnkownSender::receive(Buffer &message, const Timeout &timeout) {
     recvBytes = 0;
     throwWithLastErrorCode("receive failed");
   }
-  ReceiveResult result;
   if (recvBytes > message.buffer_size) {
     // if here, the message received is probably corrupted
-    result.received_bytes = 0;
-  } else {
-    result.received_bytes = static_cast<std::size_t>(recvBytes);
-    result.sender = toAddress(sender_address);
+    return std::nullopt;
   }
-  return result;
+  return ReceiveResult{toAddress(sender_address),
+                       static_cast<std::size_t>(recvBytes)};
+}
+
+std::optional<ReceiverUnkownSender::ReceiveStringResult>
+ReceiverUnkownSender::receive(std::size_t expected_max_bytes,
+                              const Timeout &timeout) {
+  std::string buffer;
+  buffer.resize(expected_max_bytes);
+  auto buffer_temp = makeStringBuffer(buffer);
+  auto result = receive(buffer_temp, timeout);
+  if (!result) {
+    return std::nullopt;
+  }
+  buffer.resize(buffer_temp.buffer_size);
+  return ReceiveStringResult{result->sender, std::move(buffer)};
 }
 } // namespace MinimalSocket

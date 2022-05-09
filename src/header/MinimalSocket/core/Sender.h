@@ -19,7 +19,9 @@ public:
    * @return true if the message was completely sent
    * @param[in] the message to send
    */
-  bool send(const Buffer &message);
+  bool send(const ConstBuffer &message);
+
+  bool send(const std::string &message);
 
 private:
   std::mutex send_mtx;
@@ -31,7 +33,9 @@ public:
    * @return true if the message was completely sent
    * @param[in] the message to send
    */
-  bool sendTo(const Buffer &message, const Address &recipient);
+  bool sendTo(const ConstBuffer &message, const Address &recipient);
+
+  bool sendTo(const std::string &message, const Address &recipient);
 
 private:
   std::mutex send_mtx;

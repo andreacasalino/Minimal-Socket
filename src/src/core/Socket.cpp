@@ -18,6 +18,14 @@ void clear(Buffer &subject) {
   ::memset(subject.buffer, 0, subject.buffer_size);
 }
 
+Buffer makeStringBuffer(std::string &subject) {
+  return Buffer{subject.data(), subject.size()};
+}
+
+ConstBuffer makeStringConstBuffer(const std::string &subject) {
+  return ConstBuffer{subject.data(), subject.size()};
+}
+
 Socket::~Socket() = default;
 
 Socket::Socket() { resetIDWrapper(); }

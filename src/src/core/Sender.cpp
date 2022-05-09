@@ -12,7 +12,7 @@
 #include "../Utils.h"
 
 namespace MinimalSocket {
-bool Sender::send(const Buffer &message) {
+bool Sender::send(const ConstBuffer &message) {
   std::scoped_lock lock(send_mtx);
   int sentBytes = ::send(getIDWrapper().accessId(), message.buffer,
                          static_cast<int>(message.buffer_size), 0);
@@ -23,7 +23,11 @@ bool Sender::send(const Buffer &message) {
   return (sentBytes == static_cast<int>(message.buffer_size));
 }
 
-bool SenderTo::sendTo(const Buffer &message, const Address &recipient) {
+bool Sender::send(const std::string &message) {
+  return send(makeStringConstBuffer(message));
+}
+
+bool SenderTo::sendTo(const ConstBuffer &message, const Address &recipient) {
   std::scoped_lock lock(send_mtx);
   int sentBytes;
   visitAddress(
@@ -51,5 +55,9 @@ bool SenderTo::sendTo(const Buffer &message, const Address &recipient) {
     throwWithLastErrorCode("send to failed");
   }
   return (sentBytes == static_cast<int>(message.buffer_size));
+}
+
+bool SenderTo::sendTo(const std::string &message, const Address &recipient) {
+  return sendTo(makeStringConstBuffer(message), recipient);
 }
 } // namespace MinimalSocket
