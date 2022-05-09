@@ -17,9 +17,16 @@
 namespace MinimalSocket {
 struct Buffer {
   char *buffer;
-  std::size_t buffer_size;
+  const std::size_t buffer_size;
 };
 void clear(Buffer &subject);
+Buffer makeStringBuffer(std::string &subject);
+
+struct ConstBuffer {
+  const char *buffer;
+  const std::size_t buffer_size;
+};
+ConstBuffer makeStringConstBuffer(const std::string &subject);
 
 enum SocketType { UDP, TCP };
 

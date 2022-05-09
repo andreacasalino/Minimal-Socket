@@ -36,6 +36,9 @@ public:
    * message (can be also less than the buffer size)
    */
   std::size_t receive(Buffer &message, const Timeout &timeout = NULL_TIMEOUT);
+
+  std::string receive(std::size_t expected_max_bytes,
+                      const Timeout &timeout = NULL_TIMEOUT);
 };
 
 class ReceiverUnkownSender : public ReceiverBase {
@@ -51,9 +54,18 @@ public:
    * message (can be also less than the buffer size)
    */
   struct ReceiveResult {
-    std::optional<Address> sender;
+    Address sender;
     std::size_t received_bytes;
   };
-  ReceiveResult receive(Buffer &message, const Timeout &timeout = NULL_TIMEOUT);
+  std::optional<ReceiveResult> receive(Buffer &message,
+                                       const Timeout &timeout = NULL_TIMEOUT);
+
+  struct ReceiveStringResult {
+    Address sender;
+    std::string received_message;
+  };
+  std::optional<ReceiveStringResult>
+  receive(std::size_t expected_max_bytes,
+          const Timeout &timeout = NULL_TIMEOUT);
 };
 } // namespace MinimalSocket
