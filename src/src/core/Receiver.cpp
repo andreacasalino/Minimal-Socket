@@ -75,11 +75,15 @@ std::optional<ReceiverUnkownSender::ReceiveResult>
 ReceiverUnkownSender::receive(Buffer &message, const Timeout &timeout) {
   auto lock = lazyUpdateReceiveTimeout(timeout);
   clear(message);
-  SocketAddress sender_address;
-  SocketAddressLength sender_address_length;
-  int recvBytes = ::recvfrom(getIDWrapper().accessId(), message.buffer,
-                             static_cast<int>(message.buffer_size), 0,
-                             &sender_address, &sender_address_length);
+
+  char sender_address[MAX_POSSIBLE_ADDRESS_SIZE];
+  SocketAddressLength sender_address_length = MAX_POSSIBLE_ADDRESS_SIZE;
+
+  int recvBytes =
+      ::recvfrom(getIDWrapper().accessId(), message.buffer,
+                 static_cast<int>(message.buffer_size), 0,
+                 reinterpret_cast<SocketAddress *>(&sender_address[0]),
+                 &sender_address_length);
   if (recvBytes == SCK_SOCKET_ERROR) {
     recvBytes = 0;
     throwWithLastErrorCode("receive failed");
@@ -88,8 +92,9 @@ ReceiverUnkownSender::receive(Buffer &message, const Timeout &timeout) {
     // if here, the message received is probably corrupted
     return std::nullopt;
   }
-  return ReceiveResult{toAddress(sender_address),
-                       static_cast<std::size_t>(recvBytes)};
+  return ReceiveResult{
+      toAddress(reinterpret_cast<const SocketAddress &>(sender_address)),
+      static_cast<std::size_t>(recvBytes)};
 }
 
 std::optional<ReceiverUnkownSender::ReceiveStringResult>
