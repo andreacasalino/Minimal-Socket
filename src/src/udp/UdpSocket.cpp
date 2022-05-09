@@ -85,4 +85,16 @@ UdpBinded UdpConnected::disconnect() {
   result.open();
   return std::move(result);
 }
+
+UdpConnected makeUdpConnected(const Port &port,
+                              const AddressFamily &accepted_connection_family,
+                              const Timeout &timeout) {
+  UdpBinded primal_socket(port, accepted_connection_family);
+  primal_socket.open();
+  auto maybe_result = primal_socket.connect(timeout);
+  if (!maybe_result) {
+    throw Error{"Something went wrong creating a UdpConnected socket"};
+  }
+  return std::move(maybe_result.value());
+}
 } // namespace MinimalSocket::udp
