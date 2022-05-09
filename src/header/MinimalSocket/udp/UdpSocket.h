@@ -39,7 +39,7 @@ public:
   UdpConnected connect(const Address &remote_address);
 
   std::optional<UdpConnected>
-  connect(const Timeout &timeout); // to first sending 1 byte
+  connect(const Timeout &timeout = NULL_TIMEOUT); // to first sending 1 byte
 
 protected:
   void open_() override;

@@ -7,8 +7,8 @@
 #include <MinimalSocket/tcp/TcpClient.h>
 #include <MinimalSocket/tcp/TcpServer.h>
 
-#include <Parallel.h>
-#include <PortFactory.h>
+#include "Parallel.h"
+#include "PortFactory.h"
 
 using namespace MinimalSocket;
 using namespace MinimalSocket::tcp;
@@ -35,18 +35,14 @@ void send_response(const SenderReceiver &requester,
       [&]() {
         for (std::size_t c = 0; c < cycles; ++c) {
           CHECK(requester.sender.send(request));
-          Buffer buffer;
-          buffer.resize(response.size());
-          requester.receiver.receive(buffer);
-          CHECK(buffer == response);
+          auto received_response = requester.receiver.receive(response.size());
+          CHECK(received_response == response);
         }
       },
       [&]() {
         for (std::size_t c = 0; c < cycles; ++c) {
-          Buffer buffer;
-          buffer.resize(request.size());
-          responder.receiver.receive(buffer);
-          CHECK(buffer == request);
+          auto received_request = responder.receiver.receive(request.size());
+          CHECK(received_request == request);
           CHECK(responder.sender.send(response));
         }
       });
