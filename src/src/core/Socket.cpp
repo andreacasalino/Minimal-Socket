@@ -73,7 +73,7 @@ bool Openable::open(const Timeout &timeout) {
       if (open_task_status != std::future_status::ready) {
         resetIDWrapper();
         open_task.get(); // should throw already here
-        throw Error{""}; // jsut to be sure it throws
+        throw Error{""}; // just to be sure it throws
       }
     }
     opened = true;
