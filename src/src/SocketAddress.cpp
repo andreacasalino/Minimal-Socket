@@ -51,7 +51,7 @@ std::optional<SocketAddressIpv4> toSocketAddressIpv4(const std::string &host,
     return std::nullopt;
   }
 
-  auto ipv4 = reinterpret_cast<sockaddr_in *>(res->ai_addr);
+  auto ipv4 = reinterpret_cast<SocketAddressIpv4 *>(res->ai_addr);
   result_ref.sin_addr.s_addr = ipv4->sin_addr.s_addr;
   ::freeaddrinfo(res);
   return result;
@@ -92,7 +92,7 @@ std::optional<SocketAddressIpv6> toSocketAddressIpv6(const std::string &host,
     return std::nullopt;
   }
 
-  auto ipv6 = reinterpret_cast<sockaddr_in6 *>(res->ai_addr);
+  auto ipv6 = reinterpret_cast<SocketAddressIpv6 *>(res->ai_addr);
   result_ref.sin6_addr = ipv6->sin6_addr;
   ::freeaddrinfo(res);
   return result;

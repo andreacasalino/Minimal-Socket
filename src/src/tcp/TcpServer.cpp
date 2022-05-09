@@ -44,18 +44,22 @@ TcpConnection TcpServer::acceptNewClient() {
   if (!this->wasOpened()) {
     throw Error("Tcp server was not opened before starting to accept clients");
   }
-  SocketAddress acceptedClientAddress;
-  SocketAddressLength acceptedAddressLength = sizeof(SocketAddress);
+
+  char acceptedClientAddress[MAX_POSSIBLE_ADDRESS_SIZE];
+  SocketAddressLength acceptedClientAddress_length = MAX_POSSIBLE_ADDRESS_SIZE;
+
   // accept: wait for a client to call connect and hit this server and get a
   // pointer to this client.
   SocketID accepted_client_socket_id =
-      ::accept(getIDWrapper().accessId(), &acceptedClientAddress,
-               &acceptedAddressLength);
+      ::accept(getIDWrapper().accessId(),
+               reinterpret_cast<SocketAddress *>(&acceptedClientAddress[0]),
+               &acceptedClientAddress_length);
   if (accepted_client_socket_id == SCK_INVALID_SOCKET) {
     throwWithLastErrorCode("Error: accepting new client");
   }
 
-  auto accepted_client_parsed_address = toAddress(acceptedClientAddress);
+  auto accepted_client_parsed_address =
+      toAddress(reinterpret_cast<const SocketAddress &>(acceptedClientAddress));
   TcpConnection result(accepted_client_parsed_address);
   result.getIDWrapper().reset(accepted_client_socket_id);
   return std::move(result);
