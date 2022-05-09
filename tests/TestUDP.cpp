@@ -17,8 +17,8 @@ static const std::string request = "Hello";
 static const std::string response = "Welcome";
 } // namespace
 
-TEST_CASE("exchange messages between UdpBinded and UdpBinded", "[udp]") {
-  const auto family = IP_V4; // GENERATE(IP_V4, IP_V6);
+TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
+  const auto family = IP_V6; // GENERATE(IP_V4, IP_V6);
   const std::size_t cycles = 5;
 
   const auto requester_port = PortFactory::makePort();
@@ -56,7 +56,7 @@ TEST_CASE("exchange messages between UdpBinded and UdpBinded", "[udp]") {
       });
 }
 
-TEST_CASE("exchange messages between UdpConnected and UdpConnected", "[udp]") {
+TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
   const auto family = IP_V4; // GENERATE(IP_V4, IP_V6);
   const std::size_t cycles = 5;
 
