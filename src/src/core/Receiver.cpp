@@ -21,7 +21,7 @@ ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
   // set new timeout
 #ifdef _WIN32
   auto tv = DWORD(this->receive_timeout.count());
-  if (setsockopt(getIDWrapper().access(), SOL_SOCKET, SO_RCVTIMEO,
+  if (setsockopt(getIDWrapper().accessId(), SOL_SOCKET, SO_RCVTIMEO,
                  reinterpret_cast<const char *>(&tv),
                  sizeof(DWORD)) == SOCKET_ERROR) {
 #else
