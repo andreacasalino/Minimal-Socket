@@ -64,4 +64,9 @@ public:
 protected:
   void open_() override;
 };
+
+UdpConnected makeUdpConnected(
+    const Port &port = ANY_PORT,
+    const AddressFamily &accepted_connection_family = AddressFamily::IP_V4,
+    const Timeout &timeout = NULL_TIMEOUT);
 } // namespace MinimalSocket::udp
