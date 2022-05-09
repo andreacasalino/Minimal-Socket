@@ -72,18 +72,25 @@ Port bind(const SocketID &socket_id, const AddressFamily &family,
 
   Port binded_port = port;
   if (ANY_PORT == port) {
-    SocketAddress binded_address;
-    SocketAddressLength binded_address_length;
-    if (::getsockname(socket_id, &binded_address, &binded_address_length) ==
-        SCK_SOCKET_ERROR) {
+    char binded_address[MAX_POSSIBLE_ADDRESS_SIZE];
+    SocketAddressLength binded_address_length = MAX_POSSIBLE_ADDRESS_SIZE;
+    if (::getsockname(socket_id,
+                      reinterpret_cast<SocketAddress *>(&binded_address[0]),
+                      &binded_address_length) == SCK_SOCKET_ERROR) {
       throwWithLastErrorCode("Wasn't able to deduce the binded port");
     }
-    if (AF_INET == binded_address.sa_family) {
+    switch (reinterpret_cast<const SocketAddress &>(binded_address).sa_family) {
+    case AF_INET:
       binded_port =
           reinterpret_cast<const SocketAddressIpv4 &>(binded_address).sin_port;
-    } else {
+      break;
+    case AF_INET6:
       binded_port =
           reinterpret_cast<const SocketAddressIpv6 &>(binded_address).sin6_port;
+      break;
+    default:
+      throw Error{"Wasn't able to deduce the binded port"};
+      break;
     }
   }
   return binded_port;
