@@ -86,9 +86,10 @@ UdpBinded UdpConnected::disconnect() {
   return std::move(result);
 }
 
-UdpConnected makeUdpConnected(const Port &port,
-                              const AddressFamily &accepted_connection_family,
-                              const Timeout &timeout) {
+UdpConnected
+makeUdpConnectedToUnknown(const Port &port,
+                          const AddressFamily &accepted_connection_family,
+                          const Timeout &timeout) {
   UdpBinded primal_socket(port, accepted_connection_family);
   primal_socket.open();
   auto maybe_result = primal_socket.connect(timeout);

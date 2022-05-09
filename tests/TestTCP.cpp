@@ -15,44 +15,11 @@ using namespace MinimalSocket::tcp;
 using namespace MinimalSocket::test;
 
 namespace {
-struct SenderReceiver {
-  Sender &sender;
-  Receiver &receiver;
+struct Peers {
+  std::unique_ptr<TcpConnection> server_side;
+  std::unique_ptr<TcpClient> client_side;
 };
-template <typename T> SenderReceiver makeSenderReceiver(T &subject) {
-  Sender &as_sender = subject;
-  Receiver &as_receiver = subject;
-  return SenderReceiver{as_sender, as_receiver};
-}
-
-void send_response(const SenderReceiver &requester,
-                   const SenderReceiver &responder) {
-  std::size_t cycles = 5;
-  const std::string request = "Hello";
-  const std::string response = "Welcome";
-
-  parallel(
-      [&]() {
-        for (std::size_t c = 0; c < cycles; ++c) {
-          CHECK(requester.sender.send(request));
-          auto received_response = requester.receiver.receive(response.size());
-          CHECK(received_response == response);
-        }
-      },
-      [&]() {
-        for (std::size_t c = 0; c < cycles; ++c) {
-          auto received_request = responder.receiver.receive(request.size());
-          CHECK(received_request == request);
-          CHECK(responder.sender.send(response));
-        }
-      });
-}
-} // namespace
-
-TEST_CASE("Establish tcp connection", "[tcp]") {
-  const auto port = PortFactory::makePort();
-  const auto family = GENERATE(IP_V4, IP_V6);
-
+Peers make_peers(const Port &port, const AddressFamily &family) {
   std::unique_ptr<TcpConnection> server_side;
   std::unique_ptr<TcpClient> client_side;
 
@@ -76,22 +43,75 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
         client_side = std::make_unique<TcpClient>(std::move(client));
       });
 
-  REQUIRE_FALSE(nullptr == *client_side);
-  REQUIRE(client_side->wasOpened());
-  REQUIRE_FALSE(nullptr == *server_side);
+  return Peers{std::move(server_side), std::move(client_side)};
+}
 
-  const std::size_t cycles = 5;
-  const std::string request = "Hello";
-  const std::string response = "Welcome";
+static const std::string request = "Hello";
+static const std::string response = "Welcome";
 
-  SECTION("client send, server respond") {
-    send_response(makeSenderReceiver(*client_side),
-                  makeSenderReceiver(*server_side));
+struct SenderReceiver {
+  Sender &sender;
+  Receiver &receiver;
+};
+template <typename T> SenderReceiver makeSenderReceiver(T &subject) {
+  Sender &as_sender = subject;
+  Receiver &as_receiver = subject;
+  return SenderReceiver{as_sender, as_receiver};
+}
+
+void send_response(const SenderReceiver &requester,
+                   const SenderReceiver &responder) {
+  std::size_t cycles = 5;
+
+  parallel(
+      [&]() {
+        for (std::size_t c = 0; c < cycles; ++c) {
+          CHECK(requester.sender.send(request));
+          auto received_response = requester.receiver.receive(response.size());
+          CHECK(received_response == response);
+        }
+      },
+      [&]() {
+        for (std::size_t c = 0; c < cycles; ++c) {
+          auto received_request = responder.receiver.receive(request.size());
+          CHECK(received_request == request);
+          CHECK(responder.sender.send(response));
+        }
+      });
+}
+} // namespace
+
+TEST_CASE("Establish tcp connection", "[tcp]") {
+  const auto port = PortFactory::makePort();
+  const auto family = GENERATE(IP_V4, IP_V6);
+
+  SECTION("expected success") {
+    auto peers = make_peers(port, family);
+    auto &[server_side, client_side] = peers;
+
+    REQUIRE_FALSE(nullptr == *client_side);
+    REQUIRE(client_side->wasOpened());
+    REQUIRE_FALSE(nullptr == *server_side);
+
+    const std::size_t cycles = 5;
+    const std::string request = "Hello";
+    const std::string response = "Welcome";
+
+    SECTION("client send, server respond") {
+      send_response(makeSenderReceiver(*client_side),
+                    makeSenderReceiver(*server_side));
+    }
+
+    SECTION("server send, client respond") {
+      send_response(makeSenderReceiver(*server_side),
+                    makeSenderReceiver(*client_side));
+    }
   }
 
-  SECTION("server send, client respond") {
-    send_response(makeSenderReceiver(*server_side),
-                  makeSenderReceiver(*client_side));
+  SECTION("expected failure") {
+    TcpClient client(Address::makeLocalHost(port, family));
+    CHECK_FALSE(client.open());
+    CHECK_FALSE(client.wasOpened());
   }
 }
 
@@ -161,4 +181,68 @@ TEST_CASE("Open multiple times tcp clients", "[tcp]") {
   }
 }
 
-// tests receive e open con timeout
+#include <thread>
+
+TEST_CASE("Open tcp client with timeout", "[tcp]") {
+  const auto port = PortFactory::makePort();
+  const auto family = GENERATE(IP_V4, IP_V6);
+
+  const auto timeout = Timeout{500};
+
+  TcpClient client(Address::makeLocalHost(port, family));
+
+  SECTION("expect fail within timeout") {
+    CHECK_FALSE(client.open(timeout));
+    CHECK_FALSE(client.wasOpened());
+  }
+
+  SECTION("expect success within timeout") {
+    const auto wait = Timeout{250};
+    TcpServer server(port, family);
+    REQUIRE(server.open());
+    parallel(
+        [&]() {
+#pragma omp barrier
+          std::this_thread::sleep_for(wait);
+          server.acceptNewClient();
+        },
+        [&]() {
+#pragma omp barrier
+          CHECK(client.open(timeout));
+        });
+  }
+}
+
+TEST_CASE("Receive with timeout", "[tcp]") {
+  const auto port = PortFactory::makePort();
+  const auto family = GENERATE(IP_V4, IP_V6);
+
+  auto peers = make_peers(port, family);
+  auto &[server_side, client_side] = peers;
+
+  REQUIRE_FALSE(nullptr == *client_side);
+  REQUIRE(client_side->wasOpened());
+  REQUIRE_FALSE(nullptr == *server_side);
+
+  const auto timeout = Timeout{500};
+
+  SECTION("expect fail within timeout") {
+    auto received = server_side->receive(request.size(), timeout);
+    CHECK(received.empty());
+  }
+
+  SECTION("expect success within timeout") {
+    const auto wait = Timeout{250};
+    parallel(
+        [&]() {
+#pragma omp barrier
+          std::this_thread::sleep_for(wait);
+          client_side->send(request);
+        },
+        [&]() {
+#pragma omp barrier
+          auto received_request = server_side->receive(request.size(), timeout);
+          CHECK(received_request == request);
+        });
+  }
+}
