@@ -102,8 +102,9 @@ Address toAddress(const SocketAddress &address) {
   // refer to
   // https://stackoverflow.com/questions/11684008/how-do-you-cast-sockaddr-structure-to-a-sockaddr-in-c-networking-sockets-ubu
   std::string ip;
-  Port port;
-  if (AF_INET == address.sa_family) {
+  Port port = ANY_PORT;
+  switch (address.sa_family) {
+  case AF_INET: {
     // ipv4 address
     // inet_ntoa is deprecated, but using inet_ntop for ipv4 address, leads to
     // an ip that has no sense
@@ -111,7 +112,9 @@ Address toAddress(const SocketAddress &address) {
         reinterpret_cast<const SocketAddressIpv4 *>(&address)->sin_addr));
     port =
         ntohs(reinterpret_cast<const SocketAddressIpv4 *>(&address)->sin_port);
-  } else {
+
+  } break;
+  case AF_INET6: {
     // ipv6 address
     char temp[INET6_ADDRSTRLEN]; // this is the longest one
     // refer to
@@ -121,6 +124,10 @@ Address toAddress(const SocketAddress &address) {
     ip = std::string(temp, INET6_ADDRSTRLEN);
     port =
         ntohs(reinterpret_cast<const SocketAddressIpv6 *>(&address)->sin6_port);
+
+  } break;
+  default:
+    break;
   }
   return Address{ip, port};
 }
