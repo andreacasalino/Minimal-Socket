@@ -2,6 +2,7 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include <omp.h>
+#include <thread>
 
 #include <MinimalSocket/udp/UdpSocket.h>
 
@@ -61,6 +62,33 @@ TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
 #pragma omp barrier
         }
       });
+
+  SECTION("receive with timeout") {
+    const auto timeout = Timeout{500};
+
+    SECTION("expect fail within timeout") {
+      auto received_request = responder.receive(request.size(), timeout);
+      CHECK_FALSE(received_request);
+    }
+
+    SECTION("expect success within timeout") {
+      const auto wait = Timeout{250};
+      parallel(
+          [&]() {
+#pragma omp barrier
+            std::this_thread::sleep_for(wait);
+            requester.sendTo(request, responder_address);
+          },
+          [&]() {
+#pragma omp barrier
+            auto received_request = responder.receive(request.size(), timeout);
+            REQUIRE(received_request);
+            CHECK(received_request->received_message == request);
+            CHECK(
+                are_same(received_request->sender, requester_address, family));
+          });
+    }
+  }
 }
 
 TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
@@ -99,6 +127,30 @@ TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
 #pragma omp barrier
         }
       });
+
+  SECTION("receive with timeout") {
+    const auto timeout = Timeout{500};
+
+    SECTION("expect fail within timeout") {
+      auto received_request = responder.receive(request.size(), timeout);
+      CHECK(received_request.empty());
+    }
+
+    SECTION("expect success within timeout") {
+      const auto wait = Timeout{250};
+      parallel(
+          [&]() {
+#pragma omp barrier
+            std::this_thread::sleep_for(wait);
+            requester.send(request);
+          },
+          [&]() {
+#pragma omp barrier
+            auto received_request = responder.receive(request.size(), timeout);
+            CHECK(received_request == request);
+          });
+    }
+  }
 }
 
 TEST_CASE("Metamorphosis of udp connections", "[udp]") {
@@ -197,4 +249,43 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
       });
 }
 
-// tests receive e open con timeout
+#include <thread>
+
+TEST_CASE("Open connection with timeout", "[udp]") {
+  const auto family = GENERATE(IP_V4, IP_V6);
+
+  const auto requester_port = PortFactory::makePort();
+  const Address requester_address =
+      Address::makeLocalHost(requester_port, family);
+  UdpBinded requester(requester_port, family);
+  REQUIRE(requester.open());
+
+  const auto responder_port = PortFactory::makePort();
+  const Address responder_address =
+      Address::makeLocalHost(responder_port, family);
+  UdpBinded responder(responder_port, family);
+  REQUIRE(responder.open());
+
+  const auto timeout = Timeout{500};
+
+  SECTION("expect fail within timeout") {
+    CHECK_FALSE(requester.connect(timeout));
+  }
+
+  SECTION("expect success within timeout") {
+    const auto wait = Timeout{250};
+    parallel(
+        [&]() {
+#pragma omp barrier
+          std::this_thread::sleep_for(wait);
+          responder.sendTo("1", requester_address);
+        },
+        [&]() {
+#pragma omp barrier
+          auto connected_result = requester.connect(timeout);
+          REQUIRE(connected_result);
+          CHECK(are_same(connected_result->getRemoteAddress(),
+                         responder_address, family));
+        });
+  }
+}

@@ -3,6 +3,7 @@
 
 #include <list>
 #include <omp.h>
+#include <thread>
 
 #include <MinimalSocket/tcp/TcpClient.h>
 #include <MinimalSocket/tcp/TcpServer.h>
@@ -85,6 +86,12 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
   const auto port = PortFactory::makePort();
   const auto family = GENERATE(IP_V4, IP_V6);
 
+  SECTION("expected failure") {
+    TcpClient client(Address::makeLocalHost(port, family));
+    CHECK_FALSE(client.open());
+    CHECK_FALSE(client.wasOpened());
+  }
+
   SECTION("expected success") {
     auto peers = make_peers(port, family);
     auto &[server_side, client_side] = peers;
@@ -106,12 +113,31 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
       send_response(makeSenderReceiver(*server_side),
                     makeSenderReceiver(*client_side));
     }
-  }
 
-  SECTION("expected failure") {
-    TcpClient client(Address::makeLocalHost(port, family));
-    CHECK_FALSE(client.open());
-    CHECK_FALSE(client.wasOpened());
+    SECTION("receive with timeout") {
+      const auto timeout = Timeout{500};
+
+      SECTION("expect fail within timeout") {
+        auto received_request = server_side->receive(request.size(), timeout);
+        CHECK(received_request.empty());
+      }
+
+      SECTION("expect success within timeout") {
+        const auto wait = Timeout{250};
+        parallel(
+            [&]() {
+#pragma omp barrier
+              std::this_thread::sleep_for(wait);
+              client_side->send(request);
+            },
+            [&]() {
+#pragma omp barrier
+              auto received_request =
+                  server_side->receive(request.size(), timeout);
+              CHECK(received_request == request);
+            });
+      }
+    }
   }
 }
 
@@ -209,40 +235,6 @@ TEST_CASE("Open tcp client with timeout", "[tcp]") {
         [&]() {
 #pragma omp barrier
           CHECK(client.open(timeout));
-        });
-  }
-}
-
-TEST_CASE("Receive with timeout", "[tcp]") {
-  const auto port = PortFactory::makePort();
-  const auto family = GENERATE(IP_V4, IP_V6);
-
-  auto peers = make_peers(port, family);
-  auto &[server_side, client_side] = peers;
-
-  REQUIRE_FALSE(nullptr == *client_side);
-  REQUIRE(client_side->wasOpened());
-  REQUIRE_FALSE(nullptr == *server_side);
-
-  const auto timeout = Timeout{500};
-
-  SECTION("expect fail within timeout") {
-    auto received = server_side->receive(request.size(), timeout);
-    CHECK(received.empty());
-  }
-
-  SECTION("expect success within timeout") {
-    const auto wait = Timeout{250};
-    parallel(
-        [&]() {
-#pragma omp barrier
-          std::this_thread::sleep_for(wait);
-          client_side->send(request);
-        },
-        [&]() {
-#pragma omp barrier
-          auto received_request = server_side->receive(request.size(), timeout);
-          CHECK(received_request == request);
         });
   }
 }
