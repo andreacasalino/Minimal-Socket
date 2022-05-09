@@ -207,8 +207,6 @@ TEST_CASE("Open multiple times tcp clients", "[tcp]") {
   }
 }
 
-#include <thread>
-
 TEST_CASE("Open tcp client with timeout", "[tcp]") {
   const auto port = PortFactory::makePort();
   const auto family = GENERATE(IP_V4, IP_V6);

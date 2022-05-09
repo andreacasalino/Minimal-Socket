@@ -151,6 +151,24 @@ TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
           });
     }
   }
+
+  SECTION(
+      "receive from third peer expected to fail since socket was connected") {
+    UdpConnected second_requester(responder_address, PortFactory::makePort());
+    const auto timeout = Timeout{500};
+    const auto wait = Timeout{250};
+    parallel(
+        [&]() {
+#pragma omp barrier
+          std::this_thread::sleep_for(wait);
+          second_requester.send(request);
+        },
+        [&]() {
+#pragma omp barrier
+          auto received_request = responder.receive(request.size(), timeout);
+          CHECK(received_request.empty());
+        });
+  }
 }
 
 TEST_CASE("Metamorphosis of udp connections", "[udp]") {
@@ -248,8 +266,6 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
         }
       });
 }
-
-#include <thread>
 
 TEST_CASE("Open connection with timeout", "[udp]") {
   const auto family = GENERATE(IP_V4, IP_V6);
