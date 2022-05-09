@@ -11,11 +11,13 @@
 #include <MinimalSocket/core/Socket.h>
 
 #ifdef _WIN32
-#include <mutex>
 #include <stdio.h>
 #include <winsock2.h>
 #include <ws2ipdef.h>
 #include <ws2tcpip.h>
+
+#include <memory>
+#include <mutex>
 #else
 #include <arpa/inet.h>
 #include <errno.h>
@@ -74,26 +76,23 @@ public:
    */
   void reset(const SocketID &hndl);
 
-#ifdef _WIN32
-  class SocketIDFactory {
-  public:
-      /**
-       * @brief If we are about to open the first socket, WSAStartup() is invoked
-       */
-      static void beforeOpen();
-      /**
-       * @brief If we are closing the last socket, WSACleanup() is invoked
-       */
-      static void afterClose();
-
-  private:
-      static std::mutex handlerCounterMtx;
-      static std::size_t handlerCounter;
-  };
-#endif
-
 private:
   SocketID socket_id = SCK_INVALID_SOCKET;
 };
 
+
+#ifdef _WIN32
+class WSALazyInitializer {
+public:
+	static void lazyInit();
+
+	~WSALazyInitializer();
+
+private:
+	WSALazyInitializer();
+
+	static std::mutex lazy_proxy_mtx;
+	static std::unique_ptr<WSALazyInitializer> lazy_proxy;
+};
+#endif
 } // namespace MinimalSocket

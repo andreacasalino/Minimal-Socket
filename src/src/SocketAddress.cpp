@@ -19,6 +19,10 @@
 namespace MinimalSocket {
 std::optional<SocketAddressIpv4> toSocketAddressIpv4(const std::string &host,
                                                      const Port &port) {
+#ifdef _WIN32
+    WSALazyInitializer::lazyInit();
+#endif
+
   std::optional<SocketAddressIpv4> result;
   auto &result_ref = result.emplace();
   // set everything to 0 first
@@ -51,14 +55,18 @@ std::optional<SocketAddressIpv4> toSocketAddressIpv4(const std::string &host,
     return std::nullopt;
   }
 
-  auto ipv4 = reinterpret_cast<SocketAddressIpv4 *>(res->ai_addr);
-  result_ref.sin_addr.s_addr = ipv4->sin_addr.s_addr;
+  const auto& ipv4 = reinterpret_cast<const SocketAddressIpv4 &>(res->ai_addr);
+  result_ref.sin_addr.s_addr = ipv4.sin_addr.s_addr;
   ::freeaddrinfo(res);
   return result;
 }
 
 std::optional<SocketAddressIpv6> toSocketAddressIpv6(const std::string &host,
                                                      const Port &port) {
+#ifdef _WIN32
+    WSALazyInitializer::lazyInit();
+#endif
+
   std::optional<SocketAddressIpv6> result;
   auto &result_ref = result.emplace();
   // set everything to 0 first
@@ -92,13 +100,17 @@ std::optional<SocketAddressIpv6> toSocketAddressIpv6(const std::string &host,
     return std::nullopt;
   }
 
-  auto ipv6 = reinterpret_cast<SocketAddressIpv6 *>(res->ai_addr);
-  result_ref.sin6_addr = ipv6->sin6_addr;
+  const auto& ipv6 = reinterpret_cast<const SocketAddressIpv6 &>(res->ai_addr);
+  result_ref.sin6_addr = ipv6.sin6_addr;
   ::freeaddrinfo(res);
   return result;
 }
 
 Address toAddress(const SocketAddress &address) {
+#ifdef _WIN32
+    WSALazyInitializer::lazyInit();
+#endif
+
   // refer to
   // https://stackoverflow.com/questions/11684008/how-do-you-cast-sockaddr-structure-to-a-sockaddr-in-c-networking-sockets-ubu
   std::string ip;
