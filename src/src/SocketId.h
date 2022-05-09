@@ -74,26 +74,26 @@ public:
    */
   void reset(const SocketID &hndl);
 
-private:
-  SocketID socket_id = SCK_INVALID_SOCKET;
-
 #ifdef _WIN32
   class SocketIDFactory {
   public:
-    /**
-     * @brief If we are about to open the first socket, WSAStartup() is invoked
-     */
-    static void beforeOpen();
-    /**
-     * @brief If we are closing the last socket, WSACleanup() is invoked
-     */
-    static void afterClose();
+      /**
+       * @brief If we are about to open the first socket, WSAStartup() is invoked
+       */
+      static void beforeOpen();
+      /**
+       * @brief If we are closing the last socket, WSACleanup() is invoked
+       */
+      static void afterClose();
 
   private:
-    static std::mutex handlerCounterMtx;
-    static std::size_t handlerCounter;
+      static std::mutex handlerCounterMtx;
+      static std::size_t handlerCounter;
   };
 #endif
+
+private:
+  SocketID socket_id = SCK_INVALID_SOCKET;
 };
 
 } // namespace MinimalSocket

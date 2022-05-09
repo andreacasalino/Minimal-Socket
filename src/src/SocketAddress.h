@@ -43,7 +43,7 @@ using SocketAddressIpv6 = sockaddr_in6;
 #endif
 
 static constexpr std::size_t MAX_POSSIBLE_ADDRESS_SIZE =
-    std::max(sizeof(SocketAddressIpv4), sizeof(SocketAddressIpv6));
+    std::max<std::size_t>(sizeof(SocketAddressIpv4), sizeof(SocketAddressIpv6));
 
 /**
  * @brief checks the address syntax and in case

@@ -49,7 +49,7 @@ void close(SocketID &socket_id) {
 #endif
   socket_id = SCK_INVALID_SOCKET;
 #ifdef _WIN32
-  SocketIDFactory::afterClose();
+  SocketIdWrapper::SocketIDFactory::afterClose();
 #endif
 }
 } // namespace
