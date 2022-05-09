@@ -47,6 +47,7 @@ ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
 
 std::size_t Receiver::receive(Buffer &message, const Timeout &timeout) {
   auto lock = lazyUpdateReceiveTimeout(timeout);
+  clear(message);
   int recvBytes = ::recv(getIDWrapper().accessId(), message.buffer,
                          static_cast<int>(message.buffer_size), 0);
   if (recvBytes == SCK_SOCKET_ERROR) {
@@ -73,6 +74,7 @@ std::string Receiver::receive(std::size_t expected_max_bytes,
 std::optional<ReceiverUnkownSender::ReceiveResult>
 ReceiverUnkownSender::receive(Buffer &message, const Timeout &timeout) {
   auto lock = lazyUpdateReceiveTimeout(timeout);
+  clear(message);
   SocketAddress sender_address;
   SocketAddressLength sender_address_length;
   int recvBytes = ::recvfrom(getIDWrapper().accessId(), message.buffer,
