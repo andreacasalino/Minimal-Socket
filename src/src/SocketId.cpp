@@ -12,26 +12,23 @@
 
 namespace MinimalSocket {
 #ifdef _WIN32
-std::size_t SocketIdWrapper::SocketIDFactory::handlerCounter = 0;
-std::mutex SocketIdWrapper::SocketIDFactory::handlerCounterMtx;
-
-void SocketIdWrapper::SocketIDFactory::beforeOpen() {
-  std::lock_guard<std::mutex> hndLck(handlerCounterMtx);
-  ++handlerCounter;
-  if (1 == handlerCounter) {
-    // first socket opened
+WSALazyInitializer::WSALazyInitializer() {
     WSADATA wsa;
     WSAStartup(MAKEWORD(2, 0), &wsa);
-  }
 }
 
-void SocketIdWrapper::SocketIDFactory::afterClose() {
-  std::lock_guard<std::mutex> hndLck(handlerCounterMtx);
-  --handlerCounter;
-  if (0 == handlerCounter) {
-    // last socket closed
+WSALazyInitializer::~WSALazyInitializer() {
     WSACleanup();
-  }
+}
+
+std::mutex WSALazyInitializer::lazy_proxy_mtx = std::mutex{};
+std::unique_ptr<WSALazyInitializer> WSALazyInitializer::lazy_proxy = nullptr;
+
+void WSALazyInitializer::lazyInit() {
+    std::scoped_lock lock(WSALazyInitializer::lazy_proxy_mtx);
+    if (nullptr == WSALazyInitializer::lazy_proxy) {
+        WSALazyInitializer::lazy_proxy.reset(new WSALazyInitializer{});
+    }
 }
 #endif
 
@@ -48,9 +45,6 @@ void close(SocketID &socket_id) {
   ::close(socket_id);
 #endif
   socket_id = SCK_INVALID_SOCKET;
-#ifdef _WIN32
-  SocketIdWrapper::SocketIDFactory::afterClose();
-#endif
 }
 } // namespace
 
@@ -80,7 +74,7 @@ void SocketIdWrapper::reset(const SocketType &type,
   }
 
 #ifdef _WIN32
-  SocketIDFactory::beforeOpen();
+  WSALazyInitializer::lazyInit();
 #endif
 
   switch (type) {
