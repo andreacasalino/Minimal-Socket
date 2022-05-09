@@ -15,9 +15,11 @@
 #include <utility>
 
 namespace MinimalSocket {
-using Buffer = std::string;
-
-void setZeros(Buffer &subject);
+struct Buffer {
+  char *buffer;
+  std::size_t buffer_size;
+};
+void clear(Buffer &subject);
 
 enum SocketType { UDP, TCP };
 

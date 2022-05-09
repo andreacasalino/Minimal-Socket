@@ -68,11 +68,14 @@ UdpConnectable UdpBindable::connect(const Address &remote_address) {
   return std::move(result);
 }
 
-UdpConnectable UdpBindable::connect() {
-  std::string buffer;
-  buffer.resize(MAX_UDP_RECV_MESSAGE);
-  auto sender_address = this->receive(buffer);
-  return connect(sender_address);
+std::optional<UdpConnectable> UdpBindable::connect(const Timeout &timeout) {
+  char buffer[MAX_UDP_RECV_MESSAGE];
+  Buffer buffer_temp = Buffer{&buffer[0], MAX_UDP_RECV_MESSAGE};
+  auto received_result = this->receive(buffer_temp, timeout);
+  if (received_result.sender) {
+    return connect(*received_result.sender);
+  }
+  return std::nullopt;
 }
 
 UdpConnectable::UdpConnectable(const Address &remote_address, const Port &port)

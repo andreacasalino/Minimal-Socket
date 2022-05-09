@@ -13,15 +13,17 @@
 #include <mutex>
 
 namespace MinimalSocket {
-class ReceiveTimeOutAware : public virtual Socket {
+class ReceiverBase : public virtual Socket {
 protected:
-  void lazyUpdateReceiveTimeout(const Timeout &timeout);
+  std::unique_ptr<std::scoped_lock<std::mutex>>
+  lazyUpdateReceiveTimeout(const Timeout &timeout);
 
 private:
+  std::mutex receive_mtx;
   Timeout receive_timeout = NULL_TIMEOUT;
 };
 
-class Receiver : public virtual Socket {
+class Receiver : public ReceiverBase {
 public:
   /**
    * @param[in] the buffer that will receive the message:
@@ -33,13 +35,10 @@ public:
    * @return the number of received bytes actually received and copied into
    * message (can be also less than the buffer size)
    */
-  void receive(Buffer &message, const ReceiveTimeout &timeout = NULL_TIMEOUT);
-
-private:
-  std::mutex receive_mtx;
+  std::size_t receive(Buffer &message, const Timeout &timeout = NULL_TIMEOUT);
 };
 
-class ReceiverUnkownSender : public virtual Socket {
+class ReceiverUnkownSender : public ReceiverBase {
 public:
   /**
    * @param[in] the buffer that will receive the message:
@@ -51,10 +50,10 @@ public:
    * @return the number of received bytes actually received and copied into
    * message (can be also less than the buffer size)
    */
-  Address receive(Buffer &message,
-                  const ReceiveTimeout &timeout = NULL_TIMEOUT);
-
-private:
-  std::mutex receive_mtx;
+  struct ReceiveResult {
+    std::optional<Address> sender;
+    std::size_t received_bytes;
+  };
+  ReceiveResult receive(Buffer &message, const Timeout &timeout = NULL_TIMEOUT);
 };
 } // namespace MinimalSocket

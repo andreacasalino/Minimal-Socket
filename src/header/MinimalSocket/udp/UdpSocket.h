@@ -51,7 +51,8 @@ public:
   // throw in case address family is inconsistent
   UdpConnectable connect(const Address &remote_address);
 
-  UdpConnectable connect(); // to first sending 1 byte
+  std::optional<UdpConnectable>
+  connect(const Timeout &timeout); // to first sending 1 byte
 
 protected:
   void open_() override;
