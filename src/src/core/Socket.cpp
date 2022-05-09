@@ -14,6 +14,10 @@
 #include <future>
 
 namespace MinimalSocket {
+void clear(Buffer &subject) {
+  ::memset(subject.buffer, 0, subject.buffer_size);
+}
+
 Socket::~Socket() = default;
 
 Socket::Socket() { resetIDWrapper(); }

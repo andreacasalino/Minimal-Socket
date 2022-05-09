@@ -14,13 +14,13 @@
 namespace MinimalSocket {
 bool Sender::send(const Buffer &message) {
   std::scoped_lock lock(send_mtx);
-  int sentBytes = ::send(getIDWrapper().accessId(), message.data(),
-                         static_cast<int>(message.size()), 0);
+  int sentBytes = ::send(getIDWrapper().accessId(), message.buffer,
+                         static_cast<int>(message.buffer_size), 0);
   if (sentBytes == SCK_SOCKET_ERROR) {
     sentBytes = 0;
     throwWithLastErrorCode("send failed");
   }
-  return (sentBytes == static_cast<int>(message.size()));
+  return (sentBytes == static_cast<int>(message.buffer_size));
 }
 
 bool SenderTo::sendTo(const Buffer &message, const Address &recipient) {
@@ -32,8 +32,8 @@ bool SenderTo::sendTo(const Buffer &message, const Address &recipient) {
         auto socketIp4 =
             toSocketAddressIpv4(recipient.getHost(), recipient.getPort());
         sentBytes = ::sendto(
-            getIDWrapper().accessId(), message.data(),
-            static_cast<int>(message.size()), 0,
+            getIDWrapper().accessId(), message.buffer,
+            static_cast<int>(message.buffer_size), 0,
             reinterpret_cast<const SocketAddress *>(&socketIp4.value()),
             sizeof(SocketAddressIpv4));
       },
@@ -41,8 +41,8 @@ bool SenderTo::sendTo(const Buffer &message, const Address &recipient) {
         auto socketIp6 =
             toSocketAddressIpv6(recipient.getHost(), recipient.getPort());
         sentBytes = ::sendto(
-            getIDWrapper().accessId(), message.data(),
-            static_cast<int>(message.size()), 0,
+            getIDWrapper().accessId(), message.buffer,
+            static_cast<int>(message.buffer_size), 0,
             reinterpret_cast<const SocketAddress *>(&socketIp6.value()),
             sizeof(SocketAddressIpv6));
       });
@@ -50,6 +50,6 @@ bool SenderTo::sendTo(const Buffer &message, const Address &recipient) {
     sentBytes = 0;
     throwWithLastErrorCode("send to failed");
   }
-  return (sentBytes == static_cast<int>(message.size()));
+  return (sentBytes == static_cast<int>(message.buffer_size));
 }
 } // namespace MinimalSocket

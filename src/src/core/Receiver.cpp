@@ -7,16 +7,17 @@
 
 #include <MinimalSocket/core/Receiver.h>
 
+#include "../SocketAddress.h"
 #include "../SocketError.h"
-#include "../SocketId.h"
 
 namespace MinimalSocket {
-void ReceiveTimeOutAware::lazyUpdateReceiveTimeout(
-    const ReceiveTimeout &timeout) {
+std::unique_ptr<std::scoped_lock<std::mutex>>
+ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
+  std::unique_ptr<std::scoped_lock<std::mutex>> lock =
+      std::make_unique<std::scoped_lock<std::mutex>>(receive_mtx);
   if (timeout == receive_timeout) {
-    return;
+    return lock;
   }
-  receive_timeout = timeout;
   // set new timeout
 #ifdef _WIN32
   auto tv = DWORD(this->receive_timeout.count());
@@ -40,20 +41,45 @@ void ReceiveTimeOutAware::lazyUpdateReceiveTimeout(
 #endif
     throwWithLastErrorCode("can't set timeout");
   }
+  receive_timeout = timeout;
+  return lock;
 }
 
-void Receiver::receive(Buffer &message, const ReceiveTimeout &timeout) {
-  std::lock_guard<std::mutex> recvLock(receive_mtx);
-  int recvBytes = ::recv(getIDWrapper().accessId(), message.data(),
-                         static_cast<int>(message.size()), 0);
+std::size_t Receiver::receive(Buffer &message, const Timeout &timeout) {
+  auto lock = lazyUpdateReceiveTimeout(timeout);
+  int recvBytes = ::recv(getIDWrapper().accessId(), message.buffer,
+                         static_cast<int>(message.buffer_size), 0);
   if (recvBytes == SCK_SOCKET_ERROR) {
     recvBytes = 0;
     throwWithLastErrorCode("receive failed");
   }
-  if (recvBytes > message.size()) {
+  if (recvBytes > message.buffer_size) {
     // if here, the message received is probably corrupted
     recvBytes = 0;
   }
-  message.resize(recvBytes);
+  return static_cast<std::size_t>(recvBytes);
+}
+
+ReceiverUnkownSender::ReceiveResult
+ReceiverUnkownSender::receive(Buffer &message, const Timeout &timeout) {
+  auto lock = lazyUpdateReceiveTimeout(timeout);
+  SocketAddress sender_address;
+  SocketAddressLength sender_address_length;
+  int recvBytes = ::recvfrom(getIDWrapper().accessId(), message.buffer,
+                             static_cast<int>(message.buffer_size), 0,
+                             &sender_address, &sender_address_length);
+  if (recvBytes == SCK_SOCKET_ERROR) {
+    recvBytes = 0;
+    throwWithLastErrorCode("receive failed");
+  }
+  ReceiveResult result;
+  if (recvBytes > message.buffer_size) {
+    // if here, the message received is probably corrupted
+    result.received_bytes = 0;
+  } else {
+    result.received_bytes = static_cast<std::size_t>(recvBytes);
+    result.sender = toAddress(sender_address);
+  }
+  return result;
 }
 } // namespace MinimalSocket
