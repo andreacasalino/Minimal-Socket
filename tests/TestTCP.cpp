@@ -149,12 +149,15 @@ TEST_CASE("Open multiple times tcp clients", "[tcp]") {
 
   std::size_t cycles = 5;
 
-  TcpClient client(Address::makeLocalHost(family));
+  TcpClient client(Address::makeLocalHost(port, family));
 
   for (std::size_t c = 0; c < cycles; ++c) {
     parallel([&]() { server.acceptNewClient(); },
-             [&]() { CHECK(client.open()); });
-    TcpClient{std::move(client)};
+             [&]() {
+               CHECK(client.open());
+               TcpClient{std::move(client)};
+               CHECK_FALSE(client.wasOpened());
+             });
   }
 }
 
