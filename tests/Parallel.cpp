@@ -5,7 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <Parallel.h>
+#include "Parallel.h"
 #include <omp.h>
 #include <stdexcept>
 

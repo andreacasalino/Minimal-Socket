@@ -8,17 +8,21 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(catch2)
 
-add_subdirectory(UtilsTest)
-
-function(MakeTest)
+function(MakeTests)
 	set(TEST_NAME "Tests")
 
-	file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+	file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 	add_executable(${TEST_NAME} ${SRC_FILES})
 
-	target_link_libraries(${TEST_NAME} PUBLIC UtilsTest)
+	find_package(OpenMP)
+	target_link_libraries(${TEST_NAME} PUBLIC 
+		MinimalSocket
+		OpenMP::OpenMP_CXX
+		Catch2::Catch2
+		Catch2::Catch2WithMain
+	)
 
 	install(TARGETS ${TEST_NAME})
 endfunction()
 
-MakeTest()
+MakeTests()
