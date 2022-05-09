@@ -161,3 +161,5 @@ TEST_CASE("Open multiple times tcp clients", "[tcp]") {
     TcpClient{std::move(client)};
   }
 }
+
+// tests receive e open con timeout
