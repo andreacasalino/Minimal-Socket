@@ -15,19 +15,26 @@ using namespace MinimalSocket::test;
 namespace {
 static const std::string request = "Hello";
 static const std::string response = "Welcome";
+
+bool are_same(const Address &a, const Address &b, const AddressFamily &family) {
+  return (family == AddressFamily::IP_V4) ? (a == b)
+                                          : (a.getPort() == b.getPort());
+}
 } // namespace
 
 TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
-  const auto family = IP_V6; // GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(IP_V4, IP_V6);
   const std::size_t cycles = 5;
 
   const auto requester_port = PortFactory::makePort();
-  const Address requester_address = Address::makeLocalHost(requester_port);
+  const Address requester_address =
+      Address::makeLocalHost(requester_port, family);
   UdpBinded requester(requester_port, family);
   REQUIRE(requester.open());
 
   const auto responder_port = PortFactory::makePort();
-  const Address responder_address = Address::makeLocalHost(responder_port);
+  const Address responder_address =
+      Address::makeLocalHost(responder_port, family);
   UdpBinded responder(responder_port, family);
   REQUIRE(responder.open());
 
@@ -40,7 +47,7 @@ TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
           auto received_response = requester.receive(response.size());
           REQUIRE(received_response);
           CHECK(received_response->received_message == response);
-          CHECK(received_response->sender == responder_address);
+          CHECK(are_same(received_response->sender, responder_address, family));
         }
       },
       [&]() {
@@ -49,7 +56,7 @@ TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
           auto received_request = responder.receive(request.size());
           REQUIRE(received_request);
           CHECK(received_request->received_message == request);
-          CHECK(received_request->sender == requester_address);
+          CHECK(are_same(received_request->sender, requester_address, family));
           responder.sendTo(response, requester_address);
 #pragma omp barrier
         }
@@ -57,14 +64,16 @@ TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
 }
 
 TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
-  const auto family = IP_V4; // GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(IP_V4, IP_V6);
   const std::size_t cycles = 5;
 
   const auto requester_port = PortFactory::makePort();
-  const Address requester_address = Address::makeLocalHost(requester_port);
+  const Address requester_address =
+      Address::makeLocalHost(requester_port, family);
 
   const auto responder_port = PortFactory::makePort();
-  const Address responder_address = Address::makeLocalHost(responder_port);
+  const Address responder_address =
+      Address::makeLocalHost(responder_port, family);
 
   UdpConnected requester(responder_address, requester_port);
   REQUIRE(requester.open());
@@ -93,13 +102,15 @@ TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
 }
 
 TEST_CASE("Metamorphosis of udp connections", "[udp]") {
-  const auto family = IP_V4; // GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(IP_V4, IP_V6);
   const std::size_t cycles = 5;
 
   const auto requester_port = PortFactory::makePort();
-  const Address requester_address = Address::makeLocalHost(requester_port);
+  const Address requester_address =
+      Address::makeLocalHost(requester_port, family);
   const auto responder_port = PortFactory::makePort();
-  const Address responder_address = Address::makeLocalHost(responder_port);
+  const Address responder_address =
+      Address::makeLocalHost(responder_port, family);
 
   UdpBinded responder(responder_port, family);
   REQUIRE(responder.open());
@@ -122,7 +133,8 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
           std::optional<UdpConnected> socket_connected =
               requester_only_bind->connect();
           REQUIRE(socket_connected);
-          REQUIRE(socket_connected->getRemoteAddress() == responder_address);
+          CHECK(are_same(socket_connected->getRemoteAddress(),
+                         responder_address, family));
           requester_connected = std::make_unique<UdpConnected>(
               std::move(socket_connected.value()));
         });
