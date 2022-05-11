@@ -13,3 +13,7 @@ nella descrizione stressare il fatto che si usa c++ moderno per addomesticare so
 aggiungere test con ANY_PORT 
 
 accept tcp client con timeout
+
+add negative test per capire se vegono thrownati giusti SocketError
+
+add test dove request e spezzettata in piu frammenti (piu send diverse)
