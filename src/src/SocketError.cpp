@@ -9,16 +9,15 @@
 #include "SocketId.h"
 
 namespace MinimalSocket {
-namespace {
-int getLastErrorCode() {
+ErrorCodeAware::ErrorCodeAware() {
+  error_code =
 #ifdef _WIN32
-  return WSAGetLastError();
+      WSAGetLastError();
 #else
-  return static_cast<int>(errno);
+      static_cast<int>(errno);
 #endif
 }
-} // namespace
 
 SocketError::SocketError(const std::string &what)
-    : Error(what, " , error code: ", getLastErrorCode()) {}
+    : ErrorCodeAware(), Error(what, " , error code: ", getErrorCode()) {}
 } // namespace MinimalSocket

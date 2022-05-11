@@ -23,7 +23,7 @@ ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
 #ifdef _WIN32
   auto tv = DWORD(this->receive_timeout.count());
   if (setsockopt(getIDWrapper().accessId(), SOL_SOCKET, SO_RCVTIMEO,
-                 reinterpret_cast<const char *>(&tv),
+                 static_cast<const void *>(&tv),
                  sizeof(DWORD)) == SOCKET_ERROR) {
 #else
   struct timeval tv = {0, 0};
@@ -37,7 +37,7 @@ ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
             .count();
   }
   if (::setsockopt(getIDWrapper().accessId(), SOL_SOCKET, SO_RCVTIMEO,
-                   reinterpret_cast<const char *>(&tv),
+                   static_cast<const void *>(&tv),
                    sizeof(struct timeval)) < 0) {
 #endif
     throw SocketError{"can't set timeout"};
@@ -45,15 +45,26 @@ ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
   return lock;
 }
 
+namespace {
+void check_received_bytes(int &recvBytes, const Timeout &timeout) {
+  if (recvBytes != SCK_SOCKET_ERROR) {
+    return;
+  }
+  SocketError error_with_code("receive failed");
+  recvBytes = 0;
+  if ((error_with_code.getErrorCode() == EAGAIN) && (timeout != NULL_TIMEOUT)) {
+    return;
+  }
+  throw error_with_code;
+}
+} // namespace
+
 std::size_t Receiver::receive(Buffer &message, const Timeout &timeout) {
   auto lock = lazyUpdateReceiveTimeout(timeout);
   clear(message);
   int recvBytes = ::recv(getIDWrapper().accessId(), message.buffer,
                          static_cast<int>(message.buffer_size), 0);
-  if (recvBytes == SCK_SOCKET_ERROR) {
-    recvBytes = 0;
-    throw SocketError{"receive failed"};
-  }
+  check_received_bytes(recvBytes, timeout);
   if (recvBytes > message.buffer_size) {
     // if here, the message received is probably corrupted
     recvBytes = 0;
@@ -84,10 +95,7 @@ ReceiverUnkownSender::receive(Buffer &message, const Timeout &timeout) {
                  static_cast<int>(message.buffer_size), 0,
                  reinterpret_cast<SocketAddress *>(&sender_address[0]),
                  &sender_address_length);
-  if (recvBytes == SCK_SOCKET_ERROR) {
-    recvBytes = 0;
-    throw SocketError{"receive failed"};
-  }
+  check_received_bytes(recvBytes, timeout);
   if (recvBytes > message.buffer_size) {
     // if here, the message received is probably corrupted
     return std::nullopt;

@@ -12,7 +12,18 @@
 #include <string>
 
 namespace MinimalSocket {
-class SocketError : public Error {
+class ErrorCodeAware {
+public:
+  int getErrorCode() const { return error_code; }
+
+protected:
+  ErrorCodeAware();
+
+private:
+  int error_code;
+};
+
+class SocketError : public ErrorCodeAware, public Error {
 public:
   /**
    * @brief last error code raised by the socket API is automatically retrieved
