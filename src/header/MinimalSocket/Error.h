@@ -11,13 +11,14 @@
 #include <stdexcept>
 
 namespace MinimalSocket {
+
 class Error : public std::runtime_error {
 public:
   Error(const std::string &what) : std::runtime_error(what){};
 
   template <typename... Args> Error(Args... args) : Error(merge(args...)) {}
 
-private:
+protected:
   template <typename... Args> static std::string merge(Args... args) {
     std::stringstream stream;
     merge(stream, args...);

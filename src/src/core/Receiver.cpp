@@ -18,6 +18,7 @@ ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
   if (timeout == receive_timeout) {
     return lock;
   }
+  receive_timeout = timeout;
   // set new timeout
 #ifdef _WIN32
   auto tv = DWORD(this->receive_timeout.count());
@@ -39,9 +40,8 @@ ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
                    reinterpret_cast<const char *>(&tv),
                    sizeof(struct timeval)) < 0) {
 #endif
-    throwWithLastErrorCode("can't set timeout");
+    throw SocketError{"can't set timeout"};
   }
-  receive_timeout = timeout;
   return lock;
 }
 
@@ -52,7 +52,7 @@ std::size_t Receiver::receive(Buffer &message, const Timeout &timeout) {
                          static_cast<int>(message.buffer_size), 0);
   if (recvBytes == SCK_SOCKET_ERROR) {
     recvBytes = 0;
-    throwWithLastErrorCode("receive failed");
+    throw SocketError{"receive failed"};
   }
   if (recvBytes > message.buffer_size) {
     // if here, the message received is probably corrupted
@@ -86,7 +86,7 @@ ReceiverUnkownSender::receive(Buffer &message, const Timeout &timeout) {
                  &sender_address_length);
   if (recvBytes == SCK_SOCKET_ERROR) {
     recvBytes = 0;
-    throwWithLastErrorCode("receive failed");
+    throw SocketError{"receive failed"};
   }
   if (recvBytes > message.buffer_size) {
     // if here, the message received is probably corrupted
