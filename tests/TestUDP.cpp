@@ -31,13 +31,13 @@ TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
   const Address requester_address =
       Address::makeLocalHost(requester_port, family);
   UdpBinded requester(requester_port, family);
-  REQUIRE(requester.open());
+  REQUIRE_FALSE(requester.open());
 
   const auto responder_port = PortFactory::makePort();
   const Address responder_address =
       Address::makeLocalHost(responder_port, family);
   UdpBinded responder(responder_port, family);
-  REQUIRE(responder.open());
+  REQUIRE_FALSE(responder.open());
 
   parallel(
       [&]() {
@@ -68,7 +68,7 @@ TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
 
     SECTION("expect fail within timeout") {
       auto received_request = responder.receive(request.size(), timeout);
-      CHECK_FALSE(received_request);
+      CHECK(received_request);
     }
 
     SECTION("expect success within timeout") {
@@ -104,9 +104,9 @@ TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
       Address::makeLocalHost(responder_port, family);
 
   UdpConnected requester(responder_address, requester_port);
-  REQUIRE(requester.open());
+  REQUIRE_FALSE(requester.open());
   UdpConnected responder(requester_address, responder_port);
-  REQUIRE(responder.open());
+  REQUIRE_FALSE(responder.open());
 
   parallel(
       [&]() {
@@ -183,7 +183,7 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
       Address::makeLocalHost(responder_port, family);
 
   UdpBinded responder(responder_port, family);
-  REQUIRE(responder.open());
+  REQUIRE_FALSE(responder.open());
 
   std::unique_ptr<UdpBinded> requester_only_bind =
       std::make_unique<UdpBinded>(requester_port, family);
@@ -274,13 +274,13 @@ TEST_CASE("Open connection with timeout", "[udp]") {
   const Address requester_address =
       Address::makeLocalHost(requester_port, family);
   UdpBinded requester(requester_port, family);
-  REQUIRE(requester.open());
+  REQUIRE_FALSE(requester.open());
 
   const auto responder_port = PortFactory::makePort();
   const Address responder_address =
       Address::makeLocalHost(responder_port, family);
   UdpBinded responder(responder_port, family);
-  REQUIRE(responder.open());
+  REQUIRE_FALSE(responder.open());
 
   const auto timeout = Timeout{500};
 
