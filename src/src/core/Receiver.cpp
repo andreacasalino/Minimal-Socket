@@ -23,7 +23,7 @@ ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
 #ifdef _WIN32
   auto tv = DWORD(this->receive_timeout.count());
   if (setsockopt(getIDWrapper().accessId(), SOL_SOCKET, SO_RCVTIMEO,
-                 static_cast<const void *>(&tv),
+                 static_cast<const char *>(&tv),
                  sizeof(DWORD)) == SOCKET_ERROR) {
 #else
   struct timeval tv = {0, 0};
