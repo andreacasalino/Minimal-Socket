@@ -25,12 +25,12 @@ TEST_CASE("Simulate open with timeout", "[open]") {
   OpenableTest test(open_time);
 
   SECTION("expected success") {
-    CHECK(test.open(Timeout{1000}));
+    CHECK_FALSE(test.open(Timeout{1000}));
     CHECK(test.wasOpened());
   }
 
   SECTION("expected failure") {
-    CHECK_FALSE(test.open(Timeout{250}));
+    CHECK(test.open(Timeout{250}));
     CHECK_FALSE(test.wasOpened());
   }
 }
