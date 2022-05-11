@@ -60,6 +60,10 @@ std::optional<SocketAddressIpv4> toSocketAddressIpv4(const std::string &host,
 std::optional<SocketAddressIpv6> toSocketAddressIpv6(const std::string &host,
                                                      const Port &port);
 
+std::optional<Port> toPort(const SocketAddress &address);
+
+std::optional<std::string> toHost(const SocketAddress &address);
+
 /**
  * @brief Convert a SocketAddress_t into an Address, internally
  * deducing the family.
