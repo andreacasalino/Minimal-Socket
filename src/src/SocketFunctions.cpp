@@ -79,18 +79,12 @@ Port bind(const SocketID &socket_id, const AddressFamily &family,
                       &binded_address_length) == SCK_SOCKET_ERROR) {
       throw SocketError{"Wasn't able to deduce the binded port"};
     }
-    switch (reinterpret_cast<const SocketAddress &>(binded_address).sa_family) {
-    case AF_INET:
-      binded_port =
-          reinterpret_cast<const SocketAddressIpv4 &>(binded_address).sin_port;
-      break;
-    case AF_INET6:
-      binded_port =
-          reinterpret_cast<const SocketAddressIpv6 &>(binded_address).sin6_port;
-      break;
-    default:
+    auto maybe_port =
+        toPort(reinterpret_cast<const SocketAddress &>(binded_address));
+    if (maybe_port) {
+      binded_port = *maybe_port;
+    } else {
       throw Error{"Wasn't able to deduce the binded port"};
-      break;
     }
   }
   return binded_port;

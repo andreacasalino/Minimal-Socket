@@ -28,7 +28,7 @@ Peers make_peers(const Port &port, const AddressFamily &family) {
       [&]() {
         // server
         TcpServer server(port, family);
-        REQUIRE(server.open());
+        REQUIRE_FALSE(server.open());
 #pragma omp barrier
         auto accepted = server.acceptNewClient();
         REQUIRE_FALSE(nullptr == accepted);
@@ -38,7 +38,7 @@ Peers make_peers(const Port &port, const AddressFamily &family) {
         // client
         TcpClient client(Address::makeLocalHost(port, family));
 #pragma omp barrier
-        REQUIRE(client.open());
+        REQUIRE_FALSE(client.open());
         REQUIRE_FALSE(nullptr == client);
         REQUIRE(client.wasOpened());
         client_side = std::make_unique<TcpClient>(std::move(client));
@@ -88,7 +88,7 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
 
   SECTION("expected failure") {
     TcpClient client(Address::makeLocalHost(port, family));
-    CHECK_FALSE(client.open());
+    CHECK(client.open());
     CHECK_FALSE(client.wasOpened());
   }
 
@@ -163,7 +163,7 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
           for (std::size_t c = 0; c < clients_numb; ++c) {
             auto &client =
                 clients.emplace_back(Address::makeLocalHost(port, family));
-            CHECK(client.open());
+            CHECK_FALSE(client.open());
           }
         });
   }
@@ -177,7 +177,7 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
     });
     Task ask_connection = [&]() {
       TcpClient client(Address::makeLocalHost(port, family));
-      CHECK(client.open());
+      CHECK_FALSE(client.open());
     };
     for (std::size_t c = 0; c < clients_numb; ++c) {
       tasks.push_back(ask_connection);
@@ -200,7 +200,7 @@ TEST_CASE("Open multiple times tcp clients", "[tcp]") {
   for (std::size_t c = 0; c < cycles; ++c) {
     parallel([&]() { server.acceptNewClient(); },
              [&]() {
-               CHECK(client.open());
+               CHECK_FALSE(client.open());
                TcpClient{std::move(client)};
                CHECK_FALSE(client.wasOpened());
              });
@@ -216,14 +216,14 @@ TEST_CASE("Open tcp client with timeout", "[tcp]") {
   TcpClient client(Address::makeLocalHost(port, family));
 
   SECTION("expect fail within timeout") {
-    CHECK_FALSE(client.open(timeout));
+    CHECK(client.open(timeout));
     CHECK_FALSE(client.wasOpened());
   }
 
   SECTION("expect success within timeout") {
     const auto wait = Timeout{250};
     TcpServer server(port, family);
-    REQUIRE(server.open());
+    REQUIRE_FALSE(server.open());
     parallel(
         [&]() {
 #pragma omp barrier
@@ -234,7 +234,7 @@ TEST_CASE("Open tcp client with timeout", "[tcp]") {
         },
         [&]() {
 #pragma omp barrier
-          CHECK(client.open(timeout));
+          CHECK_FALSE(client.open(timeout));
           client.send(request);
         });
   }
@@ -244,7 +244,7 @@ TEST_CASE("Reserve random port for tcp server", "[tcp]") {
   const auto family = GENERATE(IP_V4, IP_V6);
 
   TcpServer server(ANY_PORT, family);
-  REQUIRE(server.open());
+  REQUIRE_FALSE(server.open());
   const auto port = server.getPortToBind();
   REQUIRE(port != 0);
 
@@ -260,7 +260,7 @@ TEST_CASE("Reserve random port for tcp server", "[tcp]") {
         // client
         TcpClient client(Address::makeLocalHost(port, family));
 #pragma omp barrier
-        REQUIRE(client.open());
+        REQUIRE_FALSE(client.open());
         REQUIRE_FALSE(nullptr == client);
         REQUIRE(client.wasOpened());
         client.send(request);

@@ -59,7 +59,7 @@ void Socket::resetIDWrapper() {
   socket_id_wrapper = std::make_unique<SocketIdWrapper>();
 }
 
-bool Openable::open(const Timeout &timeout) {
+std::optional<Error> Openable::open(const Timeout &timeout) {
   if (opened) {
     throw Error{"Already opened"};
   }
@@ -79,12 +79,13 @@ bool Openable::open(const Timeout &timeout) {
       }
     }
     opened = true;
-  } catch (const Error &) {
+  } catch (const Error &e) {
     resetIDWrapper();
+    return e;
   } catch (...) {
     throw Error{"Not opened for unkown reason"};
   }
-  return opened;
+  return std::nullopt;
 }
 
 void Openable::transfer(Openable &receiver, Openable &giver) {

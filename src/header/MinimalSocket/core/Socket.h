@@ -7,10 +7,13 @@
 
 #pragma once
 
+#include <MinimalSocket/Error.h>
+
 #include <atomic>
 #include <chrono>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -66,7 +69,7 @@ bool operator==(const Socket &subject, std::nullptr_t);
 class Openable : public virtual Socket {
 public:
   bool wasOpened() const { return opened; }
-  bool open(const Timeout &timeout = NULL_TIMEOUT);
+  std::optional<Error> open(const Timeout &timeout = NULL_TIMEOUT);
 
 protected:
   Openable() = default;
