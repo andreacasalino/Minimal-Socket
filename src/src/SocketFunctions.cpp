@@ -96,12 +96,8 @@ Port bind(const SocketID &socket_id, const AddressFamily &family,
   return binded_port;
 }
 
-namespace {
-static constexpr std::size_t LISTEN_BACKLOG = 50;
-}
-
-void listen(const SocketID &socket_id) {
-  if (::listen(socket_id, LISTEN_BACKLOG) == SCK_SOCKET_ERROR) {
+void listen(const SocketID &socket_id, const std::size_t backlog_size) {
+  if (::listen(socket_id, backlog_size) == SCK_SOCKET_ERROR) {
     throwWithLastErrorCode("Error: listening on reserved port");
   }
 }

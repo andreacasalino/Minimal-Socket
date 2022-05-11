@@ -14,7 +14,7 @@ namespace MinimalSocket {
 Port bind(const SocketID &socket_id, const AddressFamily &family,
           const Port &port);
 
-void listen(const SocketID &socket_id);
+void listen(const SocketID &socket_id, const std::size_t backlog_size);
 
 void connect(const SocketID &socket_id, const Address &remote_address);
 } // namespace MinimalSocket

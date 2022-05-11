@@ -37,7 +37,14 @@ void TcpServer::open_() {
   socket.reset(TCP, family);
   auto binded_port = MinimalSocket::bind(socket.accessId(), family, port);
   setPort(binded_port);
-  MinimalSocket::listen(socket.accessId());
+  MinimalSocket::listen(socket.accessId(), client_queue_size);
+}
+
+void TcpServer::setClientQueueSize(const std::size_t queue_size) {
+  if (wasOpened()) {
+    throw Error{"Can't set client queue size of an alrady opened tcp server"};
+  }
+  client_queue_size = queue_size;
 }
 
 TcpConnection TcpServer::acceptNewClient() {
