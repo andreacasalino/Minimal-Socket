@@ -5,12 +5,11 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <MinimalSocket/Error.h>
-
 #include "SocketError.h"
 #include "SocketId.h"
 
 namespace MinimalSocket {
+namespace {
 int getLastErrorCode() {
 #ifdef _WIN32
   return WSAGetLastError();
@@ -18,8 +17,8 @@ int getLastErrorCode() {
   return static_cast<int>(errno);
 #endif
 }
+} // namespace
 
-void throwWithLastErrorCode(const std::string &what) {
-  throw Error(what, " , error code: ", getLastErrorCode());
-}
+SocketError::SocketError(const std::string &what)
+    : Error(what, " , error code: ", getLastErrorCode()) {}
 } // namespace MinimalSocket

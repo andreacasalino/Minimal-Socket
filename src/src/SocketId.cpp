@@ -13,22 +13,20 @@
 namespace MinimalSocket {
 #ifdef _WIN32
 WSALazyInitializer::WSALazyInitializer() {
-    WSADATA wsa;
-    WSAStartup(MAKEWORD(2, 0), &wsa);
+  WSADATA wsa;
+  WSAStartup(MAKEWORD(2, 0), &wsa);
 }
 
-WSALazyInitializer::~WSALazyInitializer() {
-    WSACleanup();
-}
+WSALazyInitializer::~WSALazyInitializer() { WSACleanup(); }
 
 std::mutex WSALazyInitializer::lazy_proxy_mtx = std::mutex{};
 std::unique_ptr<WSALazyInitializer> WSALazyInitializer::lazy_proxy = nullptr;
 
 void WSALazyInitializer::lazyInit() {
-    std::scoped_lock lock(WSALazyInitializer::lazy_proxy_mtx);
-    if (nullptr == WSALazyInitializer::lazy_proxy) {
-        WSALazyInitializer::lazy_proxy.reset(new WSALazyInitializer{});
-    }
+  std::scoped_lock lock(WSALazyInitializer::lazy_proxy_mtx);
+  if (nullptr == WSALazyInitializer::lazy_proxy) {
+    WSALazyInitializer::lazy_proxy.reset(new WSALazyInitializer{});
+  }
 }
 #endif
 
@@ -82,14 +80,14 @@ void SocketIdWrapper::reset(const SocketType &type,
     this->socket_id = ::socket(domain_number(family), SOCK_STREAM, 0);
     if (this->socket_id == SCK_INVALID_SOCKET) {
       MinimalSocket::close(socket_id);
-      throwWithLastErrorCode("Stream socket could not be created");
+      throw SocketError{"Stream socket could not be created"};
     }
     break;
   case SocketType::UDP:
     this->socket_id = ::socket(domain_number(family), SOCK_DGRAM, 0);
     if (this->socket_id == SCK_INVALID_SOCKET) {
       MinimalSocket::close(socket_id);
-      throwWithLastErrorCode("DataGram socket could not be created");
+      throw SocketError{"DataGram socket could not be created"};
     }
     break;
   default:

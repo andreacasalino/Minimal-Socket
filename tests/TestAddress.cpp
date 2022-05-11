@@ -10,7 +10,7 @@ static constexpr Port TEST_PORT = 100;
 }
 
 TEST_CASE("parse valid ipv4 hosts", "[address]") {
-  auto host = GENERATE("192.168.125.34", "127.0.0.1");
+  auto host = GENERATE("192.168.125.34", "127.0.0.1", "0.0.0.0");
   Address converted(host, TEST_PORT);
   CHECK_FALSE(nullptr == converted);
   CHECK(converted.getFamily() == AddressFamily::IP_V4);
@@ -20,7 +20,8 @@ TEST_CASE("parse valid ipv4 hosts", "[address]") {
 
 TEST_CASE("parse valid ipv6 hosts", "[address]") {
   auto host =
-      GENERATE("2001:0db8:85a3:0000:0000:8a2e:0370:7334", "2001:db8::1:0");
+      GENERATE("2001:0db8:85a3:0000:0000:8a2e:0370:7334", "2001:db8::1:0",
+               "0000:0000:0000:0000:0000:0000:0000:0001", "::1");
   Address converted(host, TEST_PORT);
   CHECK_FALSE(nullptr == converted);
   CHECK(converted.getFamily() == AddressFamily::IP_V6);
