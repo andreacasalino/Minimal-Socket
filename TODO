@@ -4,8 +4,6 @@ check if there is a way to check if an external passed socket was open or not in
 
 support for bluetooth connection
 
-add timeout per udp connect
-
 in receive from, resize buffer a max size udp message
 
 usare noexpect keyword in c'tors?
@@ -13,8 +11,6 @@ usare noexpect keyword in c'tors?
 pass number of max clients tcp server should accept
 
 e' thread safety assicurata nelle varie funzioni?
-
-check in c'tor passed address is not null (is valid)
 
 nella descrizione stressare il fatto che si usa c++ moderno per addomesticare socket di sistema
 

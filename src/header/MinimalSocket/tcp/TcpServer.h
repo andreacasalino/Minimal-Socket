@@ -40,7 +40,14 @@ public:
 
   TcpConnection acceptNewClient();
 
+  void setClientQueueSize(const std::size_t queue_size);
+
 protected:
   void open_() override;
+
+private:
+  std::size_t client_queue_size =
+      50; // maximum number of clients put in the queue wiating for connection
+          // to be accepted
 };
 } // namespace MinimalSocket::tcp
