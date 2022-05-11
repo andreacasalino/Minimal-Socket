@@ -228,11 +228,14 @@ TEST_CASE("Open tcp client with timeout", "[tcp]") {
         [&]() {
 #pragma omp barrier
           std::this_thread::sleep_for(wait);
-          server.acceptNewClient();
+          TcpConnection conn = server.acceptNewClient();
+          auto received_request = conn.receive(request.size());
+          CHECK(received_request == request);
         },
         [&]() {
 #pragma omp barrier
           CHECK(client.open(timeout));
+          client.send(request);
         });
   }
 }

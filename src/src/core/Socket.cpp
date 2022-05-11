@@ -70,15 +70,19 @@ bool Openable::open(const Timeout &timeout) {
     } else {
       auto open_task = std::async([&]() { this->open_(); });
       auto open_task_status = open_task.wait_for(timeout);
-      if (open_task_status != std::future_status::ready) {
+      if (open_task_status == std::future_status::ready) {
+        open_task.get(); // will throw if ready because an exception throwned
+                         // immediately
+      } else {
         resetIDWrapper();
-        open_task.get(); // should throw already here
         throw Error{""}; // just to be sure it throws
       }
     }
     opened = true;
   } catch (const Error &) {
     resetIDWrapper();
+  } catch (...) {
+    throw Error{"Not opened for unkown reason"};
   }
   return opened;
 }
