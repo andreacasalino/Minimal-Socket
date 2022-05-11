@@ -239,3 +239,30 @@ TEST_CASE("Open tcp client with timeout", "[tcp]") {
         });
   }
 }
+
+TEST_CASE("Reserve random port for tcp server", "[tcp]") {
+  const auto family = GENERATE(IP_V4, IP_V6);
+
+  TcpServer server(ANY_PORT, family);
+  REQUIRE(server.open());
+  const auto port = server.getPortToBind();
+  REQUIRE(port != 0);
+
+  parallel(
+      [&]() {
+#pragma omp barrier
+        auto accepted = server.acceptNewClient();
+        REQUIRE_FALSE(nullptr == accepted);
+        auto received_request = accepted.receive(request.size());
+        CHECK(received_request == request);
+      },
+      [&]() {
+        // client
+        TcpClient client(Address::makeLocalHost(port, family));
+#pragma omp barrier
+        REQUIRE(client.open());
+        REQUIRE_FALSE(nullptr == client);
+        REQUIRE(client.wasOpened());
+        client.send(request);
+      });
+}
