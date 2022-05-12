@@ -147,25 +147,58 @@ TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
           });
     }
   }
+}
 
-  SECTION(
-      "receive from third peer expected to fail since socket was connected") {
-    UdpBinded second_requester(PortFactory::makePort(), family);
-    REQUIRE_FALSE(second_requester.open());
-    const auto timeout = Timeout{500};
-    const auto wait = Timeout{250};
+TEST_CASE(
+    "Receive from thirdy peer expected to fail after udp socket connected",
+    "[udp]") {
+  const auto family = GENERATE(IP_V4, IP_V6);
+
+  const auto requester_port = PortFactory::makePort();
+  const Address requester_address = Address(requester_port, family);
+
+  const auto responder_port = PortFactory::makePort();
+  const Address responder_address = Address(responder_port, family);
+
+  UdpConnected requester(responder_address, requester_port);
+  REQUIRE_FALSE(requester.open());
+  UdpConnected responder(requester_address, responder_port);
+  REQUIRE_FALSE(responder.open());
+
+  auto exchange_messages_before = GENERATE(true, false);
+  if (exchange_messages_before) {
     parallel(
         [&]() {
+          CHECK(requester.send(request));
 #pragma omp barrier
-          std::this_thread::sleep_for(wait);
-          second_requester.sendTo(request, Address(requester_port));
+#pragma omp barrier
+          auto received_response = requester.receive(response.size());
+          CHECK(received_response == response);
         },
         [&]() {
 #pragma omp barrier
-          auto received_request = responder.receive(request.size(), timeout);
-          CHECK(received_request.empty());
+          auto received_request = responder.receive(request.size());
+          CHECK(received_request == request);
+          responder.send(response);
+#pragma omp barrier
         });
   }
+
+  UdpBinded second_requester(PortFactory::makePort(), family);
+  REQUIRE_FALSE(second_requester.open());
+  const auto timeout = Timeout{500};
+  const auto wait = Timeout{250};
+  parallel(
+      [&]() {
+#pragma omp barrier
+        std::this_thread::sleep_for(wait);
+        second_requester.sendTo(request, Address(responder_port, family));
+      },
+      [&]() {
+#pragma omp barrier
+        auto received_request = responder.receive(request.size(), timeout);
+        CHECK(received_request.empty());
+      });
 }
 
 TEST_CASE("Metamorphosis of udp connections", "[udp]") {
@@ -195,8 +228,7 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
         },
         [&]() {
 #pragma omp barrier
-          std::optional<UdpConnected> socket_connected =
-              requester_only_bind->connect();
+          auto socket_connected = requester_only_bind->connect();
           REQUIRE(socket_connected);
           CHECK(are_same(socket_connected->getRemoteAddress(),
                          responder_address, family));
