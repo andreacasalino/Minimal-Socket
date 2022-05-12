@@ -36,7 +36,7 @@ Peers make_peers(const Port &port, const AddressFamily &family) {
       },
       [&]() {
         // client
-        TcpClient client(Address::makeLocalHost(port, family));
+        TcpClient client(Address(port, family));
 #pragma omp barrier
         REQUIRE_FALSE(client.open());
         REQUIRE_FALSE(nullptr == client);
@@ -87,7 +87,7 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
   const auto family = GENERATE(IP_V4, IP_V6);
 
   SECTION("expected failure") {
-    TcpClient client(Address::makeLocalHost(port, family));
+    TcpClient client(Address(port, family));
     CHECK(client.open());
     CHECK_FALSE(client.wasOpened());
   }
@@ -161,8 +161,7 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
         },
         [&]() {
           for (std::size_t c = 0; c < clients_numb; ++c) {
-            auto &client =
-                clients.emplace_back(Address::makeLocalHost(port, family));
+            auto &client = clients.emplace_back(Address(port, family));
             CHECK_FALSE(client.open());
           }
         });
@@ -176,7 +175,7 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
       }
     });
     Task ask_connection = [&]() {
-      TcpClient client(Address::makeLocalHost(port, family));
+      TcpClient client(Address(port, family));
       CHECK_FALSE(client.open());
     };
     for (std::size_t c = 0; c < clients_numb; ++c) {
@@ -195,7 +194,7 @@ TEST_CASE("Open multiple times tcp clients", "[tcp]") {
 
   std::size_t cycles = 5;
 
-  TcpClient client(Address::makeLocalHost(port, family));
+  TcpClient client(Address(port, family));
 
   for (std::size_t c = 0; c < cycles; ++c) {
     parallel([&]() { server.acceptNewClient(); },
@@ -213,7 +212,7 @@ TEST_CASE("Open tcp client with timeout", "[tcp]") {
 
   const auto timeout = Timeout{500};
 
-  TcpClient client(Address::makeLocalHost(port, family));
+  TcpClient client(Address(port, family));
 
   SECTION("expect fail within timeout") {
     CHECK(client.open(timeout));
@@ -258,7 +257,7 @@ TEST_CASE("Reserve random port for tcp server", "[tcp]") {
       },
       [&]() {
         // client
-        TcpClient client(Address::makeLocalHost(port, family));
+        TcpClient client(Address(port, family));
 #pragma omp barrier
         REQUIRE_FALSE(client.open());
         REQUIRE_FALSE(nullptr == client);

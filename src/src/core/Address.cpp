@@ -36,15 +36,12 @@ static const std::string LOCALHOST_IPv4 = "127.0.0.1";
 static const std::string LOCALHOST_IPv6 = "::1";
 } // namespace
 
-Address Address::makeLocalHost(const std::uint16_t &port,
-                               const AddressFamily &family) {
-  Address result;
-  result.port = port;
-  result.family = family;
+Address::Address(const std::uint16_t &port, const AddressFamily &family) {
+  this->port = port;
+  this->family = family;
   visitAddress(
-      family, [&result]() { result.host = LOCALHOST_IPv4; },
-      [&result]() { result.host = LOCALHOST_IPv6; });
-  return result;
+      family, [this]() { this->host = LOCALHOST_IPv4; },
+      [this]() { this->host = LOCALHOST_IPv6; });
 }
 
 bool Address::operator==(const Address &o) const {

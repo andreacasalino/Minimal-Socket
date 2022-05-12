@@ -28,14 +28,12 @@ TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
   const std::size_t cycles = 5;
 
   const auto requester_port = PortFactory::makePort();
-  const Address requester_address =
-      Address::makeLocalHost(requester_port, family);
+  const Address requester_address = Address(requester_port, family);
   UdpBinded requester(requester_port, family);
   REQUIRE_FALSE(requester.open());
 
   const auto responder_port = PortFactory::makePort();
-  const Address responder_address =
-      Address::makeLocalHost(responder_port, family);
+  const Address responder_address = Address(responder_port, family);
   UdpBinded responder(responder_port, family);
   REQUIRE_FALSE(responder.open());
 
@@ -96,12 +94,10 @@ TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
   const std::size_t cycles = 5;
 
   const auto requester_port = PortFactory::makePort();
-  const Address requester_address =
-      Address::makeLocalHost(requester_port, family);
+  const Address requester_address = Address(requester_port, family);
 
   const auto responder_port = PortFactory::makePort();
-  const Address responder_address =
-      Address::makeLocalHost(responder_port, family);
+  const Address responder_address = Address(responder_port, family);
 
   UdpConnected requester(responder_address, requester_port);
   REQUIRE_FALSE(requester.open());
@@ -162,8 +158,7 @@ TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
         [&]() {
 #pragma omp barrier
           std::this_thread::sleep_for(wait);
-          second_requester.sendTo(request,
-                                  Address::makeLocalHost(requester_port));
+          second_requester.sendTo(request, Address(requester_port));
         },
         [&]() {
 #pragma omp barrier
@@ -178,11 +173,9 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
   const std::size_t cycles = 5;
 
   const auto requester_port = PortFactory::makePort();
-  const Address requester_address =
-      Address::makeLocalHost(requester_port, family);
+  const Address requester_address = Address(requester_port, family);
   const auto responder_port = PortFactory::makePort();
-  const Address responder_address =
-      Address::makeLocalHost(responder_port, family);
+  const Address responder_address = Address(responder_port, family);
 
   UdpBinded responder(responder_port, family);
   REQUIRE_FALSE(responder.open());
@@ -273,14 +266,12 @@ TEST_CASE("Open connection with timeout", "[udp]") {
   const auto family = GENERATE(IP_V4, IP_V6);
 
   const auto requester_port = PortFactory::makePort();
-  const Address requester_address =
-      Address::makeLocalHost(requester_port, family);
+  const Address requester_address = Address(requester_port, family);
   UdpBinded requester(requester_port, family);
   REQUIRE_FALSE(requester.open());
 
   const auto responder_port = PortFactory::makePort();
-  const Address responder_address =
-      Address::makeLocalHost(responder_port, family);
+  const Address responder_address = Address(responder_port, family);
   UdpBinded responder(responder_port, family);
   REQUIRE_FALSE(responder.open());
 
@@ -313,15 +304,13 @@ TEST_CASE("Reserve random port for udp connection", "[udp]") {
   UdpBinded requester(requester_port, family);
   REQUIRE_FALSE(requester.open());
   requester_port = requester.getPortToBind();
-  const Address requester_address =
-      Address::makeLocalHost(requester_port, family);
+  const Address requester_address = Address(requester_port, family);
 
   auto responder_port = GENERATE(PortFactory::makePort(), ANY_PORT);
   UdpBinded responder(responder_port, family);
   REQUIRE_FALSE(responder.open());
   responder_port = responder.getPortToBind();
-  const Address responder_address =
-      Address::makeLocalHost(responder_port, family);
+  const Address responder_address = Address(responder_port, family);
 
   parallel(
       [&]() {
