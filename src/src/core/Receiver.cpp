@@ -101,6 +101,10 @@ ReceiverUnkownSender::receive(Buffer &message, const Timeout &timeout) {
     // if here, the message received is probably corrupted
     return std::nullopt;
   }
+  if (0 == recvBytes) {
+    // if here, timeout was reached
+    return std::nullopt;
+  }
   return ReceiveResult{
       toAddress(reinterpret_cast<const SocketAddress &>(sender_address)),
       static_cast<std::size_t>(recvBytes)};

@@ -277,7 +277,9 @@ TEST_CASE("Open connection with timeout", "[udp]") {
 
   const auto timeout = Timeout{500};
 
-  SECTION("expect fail within timeout") { CHECK(requester.connect(timeout)); }
+  SECTION("expect fail within timeout") {
+    CHECK_FALSE(requester.connect(timeout));
+  }
 
   SECTION("expect success within timeout") {
     const auto wait = Timeout{250};
