@@ -8,7 +8,6 @@
 #include <MinimalSocket/Error.h>
 
 #include "SocketAddress.h"
-#include "SocketError.h"
 #include "SocketFunctions.h"
 #include "Utils.h"
 

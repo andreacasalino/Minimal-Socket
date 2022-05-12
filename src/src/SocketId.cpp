@@ -7,7 +7,6 @@
 
 #include <MinimalSocket/Error.h>
 
-#include "SocketError.h"
 #include "Utils.h"
 
 namespace MinimalSocket {
@@ -17,32 +16,34 @@ WSALazyInitializer::WSALazyInitializer() {
   const auto version = WSAManager::getWsaVersion();
   const BYTE version_major = static_cast<BYTE>(version[0]);
   const BYTE version_minor = static_cast<BYTE>(version[1]);
-  auto result = WSAStartup(MAKEWORD( version_major, version_minor), &wsa);
+  auto result = WSAStartup(MAKEWORD(version_major, version_minor), &wsa);
   if (0 == result) {
-      return;
+    return;
   }
   std::string message;
   switch (result) {
   case WSASYSNOTREADY:
-      message = " , system not ready";
-      break;
+    message = " , system not ready";
+    break;
   case WSAVERNOTSUPPORTED:
-      message = " , version not supported";
-      break;
+    message = " , version not supported";
+    break;
   case WSAEINPROGRESS:
-      message = " , blocking operation in progress";
-      break;
+    message = " , blocking operation in progress";
+    break;
   case WSAEPROCLIM:
-      message = " , maximum supported tasks reached";
-      break;
+    message = " , maximum supported tasks reached";
+    break;
   case WSAEFAULT:
-      message = " , invalid WSADATA";
-      break;
-   default:
-       throw Error{"Not able to initialize WSA, reason unknown"};
-      break;
+    message = " , invalid WSADATA";
+    break;
+  default:
+    throw Error{"Not able to initialize WSA, reason unknown"};
+    break;
   }
-  auto err = Error{"Not able to initialize WSA, error code: ", std::to_string(result), message};
+  auto err =
+      Error{"Not able to initialize WSA, error code: ", std::to_string(result),
+            message};
   throw err;
 }
 
@@ -54,14 +55,13 @@ std::unique_ptr<WSALazyInitializer> WSALazyInitializer::lazy_proxy = nullptr;
 void WSALazyInitializer::lazyInit() {
   std::scoped_lock lock(WSALazyInitializer::lazy_proxy_mtx);
   if (nullptr != WSALazyInitializer::lazy_proxy) {
-      return;
+    return;
   }
   try {
-      WSALazyInitializer::lazy_proxy.reset(new WSALazyInitializer{});
-  }
-  catch (const Error& e) {
-      WSALazyInitializer::lazy_proxy = nullptr;
-      throw e;
+    WSALazyInitializer::lazy_proxy.reset(new WSALazyInitializer{});
+  } catch (const Error &e) {
+    WSALazyInitializer::lazy_proxy = nullptr;
+    throw e;
   }
 }
 #endif

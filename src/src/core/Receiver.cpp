@@ -5,10 +5,10 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+#include <MinimalSocket/Error.h>
 #include <MinimalSocket/core/Receiver.h>
 
 #include "../SocketAddress.h"
-#include "../SocketError.h"
 
 namespace MinimalSocket {
 std::unique_ptr<std::scoped_lock<std::mutex>>

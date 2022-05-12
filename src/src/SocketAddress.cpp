@@ -14,7 +14,6 @@
 #include <MinimalSocket/Error.h>
 
 #include "SocketAddress.h"
-#include "SocketError.h"
 
 namespace MinimalSocket {
 std::optional<SocketAddressIpv4> toSocketAddressIpv4(const std::string &host,

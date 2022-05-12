@@ -5,10 +5,10 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+#include <MinimalSocket/Error.h>
 #include <MinimalSocket/core/Sender.h>
 
 #include "../SocketAddress.h"
-#include "../SocketError.h"
 #include "../Utils.h"
 
 namespace MinimalSocket {
