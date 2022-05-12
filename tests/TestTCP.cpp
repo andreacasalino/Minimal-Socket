@@ -8,6 +8,7 @@
 #include <MinimalSocket/tcp/TcpClient.h>
 #include <MinimalSocket/tcp/TcpServer.h>
 
+#include "IsTimeout.h"
 #include "Parallel.h"
 #include "PortFactory.h"
 
@@ -86,19 +87,20 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
   const auto port = PortFactory::makePort();
   const auto family = GENERATE(IP_V4, IP_V6);
 
-
 #if !defined(_WIN32)
   SECTION("expected failure") {
-      TcpClient client(Address(port, family));
-      CHECK(client.open());
-      CHECK_FALSE(client.wasOpened());
+    TcpClient client(Address(port, family));
+    auto err = client.open();
+    CHECK(err);
+    CHECK(test::is_timeout(err.get()));
+    CHECK_FALSE(client.wasOpened());
   }
 #endif
 
   SECTION("expected success") {
     auto peers = make_peers(port, family);
-    auto& server_side = *peers.server_side.get();
-    auto& client_side = *peers.client_side.get();
+    auto &server_side = *peers.server_side.get();
+    auto &client_side = *peers.client_side.get();
 
     REQUIRE_FALSE(nullptr == client_side);
     REQUIRE(client_side.wasOpened());
@@ -219,7 +221,9 @@ TEST_CASE("Open tcp client with timeout", "[tcp]") {
   TcpClient client(Address(port, family));
 
   SECTION("expect fail within timeout") {
-    CHECK(client.open(timeout));
+    auto err = client.open(timeout);
+    CHECK(err);
+    CHECK(test::is_timeout(err.get()));
     CHECK_FALSE(client.wasOpened());
   }
 

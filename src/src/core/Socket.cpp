@@ -26,19 +26,18 @@ ConstBuffer makeStringConstBuffer(const std::string &subject) {
   return ConstBuffer{subject.data(), subject.size()};
 }
 
-
 #ifdef _WIN32
 std::mutex WSAManager::wsa_version_mtx = std::mutex{};
-WSAVersion WSAManager::wsa_version = WSAVersion{2,2};
+WSAVersion WSAManager::wsa_version = WSAVersion{2, 2};
 
-void WSAManager::setWsaVersion(const WSAVersion& version) {
-    std::scoped_lock lock(wsa_version_mtx);
-    wsa_version = version;
+void WSAManager::setWsaVersion(const WSAVersion &version) {
+  std::scoped_lock lock(wsa_version_mtx);
+  wsa_version = version;
 }
 
 WSAVersion WSAManager::getWsaVersion() {
-    std::scoped_lock lock(wsa_version_mtx);
-    return wsa_version;
+  std::scoped_lock lock(wsa_version_mtx);
+  return wsa_version;
 }
 #endif
 
@@ -75,7 +74,7 @@ void Socket::resetIDWrapper() {
   socket_id_wrapper = std::make_unique<SocketIdWrapper>();
 }
 
-std::optional<Error> Openable::open(const Timeout &timeout) {
+std::unique_ptr<Error> Openable::open(const Timeout &timeout) {
   if (opened) {
     throw Error{"Already opened"};
   }
@@ -91,17 +90,23 @@ std::optional<Error> Openable::open(const Timeout &timeout) {
                          // immediately
       } else {
         resetIDWrapper();
-        throw Error{""}; // just to be sure it throws
+        std::unique_ptr<TimeoutError> result;
+        result.reset(new TimeoutError{});
+        return result;
       }
     }
     opened = true;
+  } catch (const SocketError &e) {
+    resetIDWrapper();
+    return std::make_unique<SocketError>(e);
   } catch (const Error &e) {
     resetIDWrapper();
-    return e;
+    return std::make_unique<Error>(e);
   } catch (...) {
-    throw Error{"Not opened for unkown reason"};
+    resetIDWrapper();
+    return std::make_unique<Error>("Not opened for an unkown reason");
   }
-  return std::nullopt;
+  return nullptr;
 }
 
 void Openable::transfer(Openable &receiver, Openable &giver) {
