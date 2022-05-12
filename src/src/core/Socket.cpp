@@ -26,6 +26,22 @@ ConstBuffer makeStringConstBuffer(const std::string &subject) {
   return ConstBuffer{subject.data(), subject.size()};
 }
 
+
+#ifdef _WIN32
+std::mutex WSAManager::wsa_version_mtx = std::mutex{};
+WSAVersion WSAManager::wsa_version = WSAVersion{2,2};
+
+void WSAManager::setWsaVersion(const WSAVersion& version) {
+    std::scoped_lock lock(wsa_version_mtx);
+    wsa_version = version;
+}
+
+WSAVersion WSAManager::getWsaVersion() {
+    std::scoped_lock lock(wsa_version_mtx);
+    return wsa_version;
+}
+#endif
+
 Socket::~Socket() = default;
 
 Socket::Socket() { resetIDWrapper(); }

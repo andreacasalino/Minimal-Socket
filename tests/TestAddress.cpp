@@ -1,13 +1,22 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include <MinimalSocket/core/Socket.h>
 #include <MinimalSocket/core/Address.h>
 
 using namespace MinimalSocket;
 
 namespace {
-static constexpr Port TEST_PORT = 100;
+    static constexpr Port TEST_PORT = 100;
 }
+
+#ifdef _WIN32
+TEST_CASE("Invalid WSA version", "[address]") {
+    WSAManager::setWsaVersion({0,0});
+    CHECK_THROWS_AS(Address("127.0.0.1", TEST_PORT), Error);
+}
+#endif
+
 
 TEST_CASE("parse valid ipv4 hosts", "[address]") {
   auto host = GENERATE("192.168.125.34", "127.0.0.1", "0.0.0.0");

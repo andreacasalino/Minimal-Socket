@@ -80,7 +80,6 @@ private:
   SocketID socket_id = SCK_INVALID_SOCKET;
 };
 
-
 #ifdef _WIN32
 class WSALazyInitializer {
 public:
