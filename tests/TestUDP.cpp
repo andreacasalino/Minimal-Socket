@@ -305,3 +305,41 @@ TEST_CASE("Open connection with timeout", "[udp]") {
         });
   }
 }
+
+TEST_CASE("Reserve random port for udp connection", "[udp]") {
+  const auto family = GENERATE(IP_V4, IP_V6);
+
+  auto requester_port = ANY_PORT;
+  UdpBinded requester(requester_port, family);
+  REQUIRE_FALSE(requester.open());
+  requester_port = requester.getPortToBind();
+  const Address requester_address =
+      Address::makeLocalHost(requester_port, family);
+
+  auto responder_port = GENERATE(PortFactory::makePort(), ANY_PORT);
+  UdpBinded responder(responder_port, family);
+  REQUIRE_FALSE(responder.open());
+  responder_port = responder.getPortToBind();
+  const Address responder_address =
+      Address::makeLocalHost(responder_port, family);
+
+  parallel(
+      [&]() {
+        CHECK(requester.sendTo(request, responder_address));
+#pragma omp barrier
+#pragma omp barrier
+        auto received_response = requester.receive(response.size());
+        REQUIRE(received_response);
+        CHECK(received_response->received_message == response);
+        CHECK(are_same(received_response->sender, responder_address, family));
+      },
+      [&]() {
+#pragma omp barrier
+        auto received_request = responder.receive(request.size());
+        REQUIRE(received_request);
+        CHECK(received_request->received_message == request);
+        CHECK(are_same(received_request->sender, requester_address, family));
+        responder.sendTo(response, requester_address);
+#pragma omp barrier
+      });
+}
