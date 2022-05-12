@@ -5,7 +5,8 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include "SocketError.h"
+#include <MinimalSocket/Error.h>
+
 #include "SocketId.h"
 
 namespace MinimalSocket {

@@ -9,6 +9,7 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <string>
 
 namespace MinimalSocket {
 
@@ -36,5 +37,31 @@ protected:
   static void merge(std::stringstream &stream, const T &back) {
     stream << back;
   };
+};
+
+class ErrorCodeAware {
+public:
+  int getErrorCode() const { return error_code; }
+
+protected:
+  ErrorCodeAware();
+
+private:
+  int error_code;
+};
+class SocketError : public ErrorCodeAware, public Error {
+public:
+  /**
+   * @brief last error code raised by the socket API is automatically retrieved
+   */
+  SocketError(const std::string &what);
+
+  template <typename... Args>
+  SocketError(const Args &...args) : SocketError{merge(args...)} {};
+};
+
+class TimeoutError : public Error {
+public:
+  TimeoutError() : Error("Timeout error"){};
 };
 } // namespace MinimalSocket
