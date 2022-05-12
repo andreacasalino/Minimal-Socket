@@ -40,7 +40,8 @@ ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
                    static_cast<const void *>(&tv),
                    sizeof(struct timeval)) != 0) {
 #endif
-    throw SocketError{"can't set timeout"};
+    auto err = SocketError{"can't set timeout"};
+    throw err;
   }
   return lock;
 }

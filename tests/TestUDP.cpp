@@ -154,14 +154,16 @@ TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
 
   SECTION(
       "receive from third peer expected to fail since socket was connected") {
-    UdpConnected second_requester(responder_address, PortFactory::makePort());
+    UdpBinded second_requester(PortFactory::makePort(), family);
+    REQUIRE_FALSE(second_requester.open());
     const auto timeout = Timeout{500};
     const auto wait = Timeout{250};
     parallel(
         [&]() {
 #pragma omp barrier
           std::this_thread::sleep_for(wait);
-          second_requester.send(request);
+          second_requester.sendTo(request,
+                                  Address::makeLocalHost(requester_port));
         },
         [&]() {
 #pragma omp barrier
@@ -187,7 +189,7 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
 
   std::unique_ptr<UdpBinded> requester_only_bind =
       std::make_unique<UdpBinded>(requester_port, family);
-  REQUIRE(requester_only_bind->open());
+  REQUIRE_FALSE(requester_only_bind->open());
 
   // connect requester to responder
   auto deduce_sender = GENERATE(true, false);
@@ -284,9 +286,7 @@ TEST_CASE("Open connection with timeout", "[udp]") {
 
   const auto timeout = Timeout{500};
 
-  SECTION("expect fail within timeout") {
-    CHECK_FALSE(requester.connect(timeout));
-  }
+  SECTION("expect fail within timeout") { CHECK(requester.connect(timeout)); }
 
   SECTION("expect success within timeout") {
     const auto wait = Timeout{250};

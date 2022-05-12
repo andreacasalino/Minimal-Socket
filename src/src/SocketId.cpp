@@ -87,7 +87,8 @@ void SocketIdWrapper::reset(const SocketType &type,
   }
   if (this->socket_id == SCK_INVALID_SOCKET) {
     MinimalSocket::close(socket_id);
-    throw SocketError{"Stream socket could not be created"};
+    auto err = SocketError{"Stream socket could not be created"};
+    throw err;
   }
 }
 } // namespace MinimalSocket

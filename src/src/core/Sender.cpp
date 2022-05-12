@@ -18,7 +18,8 @@ bool Sender::send(const ConstBuffer &message) {
                          static_cast<int>(message.buffer_size), 0);
   if (sentBytes == SCK_SOCKET_ERROR) {
     sentBytes = 0;
-    throw SocketError{"send failed"};
+    auto err = SocketError{"send failed"};
+    throw err;
   }
   return (sentBytes == static_cast<int>(message.buffer_size));
 }
@@ -52,7 +53,8 @@ bool SenderTo::sendTo(const ConstBuffer &message, const Address &recipient) {
       });
   if (sentBytes == SCK_SOCKET_ERROR) {
     sentBytes = 0;
-    throw SocketError{"sendto failed"};
+    auto err = SocketError{"sendto failed"};
+    throw err;
   }
   return (sentBytes == static_cast<int>(message.buffer_size));
 }
