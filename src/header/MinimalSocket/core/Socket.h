@@ -9,6 +9,7 @@
 
 #include <MinimalSocket/Error.h>
 
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <memory>
@@ -16,7 +17,6 @@
 #include <optional>
 #include <string>
 #include <utility>
-#include <array>
 
 namespace MinimalSocket {
 struct Buffer {
@@ -43,12 +43,12 @@ using WSAVersion = std::array<std::uint16_t, 2>;
 
 class WSAManager {
 public:
-    static void setWsaVersion(const WSAVersion& version);
-    static WSAVersion getWsaVersion();
+  static void setWsaVersion(const WSAVersion &version);
+  static WSAVersion getWsaVersion();
 
 private:
-    static std::mutex wsa_version_mtx;
-    static WSAVersion wsa_version;
+  static std::mutex wsa_version_mtx;
+  static WSAVersion wsa_version;
 };
 #endif
 
@@ -84,7 +84,7 @@ bool operator==(const Socket &subject, std::nullptr_t);
 class Openable : public virtual Socket {
 public:
   bool wasOpened() const { return opened; }
-  std::optional<Error> open(const Timeout &timeout = NULL_TIMEOUT);
+  std::unique_ptr<Error> open(const Timeout &timeout = NULL_TIMEOUT);
 
 protected:
   Openable() = default;

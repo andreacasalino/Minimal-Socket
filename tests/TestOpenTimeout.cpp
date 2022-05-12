@@ -3,6 +3,8 @@
 
 #include <MinimalSocket/core/Socket.h>
 
+#include "IsTimeout.h"
+
 #include <thread>
 
 using namespace MinimalSocket;
@@ -30,7 +32,9 @@ TEST_CASE("Simulate open with timeout", "[open]") {
   }
 
   SECTION("expected failure") {
-    CHECK(test.open(Timeout{250}));
+    auto err = test.open(Timeout{250});
+    CHECK(err);
+    CHECK(test::is_timeout(err.get()));
     CHECK_FALSE(test.wasOpened());
   }
 }
