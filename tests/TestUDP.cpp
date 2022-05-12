@@ -66,7 +66,7 @@ TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
 
     SECTION("expect fail within timeout") {
       auto received_request = responder.receive(request.size(), timeout);
-      CHECK(received_request);
+      CHECK_FALSE(received_request);
     }
 
     SECTION("expect success within timeout") {
