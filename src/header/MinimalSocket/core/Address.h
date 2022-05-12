@@ -37,9 +37,8 @@ public:
   /**
    * @return an ipv4 or ipv6 with localhost as host and the passed port
    */
-  static Address
-  makeLocalHost(const Port &port,
-                const AddressFamily &family = AddressFamily::IP_V4);
+  Address(const Port &port, const AddressFamily &family =
+                                AddressFamily::IP_V4); // local host assumed
 
   const std::string &getHost() const { return this->host; };
   const Port &getPort() const { return this->port; };
