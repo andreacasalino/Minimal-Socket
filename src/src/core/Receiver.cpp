@@ -38,7 +38,7 @@ ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
   }
   if (::setsockopt(getIDWrapper().accessId(), SOL_SOCKET, SO_RCVTIMEO,
                    static_cast<const void *>(&tv),
-                   sizeof(struct timeval)) < 0) {
+                   sizeof(struct timeval)) != 0) {
 #endif
     throw SocketError{"can't set timeout"};
   }
