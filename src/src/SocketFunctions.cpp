@@ -94,7 +94,7 @@ Port bind(const SocketID &socket_id, const AddressFamily &family,
 }
 
 void listen(const SocketID &socket_id, const std::size_t backlog_size) {
-  if (::listen(socket_id, backlog_size) == SCK_SOCKET_ERROR) {
+  if (::listen(socket_id, static_cast<int>(backlog_size)) == SCK_SOCKET_ERROR) {
     auto err = SocketError{"Error: listening on reserved port"};
     throw err;
   }
