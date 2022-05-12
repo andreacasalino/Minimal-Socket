@@ -82,7 +82,10 @@ void UdpConnected::open_() {
 UdpBinded UdpConnected::disconnect() {
   resetIDWrapper();
   UdpBinded result(getPortToBind(), getRemoteAddress().getFamily());
-  result.open();
+  auto maybe_open_error = result.open();
+  if (maybe_open_error) {
+    throw *maybe_open_error;
+  }
   return std::move(result);
 }
 
@@ -91,7 +94,10 @@ makeUdpConnectedToUnknown(const Port &port,
                           const AddressFamily &accepted_connection_family,
                           const Timeout &timeout) {
   UdpBinded primal_socket(port, accepted_connection_family);
-  primal_socket.open();
+  auto maybe_open_error = primal_socket.open();
+  if (maybe_open_error) {
+    throw *maybe_open_error;
+  }
   auto maybe_result = primal_socket.connect(timeout);
   if (!maybe_result) {
     throw Error{"Something went wrong creating a UdpConnected socket"};

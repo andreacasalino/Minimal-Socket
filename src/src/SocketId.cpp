@@ -78,20 +78,16 @@ void SocketIdWrapper::reset(const SocketType &type,
   switch (type) {
   case SocketType::TCP:
     this->socket_id = ::socket(domain_number(family), SOCK_STREAM, 0);
-    if (this->socket_id == SCK_INVALID_SOCKET) {
-      MinimalSocket::close(socket_id);
-      throw SocketError{"Stream socket could not be created"};
-    }
     break;
   case SocketType::UDP:
     this->socket_id = ::socket(domain_number(family), SOCK_DGRAM, 0);
-    if (this->socket_id == SCK_INVALID_SOCKET) {
-      MinimalSocket::close(socket_id);
-      throw SocketError{"DataGram socket could not be created"};
-    }
     break;
   default:
-    throw Error("unknown protocol type");
+    throw Error("Unknown socket type");
+  }
+  if (this->socket_id == SCK_INVALID_SOCKET) {
+    MinimalSocket::close(socket_id);
+    throw SocketError{"Stream socket could not be created"};
   }
 }
 } // namespace MinimalSocket
