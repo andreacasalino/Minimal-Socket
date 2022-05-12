@@ -94,32 +94,32 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
 
   SECTION("expected success") {
     auto peers = make_peers(port, family);
-    auto& server_side = peers.server_side;
-    auto& client_side = peers.client_side;
+    auto& server_side = *peers.server_side.get();
+    auto& client_side = *peers.client_side.get();
 
-    REQUIRE_FALSE(nullptr == *client_side);
-    REQUIRE(client_side->wasOpened());
-    REQUIRE_FALSE(nullptr == *server_side);
+    REQUIRE_FALSE(nullptr == client_side);
+    REQUIRE(client_side.wasOpened());
+    REQUIRE_FALSE(nullptr == server_side);
 
     const std::size_t cycles = 5;
     const std::string request = "Hello";
     const std::string response = "Welcome";
 
     SECTION("client send, server respond") {
-      send_response(makeSenderReceiver(*client_side),
-                    makeSenderReceiver(*server_side));
+      send_response(makeSenderReceiver(client_side),
+                    makeSenderReceiver(server_side));
     }
 
     SECTION("server send, client respond") {
-      send_response(makeSenderReceiver(*server_side),
-                    makeSenderReceiver(*client_side));
+      send_response(makeSenderReceiver(server_side),
+                    makeSenderReceiver(client_side));
     }
 
     SECTION("receive with timeout") {
       const auto timeout = Timeout{500};
 
       SECTION("expect fail within timeout") {
-        auto received_request = server_side->receive(request.size(), timeout);
+        auto received_request = server_side.receive(request.size(), timeout);
         CHECK(received_request.empty());
       }
 
@@ -129,12 +129,12 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
             [&]() {
 #pragma omp barrier
               std::this_thread::sleep_for(wait);
-              client_side->send(request);
+              client_side.send(request);
             },
             [&]() {
 #pragma omp barrier
               auto received_request =
-                  server_side->receive(request.size(), timeout);
+                  server_side.receive(request.size(), timeout);
               CHECK(received_request == request);
             });
       }
