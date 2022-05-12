@@ -86,11 +86,14 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
   const auto port = PortFactory::makePort();
   const auto family = GENERATE(IP_V4, IP_V6);
 
-  //SECTION("expected failure") {
-  //  TcpClient client(Address(port, family));
-  //  CHECK(client.open());
-  //  CHECK_FALSE(client.wasOpened());
-  //}
+
+#if !defined(_WIN32)
+  SECTION("expected failure") {
+      TcpClient client(Address(port, family));
+      CHECK(client.open());
+      CHECK_FALSE(client.wasOpened());
+  }
+#endif
 
   SECTION("expected success") {
     auto peers = make_peers(port, family);

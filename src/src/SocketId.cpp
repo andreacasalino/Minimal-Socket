@@ -14,7 +14,36 @@ namespace MinimalSocket {
 #ifdef _WIN32
 WSALazyInitializer::WSALazyInitializer() {
   WSADATA wsa;
-  WSAStartup(MAKEWORD(2, 0), &wsa);
+  const auto version = WSAManager::getWsaVersion();
+  const BYTE version_major = static_cast<BYTE>(version[0]);
+  const BYTE version_minor = static_cast<BYTE>(version[1]);
+  auto result = WSAStartup(MAKEWORD( version_major, version_minor), &wsa);
+  if (0 == result) {
+      return;
+  }
+  std::string message;
+  switch (result) {
+  case WSASYSNOTREADY:
+      message = " , system not ready";
+      break;
+  case WSAVERNOTSUPPORTED:
+      message = " , version not supported";
+      break;
+  case WSAEINPROGRESS:
+      message = " , blocking operation in progress";
+      break;
+  case WSAEPROCLIM:
+      message = " , maximum supported tasks reached";
+      break;
+  case WSAEFAULT:
+      message = " , invalid WSADATA";
+      break;
+   default:
+       throw Error{"Not able to initialize WSA, reason unknown"};
+      break;
+  }
+  auto err = Error{"Not able to initialize WSA, error code: ", std::to_string(result), message};
+  throw err;
 }
 
 WSALazyInitializer::~WSALazyInitializer() { WSACleanup(); }
@@ -24,8 +53,15 @@ std::unique_ptr<WSALazyInitializer> WSALazyInitializer::lazy_proxy = nullptr;
 
 void WSALazyInitializer::lazyInit() {
   std::scoped_lock lock(WSALazyInitializer::lazy_proxy_mtx);
-  if (nullptr == WSALazyInitializer::lazy_proxy) {
-    WSALazyInitializer::lazy_proxy.reset(new WSALazyInitializer{});
+  if (nullptr != WSALazyInitializer::lazy_proxy) {
+      return;
+  }
+  try {
+      WSALazyInitializer::lazy_proxy.reset(new WSALazyInitializer{});
+  }
+  catch (const Error& e) {
+      WSALazyInitializer::lazy_proxy = nullptr;
+      throw e;
   }
 }
 #endif
