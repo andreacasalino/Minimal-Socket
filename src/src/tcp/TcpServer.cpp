@@ -62,7 +62,8 @@ TcpConnection TcpServer::acceptNewClient() {
                reinterpret_cast<SocketAddress *>(&acceptedClientAddress[0]),
                &acceptedClientAddress_length);
   if (accepted_client_socket_id == SCK_INVALID_SOCKET) {
-    throw SocketError{"accepting a new client"};
+    auto err = SocketError{"accepting a new client"};
+    throw err;
   }
 
   auto accepted_client_parsed_address =

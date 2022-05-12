@@ -50,8 +50,9 @@ Port bind(const SocketID &socket_id, const AddressFamily &family,
 #endif
         if (::bind(socket_id, reinterpret_cast<SocketAddress *>(&addr),
                    sizeof(SocketAddressIpv4)) == SCK_SOCKET_ERROR) {
-          throw SocketError{"Can't bind localhost on port: ",
-                            std::to_string(port)};
+          auto err = SocketError{"Can't bind localhost on port: ",
+                                 std::to_string(port)};
+          throw err;
         }
       },
       [&]() {
@@ -65,8 +66,9 @@ Port bind(const SocketID &socket_id, const AddressFamily &family,
         addr.sin6_port = htons(port);
         if (::bind(socket_id, reinterpret_cast<SocketAddress *>(&addr),
                    sizeof(SocketAddressIpv6)) == SCK_SOCKET_ERROR) {
-          throw SocketError{"Can't bind localhost on port: ",
-                            std::to_string(port)};
+          auto err = SocketError{"Can't bind localhost on port: ",
+                                 std::to_string(port)};
+          throw err;
         }
       });
 
@@ -77,7 +79,8 @@ Port bind(const SocketID &socket_id, const AddressFamily &family,
     if (::getsockname(socket_id,
                       reinterpret_cast<SocketAddress *>(&binded_address[0]),
                       &binded_address_length) == SCK_SOCKET_ERROR) {
-      throw SocketError{"Wasn't able to deduce the binded port"};
+      auto err = SocketError{"Wasn't able to deduce the binded port"};
+      throw err;
     }
     auto maybe_port =
         toPort(reinterpret_cast<const SocketAddress &>(binded_address));
@@ -92,7 +95,8 @@ Port bind(const SocketID &socket_id, const AddressFamily &family,
 
 void listen(const SocketID &socket_id, const std::size_t backlog_size) {
   if (::listen(socket_id, backlog_size) == SCK_SOCKET_ERROR) {
-    throw SocketError{"Error: listening on reserved port"};
+    auto err = SocketError{"Error: listening on reserved port"};
+    throw err;
   }
 }
 
@@ -109,7 +113,8 @@ void connect(const SocketID &socket_id, const Address &remote_address) {
         }
         if (::connect(socket_id, reinterpret_cast<SocketAddress *>(&(*addr)),
                       sizeof(SocketAddressIpv4)) == SCK_SOCKET_ERROR) {
-          throw SocketError{"Connection can't be established"};
+          auto err = SocketError{"Connection can't be established"};
+          throw err;
         }
       },
       [&]() {
@@ -122,7 +127,8 @@ void connect(const SocketID &socket_id, const Address &remote_address) {
         }
         if (::connect(socket_id, reinterpret_cast<SocketAddress *>(&(*addr)),
                       sizeof(SocketAddressIpv6)) == SCK_SOCKET_ERROR) {
-          throw SocketError{"Connection can't be established"};
+          auto err = SocketError{"Connection can't be established"};
+          throw err;
         }
       });
 }
