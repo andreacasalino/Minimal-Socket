@@ -11,6 +11,8 @@
 #include <MinimalSocket/core/Sender.h>
 #include <MinimalSocket/core/SocketContext.h>
 
+#include <mutex>
+
 namespace MinimalSocket::tcp {
 class TcpServer;
 
@@ -50,6 +52,8 @@ protected:
 private:
   std::size_t client_queue_size =
       50; // maximum number of clients put in the queue wiating for connection
-          // to be accepted
+  // to be accepted
+
+  std::mutex accept_mtx;
 };
 } // namespace MinimalSocket::tcp
