@@ -215,7 +215,7 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
 
   std::unique_ptr<UdpBinded> requester_only_bind =
       std::make_unique<UdpBinded>(requester_port, family);
-  REQUIRE_FALSE(requester_only_bind->open());
+  REQUIRE(requester_only_bind->open());
 
   // connect requester to responder
   auto deduce_sender = GENERATE(true, false);
