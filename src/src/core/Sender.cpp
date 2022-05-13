@@ -29,7 +29,7 @@ bool Sender::send(const std::string &message) {
 }
 
 std::future<void> SenderTo::reserveAddress(const Address &to_reserve) {
-  std::lock_guard<std::mutex> lock(recipients_register_mtx);
+  std::scoped_lock lock(recipients_register_mtx);
   auto it = recipients_register.find(to_reserve);
   if (it == recipients_register.end()) {
     auto &promises = recipients_register[to_reserve];
@@ -46,7 +46,7 @@ std::future<void> SenderTo::reserveAddress(const Address &to_reserve) {
 }
 
 void SenderTo::freeAddress(const Address &to_reserve) {
-  std::lock_guard<std::mutex> lock(recipients_register_mtx);
+  std::scoped_lock lock(recipients_register_mtx);
   auto it = recipients_register.find(to_reserve);
   auto &promises = it->second;
   if (1 == promises.size()) {
