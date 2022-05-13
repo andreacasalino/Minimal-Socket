@@ -7,15 +7,15 @@
 
 #pragma once
 
-#include <MinimalSocket/Error.h>
 #include <MinimalSocket/core/Definitions.h>
 
+#ifdef _WIN32
 #include <array>
+#endif
 #include <atomic>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <utility>
 
 namespace MinimalSocket {
 #ifdef _WIN32
