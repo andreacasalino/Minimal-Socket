@@ -15,9 +15,6 @@
 #include <winsock2.h>
 #include <ws2ipdef.h>
 #include <ws2tcpip.h>
-
-#include <memory>
-#include <mutex>
 #else
 #include <arpa/inet.h>
 #include <errno.h>
@@ -83,15 +80,15 @@ private:
 #ifdef _WIN32
 class WSALazyInitializer {
 public:
-	static void lazyInit();
+  static void lazyInit();
 
-	~WSALazyInitializer();
+  ~WSALazyInitializer();
 
 private:
-	WSALazyInitializer();
+  WSALazyInitializer();
 
-	static std::mutex lazy_proxy_mtx;
-	static std::unique_ptr<WSALazyInitializer> lazy_proxy;
+  static std::mutex lazy_proxy_mtx;
+  static std::unique_ptr<WSALazyInitializer> lazy_proxy;
 };
 #endif
 } // namespace MinimalSocket

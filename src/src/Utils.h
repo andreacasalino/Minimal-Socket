@@ -12,7 +12,6 @@
 #include "SocketId.h"
 
 #include <functional>
-#include <optional>
 
 namespace MinimalSocket {
 void visitAddress(const AddressFamily &family,
