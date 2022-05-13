@@ -20,8 +20,6 @@ negative test provando a bindare piu' volte la stessa porta per tcp e udp
 
 ricontrollare se vari buffer char sono da ripulire a zeros prima di uso
 
-valutare dove si puo' sostituire optional con expected
-
 ripulire include ridondanti
 
-test accept tcp client with timeout
+stressare bene il fatto che c'e' possibilita' di usare con timeout varie operazioni

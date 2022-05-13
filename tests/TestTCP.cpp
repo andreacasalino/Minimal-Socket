@@ -5,6 +5,7 @@
 #include <omp.h>
 #include <thread>
 
+#include <MinimalSocket/Error.h>
 #include <MinimalSocket/tcp/TcpClient.h>
 #include <MinimalSocket/tcp/TcpServer.h>
 
