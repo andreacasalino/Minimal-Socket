@@ -25,6 +25,11 @@ template <typename T, typename U> void copy_as(U &receiver, const U &giver) {
   receiver_ref = giver_ref;
 }
 
+class TimeOutError : public Error {
+public:
+  TimeOutError() : Error("Timeout"){};
+};
+
 // rethrow exception if happens
 // throw timeout excpetion if timeout reached
 void try_within_timeout(const std::function<void()> &action_to_try,

@@ -41,7 +41,7 @@ void try_within_timeout(const std::function<void()> &action_to_try,
                      // before timeout
   } else {
     action_to_abort();
-    throw TimeoutError{};
+    throw TimeOutError{};
   }
 }
 } // namespace MinimalSocket

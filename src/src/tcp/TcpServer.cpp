@@ -46,7 +46,13 @@ void TcpServer::setClientQueueSize(const std::size_t queue_size) {
   client_queue_size = queue_size;
 }
 
-TcpConnection TcpServer::acceptNewClient(const Timeout &timeout) {
+TcpConnection TcpServer::acceptNewClient() {
+  auto temp = acceptNewClient(NULL_TIMEOUT);
+  return std::move(temp.value());
+}
+
+std::optional<TcpConnection>
+TcpServer::acceptNewClient(const Timeout &timeout) {
   if (!this->wasOpened()) {
     throw Error("Tcp server was not opened before starting to accept clients");
   }
@@ -79,15 +85,19 @@ TcpConnection TcpServer::acceptNewClient(const Timeout &timeout) {
                          },
                          timeout);
     }
+  } catch (const TimeOutError &) {
+    return std::nullopt;
   } catch (...) {
     std::rethrow_exception(std::current_exception());
   }
 
   auto accepted_client_parsed_address =
       toAddress(reinterpret_cast<const SocketAddress &>(acceptedClientAddress));
-  TcpConnection result(accepted_client_parsed_address);
-  result.getIDWrapper().reset(accepted_client_socket_id);
-  return std::move(result);
+  std::optional<TcpConnection> result;
+  auto &accepted =
+      result.emplace(TcpConnection{accepted_client_parsed_address});
+  accepted.getIDWrapper().reset(accepted_client_socket_id);
+  return result;
 }
 
 TcpConnection::TcpConnection(const Address &remote_address)

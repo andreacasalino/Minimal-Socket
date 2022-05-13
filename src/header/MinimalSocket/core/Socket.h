@@ -64,7 +64,7 @@ bool operator==(const Socket &subject, std::nullptr_t);
 class Openable : public virtual Socket {
 public:
   bool wasOpened() const { return opened; }
-  std::unique_ptr<Error> open(const Timeout &timeout = NULL_TIMEOUT);
+  bool open(const Timeout &timeout = NULL_TIMEOUT);
 
 protected:
   Openable() = default;

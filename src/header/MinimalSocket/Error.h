@@ -59,9 +59,4 @@ public:
   template <typename... Args>
   SocketError(const Args &...args) : SocketError{merge(args...)} {};
 };
-
-class TimeoutError : public Error {
-public:
-  TimeoutError() : Error("Timeout error"){};
-};
 } // namespace MinimalSocket

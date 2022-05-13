@@ -60,12 +60,12 @@ void Socket::resetIDWrapper() {
   socket_id_wrapper = std::make_unique<SocketIdWrapper>();
 }
 
-std::unique_ptr<Error> Openable::open(const Timeout &timeout) {
+bool Openable::open(const Timeout &timeout) {
   if (opened) {
     throw Error{"Already opened"};
   }
   std::scoped_lock lock(open_procedure_mtx);
-  std::unique_ptr<Error> result;
+  std::unique_ptr<Error> exception;
   try {
     if (NULL_TIMEOUT == timeout) {
       this->open_();
@@ -75,16 +75,19 @@ std::unique_ptr<Error> Openable::open(const Timeout &timeout) {
     }
     opened = true;
   } catch (const SocketError &e) {
-    result = std::make_unique<SocketError>(e);
+    exception = std::make_unique<SocketError>(e);
+  } catch (const TimeOutError &) {
+    // assert and do nothing
   } catch (const Error &e) {
-    result = std::make_unique<Error>(e);
+    exception = std::make_unique<Error>(e);
   } catch (...) {
-    result = std::make_unique<Error>("Not opened for an unkown reason");
+    exception = std::make_unique<Error>("Not opened for an unkown reason");
   }
-  if (nullptr != result) {
+  if (nullptr != exception) {
     this->resetIDWrapper();
+    throw *exception;
   }
-  return result;
+  return opened;
 }
 
 void Openable::transfer(Openable &receiver, Openable &giver) {

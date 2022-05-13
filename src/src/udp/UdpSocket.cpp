@@ -47,6 +47,11 @@ UdpConnected UdpBinded::connect(const Address &remote_address) {
   return std::move(result);
 }
 
+UdpConnected UdpBinded::connect() {
+  auto result = this->connect(NULL_TIMEOUT);
+  return std::move(result.value());
+}
+
 std::optional<UdpConnected> UdpBinded::connect(const Timeout &timeout) {
   auto maybe_received = this->receive(MAX_UDP_RECV_MESSAGE, timeout);
   if (!maybe_received) {
@@ -82,26 +87,27 @@ void UdpConnected::open_() {
 UdpBinded UdpConnected::disconnect() {
   resetIDWrapper();
   UdpBinded result(getPortToBind(), getRemoteAddress().getFamily());
-  auto maybe_open_error = result.open();
-  if (maybe_open_error) {
-    throw *maybe_open_error;
-  }
+  result.open();
   return std::move(result);
 }
 
 UdpConnected
 makeUdpConnectedToUnknown(const Port &port,
+                          const AddressFamily &accepted_connection_family) {
+  auto result =
+      makeUdpConnectedToUnknown(port, accepted_connection_family, NULL_TIMEOUT);
+  return std::move(result.value());
+}
+
+std::optional<UdpConnected>
+makeUdpConnectedToUnknown(const Port &port,
                           const AddressFamily &accepted_connection_family,
                           const Timeout &timeout) {
   UdpBinded primal_socket(port, accepted_connection_family);
-  auto maybe_open_error = primal_socket.open();
-  if (maybe_open_error) {
-    throw *maybe_open_error;
+  auto success = primal_socket.open();
+  if (!success) {
+    return std::nullopt;
   }
-  auto maybe_result = primal_socket.connect(timeout);
-  if (!maybe_result) {
-    throw Error{"Something went wrong creating a UdpConnected socket"};
-  }
-  return std::move(maybe_result.value());
+  return primal_socket.connect(timeout);
 }
 } // namespace MinimalSocket::udp
