@@ -30,12 +30,12 @@ TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
   const auto requester_port = PortFactory::makePort();
   const Address requester_address = Address(requester_port, family);
   UdpBinded requester(requester_port, family);
-  REQUIRE_FALSE(requester.open());
+  REQUIRE(requester.open());
 
   const auto responder_port = PortFactory::makePort();
   const Address responder_address = Address(responder_port, family);
   UdpBinded responder(responder_port, family);
-  REQUIRE_FALSE(responder.open());
+  REQUIRE(responder.open());
 
   parallel(
       [&]() {
@@ -100,9 +100,9 @@ TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
   const Address responder_address = Address(responder_port, family);
 
   UdpConnected requester(responder_address, requester_port);
-  REQUIRE_FALSE(requester.open());
+  REQUIRE(requester.open());
   UdpConnected responder(requester_address, responder_port);
-  REQUIRE_FALSE(responder.open());
+  REQUIRE(responder.open());
 
   parallel(
       [&]() {
@@ -161,9 +161,9 @@ TEST_CASE(
   const Address responder_address = Address(responder_port, family);
 
   UdpConnected requester(responder_address, requester_port);
-  REQUIRE_FALSE(requester.open());
+  REQUIRE(requester.open());
   UdpConnected responder(requester_address, responder_port);
-  REQUIRE_FALSE(responder.open());
+  REQUIRE(responder.open());
 
   auto exchange_messages_before = GENERATE(true, false);
   if (exchange_messages_before) {
@@ -185,7 +185,7 @@ TEST_CASE(
   }
 
   UdpBinded second_requester(PortFactory::makePort(), family);
-  REQUIRE_FALSE(second_requester.open());
+  REQUIRE(second_requester.open());
   const auto timeout = Timeout{500};
   const auto wait = Timeout{250};
   parallel(
@@ -211,7 +211,7 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
   const Address responder_address = Address(responder_port, family);
 
   UdpBinded responder(responder_port, family);
-  REQUIRE_FALSE(responder.open());
+  REQUIRE(responder.open());
 
   std::unique_ptr<UdpBinded> requester_only_bind =
       std::make_unique<UdpBinded>(requester_port, family);
@@ -229,11 +229,10 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
         [&]() {
 #pragma omp barrier
           auto socket_connected = requester_only_bind->connect();
-          REQUIRE(socket_connected);
-          CHECK(are_same(socket_connected->getRemoteAddress(),
-                         responder_address, family));
-          requester_connected = std::make_unique<UdpConnected>(
-              std::move(socket_connected.value()));
+          CHECK(are_same(socket_connected.getRemoteAddress(), responder_address,
+                         family));
+          requester_connected =
+              std::make_unique<UdpConnected>(std::move(socket_connected));
         });
   } else {
     requester_connected = std::make_unique<UdpConnected>(
@@ -300,12 +299,12 @@ TEST_CASE("Open connection with timeout", "[udp]") {
   const auto requester_port = PortFactory::makePort();
   const Address requester_address = Address(requester_port, family);
   UdpBinded requester(requester_port, family);
-  REQUIRE_FALSE(requester.open());
+  REQUIRE(requester.open());
 
   const auto responder_port = PortFactory::makePort();
   const Address responder_address = Address(responder_port, family);
   UdpBinded responder(responder_port, family);
-  REQUIRE_FALSE(responder.open());
+  REQUIRE(responder.open());
 
   const auto timeout = Timeout{500};
 
@@ -336,13 +335,13 @@ TEST_CASE("Reserve random port for udp connection", "[udp]") {
 
   auto requester_port = ANY_PORT;
   UdpBinded requester(requester_port, family);
-  REQUIRE_FALSE(requester.open());
+  REQUIRE(requester.open());
   requester_port = requester.getPortToBind();
   const Address requester_address = Address(requester_port, family);
 
   auto responder_port = GENERATE(PortFactory::makePort(), ANY_PORT);
   UdpBinded responder(responder_port, family);
-  REQUIRE_FALSE(responder.open());
+  REQUIRE(responder.open());
   responder_port = responder.getPortToBind();
   const Address responder_address = Address(responder_port, family);
 
