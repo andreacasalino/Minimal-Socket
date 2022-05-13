@@ -10,7 +10,10 @@
 #include <MinimalSocket/core/Address.h>
 #include <MinimalSocket/core/Socket.h>
 
+#include <future>
+#include <list>
 #include <mutex>
+#include <unordered_map>
 
 namespace MinimalSocket {
 class Sender : public virtual Socket {
@@ -38,6 +41,19 @@ public:
   bool sendTo(const std::string &message, const Address &recipient);
 
 private:
-  std::mutex send_mtx;
+  std::future<void> reserveAddress(const Address &to_reserve);
+  void freeAddress(const Address &to_reserve);
+
+  std::mutex recipients_register_mtx;
+
+  struct AddressHasher {
+    std::hash<std::string> string_hasher;
+
+    std::size_t operator()(const Address &subject) const {
+      return string_hasher(to_string(subject));
+    }
+  };
+  std::unordered_map<Address, std::list<std::promise<void>>, AddressHasher>
+      recipients_register;
 };
 } // namespace MinimalSocket

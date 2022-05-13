@@ -28,8 +28,38 @@ bool Sender::send(const std::string &message) {
   return send(makeStringConstBuffer(message));
 }
 
+std::future<void> SenderTo::reserveAddress(const Address &to_reserve) {
+  std::lock_guard<std::mutex> lock(recipients_register_mtx);
+  auto it = recipients_register.find(to_reserve);
+  if (it == recipients_register.end()) {
+    auto &promises = recipients_register[to_reserve];
+    promises.emplace_back();
+    auto &promise = promises.back();
+    auto result = promise.get_future();
+    promise.set_value();
+    return result;
+  }
+  auto &promises = it->second;
+  promises.emplace_back();
+  auto &promise = promises.back();
+  return promise.get_future();
+}
+
+void SenderTo::freeAddress(const Address &to_reserve) {
+  std::lock_guard<std::mutex> lock(recipients_register_mtx);
+  auto it = recipients_register.find(to_reserve);
+  auto &promises = it->second;
+  if (1 == promises.size()) {
+    recipients_register.erase(it);
+  } else {
+    promises.pop_front();
+    promises.front().set_value();
+  }
+}
+
 bool SenderTo::sendTo(const ConstBuffer &message, const Address &recipient) {
-  std::scoped_lock lock(send_mtx);
+  auto send_allowed = reserveAddress(recipient);
+  send_allowed.wait();
   int sentBytes;
   visitAddress(
       recipient.getFamily(),
@@ -51,6 +81,7 @@ bool SenderTo::sendTo(const ConstBuffer &message, const Address &recipient) {
             reinterpret_cast<const SocketAddress *>(&socketIp6.value()),
             sizeof(SocketAddressIpv6));
       });
+  freeAddress(recipient);
   if (sentBytes == SCK_SOCKET_ERROR) {
     sentBytes = 0;
     auto err = SocketError{"sendto failed"};
