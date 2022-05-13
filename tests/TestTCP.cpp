@@ -8,7 +8,6 @@
 #include <MinimalSocket/tcp/TcpClient.h>
 #include <MinimalSocket/tcp/TcpServer.h>
 
-#include "IsTimeout.h"
 #include "Parallel.h"
 #include "PortFactory.h"
 
@@ -29,7 +28,7 @@ Peers make_peers(const Port &port, const AddressFamily &family) {
       [&]() {
         // server
         TcpServer server(port, family);
-        REQUIRE_FALSE(server.open());
+        REQUIRE(server.open());
 #pragma omp barrier
         auto accepted = server.acceptNewClient();
         REQUIRE_FALSE(nullptr == accepted);
@@ -39,7 +38,7 @@ Peers make_peers(const Port &port, const AddressFamily &family) {
         // client
         TcpClient client(Address(port, family));
 #pragma omp barrier
-        REQUIRE_FALSE(client.open());
+        REQUIRE(client.open());
         REQUIRE_FALSE(nullptr == client);
         REQUIRE(client.wasOpened());
         client_side = std::make_unique<TcpClient>(std::move(client));
@@ -90,9 +89,7 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
 #if !defined(_WIN32)
   SECTION("expected failure") {
     TcpClient client(Address(port, family));
-    auto err = client.open();
-    CHECK(err);
-    CHECK(test::is_timeout(err.get()));
+    CHECK_FALSE(client.open());
     CHECK_FALSE(client.wasOpened());
   }
 #endif
@@ -168,7 +165,7 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
         [&]() {
           for (std::size_t c = 0; c < clients_numb; ++c) {
             auto &client = clients.emplace_back(Address(port, family));
-            CHECK_FALSE(client.open());
+            CHECK(client.open());
           }
         });
   }
@@ -182,7 +179,7 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
     });
     Task ask_connection = [&]() {
       TcpClient client(Address(port, family));
-      CHECK_FALSE(client.open());
+      CHECK(client.open());
     };
     for (std::size_t c = 0; c < clients_numb; ++c) {
       tasks.push_back(ask_connection);
@@ -205,7 +202,7 @@ TEST_CASE("Open multiple times tcp clients", "[tcp]") {
   for (std::size_t c = 0; c < cycles; ++c) {
     parallel([&]() { server.acceptNewClient(); },
              [&]() {
-               CHECK_FALSE(client.open());
+               CHECK(client.open());
                TcpClient{std::move(client)};
                CHECK_FALSE(client.wasOpened());
              });
@@ -221,16 +218,14 @@ TEST_CASE("Open tcp client with timeout", "[tcp]") {
   TcpClient client(Address(port, family));
 
   SECTION("expect fail within timeout") {
-    auto err = client.open(timeout);
-    CHECK(err);
-    CHECK(test::is_timeout(err.get()));
+    CHECK_FALSE(client.open(timeout));
     CHECK_FALSE(client.wasOpened());
   }
 
   SECTION("expect success within timeout") {
     const auto wait = Timeout{250};
     TcpServer server(port, family);
-    REQUIRE_FALSE(server.open());
+    REQUIRE(server.open());
     parallel(
         [&]() {
 #pragma omp barrier
@@ -241,7 +236,7 @@ TEST_CASE("Open tcp client with timeout", "[tcp]") {
         },
         [&]() {
 #pragma omp barrier
-          CHECK_FALSE(client.open(timeout));
+          CHECK(client.open(timeout));
           client.send(request);
         });
   }
@@ -251,7 +246,7 @@ TEST_CASE("Reserve random port for tcp server", "[tcp]") {
   const auto family = GENERATE(IP_V4, IP_V6);
 
   TcpServer server(ANY_PORT, family);
-  REQUIRE_FALSE(server.open());
+  REQUIRE(server.open());
   const auto port = server.getPortToBind();
   REQUIRE(port != 0);
 
@@ -267,7 +262,7 @@ TEST_CASE("Reserve random port for tcp server", "[tcp]") {
         // client
         TcpClient client(Address(port, family));
 #pragma omp barrier
-        REQUIRE_FALSE(client.open());
+        REQUIRE(client.open());
         REQUIRE_FALSE(nullptr == client);
         REQUIRE(client.wasOpened());
         client.send(request);
