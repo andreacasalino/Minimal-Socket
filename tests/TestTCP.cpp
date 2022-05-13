@@ -275,3 +275,128 @@ TEST_CASE("Reserve random port for tcp server", "[tcp]") {
         client.send(request);
       });
 }
+
+TEST_CASE("Accept client with timeout", "[tcp]") {
+  const auto family = GENERATE(IP_V4, IP_V6);
+  const auto port = PortFactory::makePort();
+
+  TcpServer server(port, family);
+  REQUIRE(server.open());
+  const auto server_address = Address(port, family);
+
+  const auto timeout = Timeout{500};
+
+  SECTION("expect fail within timeout") {
+    // connect first client
+    TcpClient client_first = TcpClient{server_address};
+    std::unique_ptr<TcpConnection> server_side_first;
+    parallel(
+        [&]() {
+#pragma omp barrier
+          CHECK(client_first.open());
+        },
+        [&]() {
+#pragma omp barrier
+          auto accepted = server.acceptNewClient();
+          server_side_first =
+              std::make_unique<TcpConnection>(std::move(accepted));
+        });
+
+    // expect second accept to fail
+    CHECK_FALSE(server.acceptNewClient(timeout));
+    CHECK(server.wasOpened());
+
+    // check first accepted connection is still valid
+    parallel(
+        [&]() {
+#pragma omp barrier
+          auto received_request = server_side_first->receive(request.size());
+          CHECK(received_request == request);
+        },
+        [&]() {
+    // client
+#pragma omp barrier
+          client_first.send(request);
+        });
+
+    // connect second client after accept unsuccess and check they can exchange
+    // messages
+    parallel(
+        [&]() {
+          TcpClient client_second = TcpClient{server_address};
+#pragma omp barrier
+          CHECK(client_second.open());
+          client_second.send(request);
+        },
+        [&]() {
+#pragma omp barrier
+          auto server_side_second = server.acceptNewClient();
+          auto received_request = server_side_second.receive(request.size());
+          CHECK(received_request == request);
+        });
+  }
+
+  SECTION("expect success within timeout") {
+    const auto wait = Timeout{250};
+    parallel(
+        [&]() {
+          TcpClient client = TcpClient{server_address};
+#pragma omp barrier
+          std::this_thread::sleep_for(wait);
+          CHECK(client.open());
+        },
+        [&]() {
+#pragma omp barrier
+          CHECK(server.acceptNewClient(timeout));
+        });
+  }
+}
+
+// TEST_CASE("temppp", "[tcp]") {
+//   const auto family = GENERATE(IP_V4, IP_V6);
+//   const auto port = PortFactory::makePort();
+
+//   std::unique_ptr<TcpServer> server = std::make_unique<TcpServer>(port,
+//   family); REQUIRE(server->open());
+
+//   TcpClient client(Address(port, family));
+//   std::unique_ptr<TcpConnection> server_side;
+//   parallel(
+//       [&]() {
+// #pragma omp barrier
+//         CHECK(client.open());
+//       },
+//       [&]() {
+// #pragma omp barrier
+//         auto connected = server->acceptNewClient();
+//         server_side = std::make_unique<TcpConnection>(std::move(connected));
+//       });
+
+//   parallel(
+//       [&]() {
+// #pragma omp barrier
+//         auto received_request = server_side->receive(request.size());
+//         CHECK(received_request == request);
+//       },
+//       [&]() {
+//   // client
+// #pragma omp barrier
+//         client.send(request);
+//       });
+
+//   server.reset();
+//   server = std::make_unique<TcpServer>(port, family);
+//   REQUIRE(server->open());
+
+//   parallel(
+//       [&]() {
+// #pragma omp barrier
+//         auto received_request = server_side->receive(request.size());
+//         CHECK(received_request == request);
+//       },
+//       [&]() {
+//   // client
+// #pragma omp barrier
+//         client.send(request);
+//       });
+// }

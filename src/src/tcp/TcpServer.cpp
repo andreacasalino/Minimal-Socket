@@ -53,6 +53,7 @@ TcpConnection TcpServer::acceptNewClient() {
 
 std::optional<TcpConnection>
 TcpServer::acceptNewClient(const Timeout &timeout) {
+  std::scoped_lock lock(accept_mtx);
   if (!this->wasOpened()) {
     throw Error("Tcp server was not opened before starting to accept clients");
   }
@@ -79,13 +80,12 @@ TcpServer::acceptNewClient(const Timeout &timeout) {
       accept_client();
     } else {
       try_within_timeout([&]() { accept_client(); },
-                         [this]() {
-                           this->resetIDWrapper();
-                           this->open();
-                         },
-                         timeout);
+                         [this]() { this->resetIDWrapper(); }, timeout);
     }
   } catch (const TimeOutError &) {
+    TcpServer reopened = TcpServer{getPortToBind(), getRemoteAddressFamily()};
+    reopened.open();
+    *this = std::move(reopened);
     return std::nullopt;
   } catch (...) {
     std::rethrow_exception(std::current_exception());

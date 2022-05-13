@@ -40,7 +40,11 @@ void try_within_timeout(const std::function<void()> &action_to_try,
     open_task.get(); // will throw if ready because an exception throwned
                      // before timeout
   } else {
-    action_to_abort();
+    try {
+      action_to_abort();
+      open_task.get();
+    } catch (...) {
+    }
     throw TimeOutError{};
   }
 }
