@@ -28,7 +28,7 @@ void visitAddress(const AddressFamily &family,
   }
 }
 
-bool try_within_timeout(const std::function<void()> &action_to_try,
+void try_within_timeout(const std::function<void()> &action_to_try,
                         const std::function<void()> &action_to_abort,
                         const Timeout &timeout) {
   if (NULL_TIMEOUT == timeout) {
@@ -41,8 +41,7 @@ bool try_within_timeout(const std::function<void()> &action_to_try,
                      // before timeout
   } else {
     action_to_abort();
-    return false;
+    throw TimeoutError{};
   }
-  return true;
 }
 } // namespace MinimalSocket

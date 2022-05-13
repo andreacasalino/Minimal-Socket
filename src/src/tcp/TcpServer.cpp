@@ -46,23 +46,41 @@ void TcpServer::setClientQueueSize(const std::size_t queue_size) {
   client_queue_size = queue_size;
 }
 
-TcpConnection TcpServer::acceptNewClient() {
+TcpConnection TcpServer::acceptNewClient(const Timeout &timeout) {
   if (!this->wasOpened()) {
     throw Error("Tcp server was not opened before starting to accept clients");
   }
 
   char acceptedClientAddress[MAX_POSSIBLE_ADDRESS_SIZE];
   SocketAddressLength acceptedClientAddress_length = MAX_POSSIBLE_ADDRESS_SIZE;
+  SocketID accepted_client_socket_id = SCK_INVALID_SOCKET;
 
-  // accept: wait for a client to call connect and hit this server and get a
-  // pointer to this client.
-  SocketID accepted_client_socket_id =
-      ::accept(getIDWrapper().accessId(),
-               reinterpret_cast<SocketAddress *>(&acceptedClientAddress[0]),
-               &acceptedClientAddress_length);
-  if (accepted_client_socket_id == SCK_INVALID_SOCKET) {
-    auto err = SocketError{"accepting a new client"};
-    throw err;
+  auto accept_client = [&]() {
+    // accept: wait for a client to call connect and hit this server and get a
+    // pointer to this client.
+    accepted_client_socket_id =
+        ::accept(getIDWrapper().accessId(),
+                 reinterpret_cast<SocketAddress *>(&acceptedClientAddress[0]),
+                 &acceptedClientAddress_length);
+    if (accepted_client_socket_id == SCK_INVALID_SOCKET) {
+      auto err = SocketError{"accepting a new client"};
+      throw err;
+    }
+  };
+
+  try {
+    if (NULL_TIMEOUT == timeout) {
+      accept_client();
+    } else {
+      try_within_timeout([&]() { accept_client(); },
+                         [this]() {
+                           this->resetIDWrapper();
+                           this->open();
+                         },
+                         timeout);
+    }
+  } catch (...) {
+    std::rethrow_exception(std::current_exception());
   }
 
   auto accepted_client_parsed_address =
