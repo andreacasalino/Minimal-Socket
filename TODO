@@ -20,6 +20,8 @@ negative test provando a bindare piu' volte la stessa porta per tcp e udp
 
 ricontrollare se vari buffer char sono da ripulire a zeros prima di uso
 
-ripulire include ridondanti
-
 stressare bene il fatto che c'e' possibilita' di usare con timeout varie operazioni
+
+stressare che si possono fare in maniera safe send concorrenti per udp
+
+add test for udp concurrent send to

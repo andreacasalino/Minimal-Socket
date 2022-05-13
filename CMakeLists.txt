@@ -16,20 +16,15 @@ set(WITH_SOURCE_TREE ON)
 include(GroupSources)
 include(AutoCollect)
 include(MakeLibrary)
-include(MakeSample)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 project(MinimalCppSocket)
 add_subdirectory(src)
 
-# if(BUILD_SAMPLES OR BUILD_TESTS)
-# 	add_subdirectory(Utils)
-# endif()
-
-# if(BUILD_SAMPLES)
-#     add_subdirectory(Samples)
-# endif()
+if(BUILD_MinimalCppSocket_SAMPLES)
+    add_subdirectory(samples)
+endif()
 
 if(BUILD_MinimalCppSocket_TESTS)
     add_subdirectory(tests)
