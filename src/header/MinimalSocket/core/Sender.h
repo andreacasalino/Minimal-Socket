@@ -36,6 +36,7 @@ public:
    * @return true if the message was completely sent
    * @param[in] the message to send
    */
+  // TODO spiegare che possono essere concorrenti e come funziona
   bool sendTo(const ConstBuffer &message, const Address &recipient);
 
   bool sendTo(const std::string &message, const Address &recipient);
@@ -53,7 +54,8 @@ private:
       return string_hasher(to_string(subject));
     }
   };
-  std::unordered_map<Address, std::list<std::promise<void>>, AddressHasher>
+  using WaitingToSendQueue = std::list<std::promise<void>>;
+  std::unordered_map<Address, WaitingToSendQueue, AddressHasher>
       recipients_register;
 };
 } // namespace MinimalSocket
