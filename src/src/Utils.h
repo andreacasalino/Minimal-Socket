@@ -26,7 +26,8 @@ template <typename T, typename U> void copy_as(U &receiver, const U &giver) {
 }
 
 // rethrow exception if happens
-bool try_within_timeout(const std::function<void()> &action_to_try,
+// throw timeout excpetion if timeout reached
+void try_within_timeout(const std::function<void()> &action_to_try,
                         const std::function<void()> &action_to_abort,
                         const Timeout &timeout);
 } // namespace MinimalSocket

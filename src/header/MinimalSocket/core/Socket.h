@@ -8,36 +8,16 @@
 #pragma once
 
 #include <MinimalSocket/Error.h>
+#include <MinimalSocket/core/Definitions.h>
 
 #include <array>
 #include <atomic>
-#include <chrono>
 #include <memory>
 #include <mutex>
 #include <optional>
-#include <string>
 #include <utility>
 
 namespace MinimalSocket {
-struct Buffer {
-  char *buffer;
-  const std::size_t buffer_size;
-};
-void clear(Buffer &subject);
-Buffer makeStringBuffer(std::string &subject);
-
-struct ConstBuffer {
-  const char *buffer;
-  const std::size_t buffer_size;
-};
-ConstBuffer makeStringConstBuffer(const std::string &subject);
-
-enum SocketType { UDP, TCP };
-
-using Timeout = std::chrono::milliseconds;
-
-static constexpr Timeout NULL_TIMEOUT = Timeout{0};
-
 #ifdef _WIN32
 using WSAVersion = std::array<std::uint16_t, 2>;
 

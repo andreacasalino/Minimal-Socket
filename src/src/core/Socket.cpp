@@ -11,21 +11,7 @@
 #include "../SocketId.h"
 #include "../Utils.h"
 
-#include <future>
-
 namespace MinimalSocket {
-void clear(Buffer &subject) {
-  ::memset(subject.buffer, 0, subject.buffer_size);
-}
-
-Buffer makeStringBuffer(std::string &subject) {
-  return Buffer{subject.data(), subject.size()};
-}
-
-ConstBuffer makeStringConstBuffer(const std::string &subject) {
-  return ConstBuffer{subject.data(), subject.size()};
-}
-
 #ifdef _WIN32
 std::mutex WSAManager::wsa_version_mtx = std::mutex{};
 WSAVersion WSAManager::wsa_version = WSAVersion{2, 2};
@@ -84,12 +70,8 @@ std::unique_ptr<Error> Openable::open(const Timeout &timeout) {
     if (NULL_TIMEOUT == timeout) {
       this->open_();
     } else {
-      bool success =
-          try_within_timeout([this]() { this->open_(); },
-                             [this]() { this->resetIDWrapper(); }, timeout);
-      if (!success) {
-        return std::make_unique<TimeoutError>();
-      }
+      try_within_timeout([this]() { this->open_(); },
+                         [this]() { this->resetIDWrapper(); }, timeout);
     }
     opened = true;
   } catch (const SocketError &e) {
