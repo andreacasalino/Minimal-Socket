@@ -79,34 +79,30 @@ std::unique_ptr<Error> Openable::open(const Timeout &timeout) {
     throw Error{"Already opened"};
   }
   std::scoped_lock lock(open_procedure_mtx);
+  std::unique_ptr<Error> result;
   try {
     if (NULL_TIMEOUT == timeout) {
       this->open_();
     } else {
-      auto open_task = std::async([&]() { this->open_(); });
-      auto open_task_status = open_task.wait_for(timeout);
-      if (open_task_status == std::future_status::ready) {
-        open_task.get(); // will throw if ready because an exception throwned
-                         // immediately
-      } else {
-        resetIDWrapper();
-        std::unique_ptr<TimeoutError> result;
-        result.reset(new TimeoutError{});
-        return result;
+      bool success =
+          try_within_timeout([this]() { this->open_(); },
+                             [this]() { this->resetIDWrapper(); }, timeout);
+      if (!success) {
+        return std::make_unique<TimeoutError>();
       }
     }
     opened = true;
   } catch (const SocketError &e) {
-    resetIDWrapper();
-    return std::make_unique<SocketError>(e);
+    result = std::make_unique<SocketError>(e);
   } catch (const Error &e) {
-    resetIDWrapper();
-    return std::make_unique<Error>(e);
+    result = std::make_unique<Error>(e);
   } catch (...) {
-    resetIDWrapper();
-    return std::make_unique<Error>("Not opened for an unkown reason");
+    result = std::make_unique<Error>("Not opened for an unkown reason");
   }
-  return nullptr;
+  if (nullptr != result) {
+    this->resetIDWrapper();
+  }
+  return result;
 }
 
 void Openable::transfer(Openable &receiver, Openable &giver) {

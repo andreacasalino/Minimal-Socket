@@ -19,3 +19,5 @@ add test dove request e spezzettata in piu frammenti (piu send diverse)
 negative test provando a bindare piu' volte la stessa porta per tcp e udp
 
 ricontrollare se vari buffer char sono da ripulire a zeros prima di uso
+
+valutare dove si puo' sostituire optional con expected
