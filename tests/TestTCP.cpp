@@ -89,7 +89,7 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
 #if !defined(_WIN32)
   SECTION("expected failure") {
     TcpClient client(Address(port, family));
-    CHECK_FALSE(client.open());
+    CHECK_THROWS_AS(client.open(), Error);
     CHECK_FALSE(client.wasOpened());
   }
 #endif
@@ -218,7 +218,14 @@ TEST_CASE("Open tcp client with timeout", "[tcp]") {
   TcpClient client(Address(port, family));
 
   SECTION("expect fail within timeout") {
+#ifdef _WIN32
     CHECK_FALSE(client.open(timeout));
+#else
+    CHECK_THROWS_AS(
+        client.open(timeout),
+        Error); // linux throw if no server tcp were previously created, while
+                // windows seems to does not have this check
+#endif
     CHECK_FALSE(client.wasOpened());
   }
 
