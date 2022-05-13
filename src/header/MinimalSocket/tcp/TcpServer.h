@@ -38,8 +38,9 @@ public:
   TcpServer(const Port port_to_bind = ANY_PORT,
             const AddressFamily &accepted_client_family = AddressFamily::IP_V4);
 
-  // TODO replace with expected and add TcpConnection acceptNewClient()
-  TcpConnection acceptNewClient(const Timeout &timeout = NULL_TIMEOUT);
+  TcpConnection acceptNewClient(); // blocking
+
+  std::optional<TcpConnection> acceptNewClient(const Timeout &timeout);
 
   void setClientQueueSize(const std::size_t queue_size);
 

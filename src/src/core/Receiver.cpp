@@ -54,6 +54,7 @@ void check_received_bytes(int &recvBytes, const Timeout &timeout) {
   SocketError error_with_code("receive failed");
   recvBytes = 0;
   if ((error_with_code.getErrorCode() == EAGAIN) && (timeout != NULL_TIMEOUT)) {
+    // just out of time: tolerate
     return;
   }
   throw error_with_code;
