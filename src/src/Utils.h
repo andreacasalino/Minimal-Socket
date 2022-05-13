@@ -7,10 +7,12 @@
 
 #pragma once
 
+#include <MinimalSocket/core/Socket.h>
+
 #include "SocketId.h"
 
 #include <functional>
-#include <type_traits>
+#include <optional>
 
 namespace MinimalSocket {
 void visitAddress(const AddressFamily &family,
@@ -22,4 +24,9 @@ template <typename T, typename U> void copy_as(U &receiver, const U &giver) {
   const T &giver_ref = giver;
   receiver_ref = giver_ref;
 }
+
+// rethrow exception if happens
+bool try_within_timeout(const std::function<void()> &action_to_try,
+                        const std::function<void()> &action_to_abort,
+                        const Timeout &timeout);
 } // namespace MinimalSocket

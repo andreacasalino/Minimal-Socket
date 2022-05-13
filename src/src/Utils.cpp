@@ -9,6 +9,8 @@
 
 #include "Utils.h"
 
+#include <future>
+
 namespace MinimalSocket {
 void visitAddress(const AddressFamily &family,
                   const std::function<void()> &ipv4_case,
@@ -24,5 +26,23 @@ void visitAddress(const AddressFamily &family,
     throw Error{"Unrecognized AddressFamily"};
     break;
   }
+}
+
+bool try_within_timeout(const std::function<void()> &action_to_try,
+                        const std::function<void()> &action_to_abort,
+                        const Timeout &timeout) {
+  if (NULL_TIMEOUT == timeout) {
+    throw Error{"Invalid timeout"};
+  }
+  auto open_task = std::async([&]() { action_to_try(); });
+  auto open_task_status = open_task.wait_for(timeout);
+  if (open_task_status == std::future_status::ready) {
+    open_task.get(); // will throw if ready because an exception throwned
+                     // before timeout
+  } else {
+    action_to_abort();
+    return false;
+  }
+  return true;
 }
 } // namespace MinimalSocket
