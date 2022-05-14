@@ -40,8 +40,10 @@ int main(const int argc, const char **argv) {
   const auto server_port = static_cast<MinimalSocket::Port>(
       std::atoi(options->getValue("port").c_str()));
   const auto max_clients = std::atoi(options->getValue("clients", "0").c_str());
+  const auto family =
+      MinimalSocket::samples::to_family(options->getValue("family", "v4"));
 
-  MinimalSocket::tcp::TcpServer server(server_port);
+  MinimalSocket::tcp::TcpServer server(server_port, family);
 
   if (!server.open()) {
     cout << "Failed to bind and listen to specified port" << endl;

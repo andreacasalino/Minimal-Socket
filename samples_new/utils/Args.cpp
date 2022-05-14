@@ -64,4 +64,14 @@ std::string Args::getValue(const std::string &argument_name) const {
   }
   return args_it->second;
 }
+
+MinimalSocket::AddressFamily to_family(const std::string &family_as_string) {
+  if (family_as_string == "v4") {
+    return MinimalSocket::AddressFamily::IP_V4;
+  }
+  if (family_as_string == "v6") {
+    return MinimalSocket::AddressFamily::IP_V6;
+  }
+  throw std::runtime_error{"Invalid family address: it can be only v4 or v6"};
+}
 } // namespace MinimalSocket::samples
