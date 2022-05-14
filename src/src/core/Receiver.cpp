@@ -47,13 +47,19 @@ ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
 }
 
 namespace {
+#ifdef _WIN32
+    static constexpr int TIMEOUT_CODE = 10060;
+#else
+    static constexpr int TIMEOUT_CODE = EAGAIN;
+#endif
+
 void check_received_bytes(int &recvBytes, const Timeout &timeout) {
   if (recvBytes != SCK_SOCKET_ERROR) {
     return;
   }
   SocketError error_with_code("receive failed");
   recvBytes = 0;
-  if ((error_with_code.getErrorCode() == EAGAIN) && (timeout != NULL_TIMEOUT)) {
+  if ((error_with_code.getErrorCode() == TIMEOUT_CODE) && (timeout != NULL_TIMEOUT)) {
     // just out of time: tolerate
     return;
   }
