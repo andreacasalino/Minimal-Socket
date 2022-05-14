@@ -85,10 +85,12 @@ public:
   ~WSALazyInitializer();
 
 private:
-  WSALazyInitializer();
+  WSALazyInitializer(const WSAVersion& version);
 
   static std::mutex lazy_proxy_mtx;
   static std::unique_ptr<WSALazyInitializer> lazy_proxy;
+
+  const WSAVersion configured_version;
 };
 #endif
 } // namespace MinimalSocket
