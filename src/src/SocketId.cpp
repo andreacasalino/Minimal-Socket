@@ -11,9 +11,9 @@
 
 namespace MinimalSocket {
 #ifdef _WIN32
-WSALazyInitializer::WSALazyInitializer() {
+WSALazyInitializer::WSALazyInitializer(const WSAVersion& version)
+    : configured_version(version) {
   WSADATA wsa;
-  const auto version = WSAManager::getWsaVersion();
   const BYTE version_major = static_cast<BYTE>(version[0]);
   const BYTE version_minor = static_cast<BYTE>(version[1]);
   auto result = WSAStartup(MAKEWORD(version_major, version_minor), &wsa);
@@ -53,12 +53,13 @@ std::mutex WSALazyInitializer::lazy_proxy_mtx = std::mutex{};
 std::unique_ptr<WSALazyInitializer> WSALazyInitializer::lazy_proxy = nullptr;
 
 void WSALazyInitializer::lazyInit() {
+  auto version = WSAManager::getWsaVersion();
   std::scoped_lock lock(WSALazyInitializer::lazy_proxy_mtx);
-  if (nullptr != WSALazyInitializer::lazy_proxy) {
-    return;
+  if ((nullptr != WSALazyInitializer::lazy_proxy) && (WSALazyInitializer::lazy_proxy->configured_version == version)) {
+      return;
   }
   try {
-    WSALazyInitializer::lazy_proxy.reset(new WSALazyInitializer{});
+    WSALazyInitializer::lazy_proxy.reset(new WSALazyInitializer{version});
   } catch (const Error &e) {
     WSALazyInitializer::lazy_proxy = nullptr;
     throw e;

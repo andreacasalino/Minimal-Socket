@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include <MinimalSocket/Error.h>
 #include <MinimalSocket/core/Socket.h>
 #include <MinimalSocket/core/Address.h>
 
@@ -12,8 +13,10 @@ namespace {
 
 #ifdef _WIN32
 TEST_CASE("Invalid WSA version", "[address]") {
-    WSAManager::setWsaVersion({0,0});
+    WSAManager::setWsaVersion({ 0,0 });
     CHECK_THROWS_AS(Address("127.0.0.1", TEST_PORT), Error);
+    WSAManager::setWsaVersion({ 2,2 });
+    CHECK_NOTHROW(Address("127.0.0.1", TEST_PORT));
 }
 #endif
 

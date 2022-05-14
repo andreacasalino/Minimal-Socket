@@ -23,17 +23,17 @@ std::optional<SocketAddressIpv4> toSocketAddressIpv4(const std::string &host,
 #endif
 
   std::optional<SocketAddressIpv4> result;
-  auto &result_ref = result.emplace();
+  result.emplace();
   // set everything to 0 first
-  ::memset(&result_ref, 0, sizeof(SocketAddressIpv4));
-  result_ref.sin_family = AF_INET;
-  result_ref.sin_port = htons(port);
+  ::memset(&result.value(), 0, sizeof(SocketAddressIpv4));
+  result->sin_family = AF_INET;
+  result->sin_port = htons(port);
 
   // try address conversion
 #if !defined(_WIN32)
   in_addr ia;
   if (1 == ::inet_pton(AF_INET, host.c_str(), &ia)) {
-    result_ref.sin_addr.s_addr = ia.s_addr;
+    result->sin_addr.s_addr = ia.s_addr;
     return result;
   }
 #endif
@@ -54,8 +54,8 @@ std::optional<SocketAddressIpv4> toSocketAddressIpv4(const std::string &host,
     return std::nullopt;
   }
 
-  const auto &ipv4 = reinterpret_cast<const SocketAddressIpv4 &>(res->ai_addr);
-  result_ref.sin_addr.s_addr = ipv4.sin_addr.s_addr;
+  const auto* ipv4 = reinterpret_cast<const SocketAddressIpv4*>(res->ai_addr);
+  result->sin_addr.s_addr = ipv4->sin_addr.s_addr;
   ::freeaddrinfo(res);
   return result;
 }
@@ -67,18 +67,18 @@ std::optional<SocketAddressIpv6> toSocketAddressIpv6(const std::string &host,
 #endif
 
   std::optional<SocketAddressIpv6> result;
-  auto &result_ref = result.emplace();
+  result.emplace();
   // set everything to 0 first
-  ::memset(&result_ref, 0, sizeof(SocketAddressIpv6));
-  result_ref.sin6_family = AF_INET6;
-  result_ref.sin6_flowinfo = 0;
-  result_ref.sin6_port = htons(port);
+  ::memset(&result.value(), 0, sizeof(SocketAddressIpv6));
+  result->sin6_family = AF_INET6;
+  result->sin6_flowinfo = 0;
+  result->sin6_port = htons(port);
 
   // try address conversion
 #if !defined(_WIN32)
   in6_addr ia;
   if (1 == ::inet_pton(AF_INET6, host.c_str(), &ia)) {
-    result_ref.sin6_addr = ia;
+    result->sin6_addr = ia;
     return result;
   }
 #endif
@@ -99,8 +99,8 @@ std::optional<SocketAddressIpv6> toSocketAddressIpv6(const std::string &host,
     return std::nullopt;
   }
 
-  const auto &ipv6 = reinterpret_cast<const SocketAddressIpv6 &>(res->ai_addr);
-  result_ref.sin6_addr = ipv6.sin6_addr;
+ const auto* ipv6 = reinterpret_cast<const SocketAddressIpv6*>(res->ai_addr);
+  result->sin6_addr = ipv6->sin6_addr;
   ::freeaddrinfo(res);
   return result;
 }
