@@ -25,3 +25,5 @@ stressare bene il fatto che c'e' possibilita' di usare con timeout varie operazi
 stressare che si possono fare in maniera safe send concorrenti per udp
 
 add test for udp concurrent send to
+
+error se os non e' win32 o linux

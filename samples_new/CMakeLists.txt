@@ -1,6 +1,7 @@
 project(MinimalCppSocket-Samples)
 
 include(cmake/MakeSample.cmake)
+include(cmake/MakaLauncher.cmake)
 
 add_subdirectory(utils)
 

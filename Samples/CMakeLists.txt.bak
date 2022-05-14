@@ -1,9 +1,0 @@
-project(MinimalCppSocket-Samples)
-
-include(cmake/MakeSample.cmake)
-MakeSample(Dummy)
-
-# add_subdirectory(utils)
-
-# add_subdirectory(tcp)
-# add_subdirectory(udp)
