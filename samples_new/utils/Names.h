@@ -7,17 +7,19 @@
 
 #pragma once
 
+#include <sstream>
 #include <string>
 #include <unordered_map>
 
-namespace MinimalSocket::test {
-using Names = std::unordered_multimap<std::string, std::string>;
-static const Names NAMES_SURNAMES;
+namespace MinimalSocket::samples {
+using Names = std::unordered_map<std::string, std::string>;
 
 using NamesIterator = Names::const_iterator;
 
 class NamesCircularIterator {
 public:
+  static const Names NAMES_SURNAMES;
+
   NamesCircularIterator() : current_(NAMES_SURNAMES.begin()){};
 
   const NamesIterator &current() { return current_; };
@@ -27,4 +29,4 @@ public:
 private:
   NamesIterator current_;
 };
-} // namespace MinimalSocket::test
+} // namespace MinimalSocket::samples

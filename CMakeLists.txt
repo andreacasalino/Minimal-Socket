@@ -23,7 +23,7 @@ project(MinimalCppSocket)
 add_subdirectory(src)
 
 if(BUILD_MinimalCppSocket_SAMPLES)
-    add_subdirectory(samples)
+    add_subdirectory(samples_new)
 endif()
 
 if(BUILD_MinimalCppSocket_TESTS)
