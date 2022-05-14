@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <MinimalSocket/core/Address.h>
+
 #include <iostream>
 #include <optional>
 #include <string>
@@ -35,6 +37,8 @@ private:
 
   ArgsMap arguments_map;
 };
+
+MinimalSocket::AddressFamily to_family(const std::string &family_as_string);
 
 #define PARSE_ARGS                                                             \
   auto options = MinimalSocket::samples::Args::parse(argc, argv);              \

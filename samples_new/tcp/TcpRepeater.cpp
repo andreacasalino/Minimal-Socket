@@ -39,18 +39,20 @@ int main(const int argc, const char **argv) {
   const auto preceding_host = options->getValue("host", "127.0.0.1");
   const auto preceding_port = static_cast<MinimalSocket::Port>(
       std::atoi(options->getValue("prec_port").c_str()));
+  MinimalSocket::Address preceding_address(preceding_host, preceding_port);
+
   const auto port_to_reserve = static_cast<MinimalSocket::Port>(
       std::atoi(options->getValue("port").c_str()));
 
   // ask connection to preceding
-  MinimalSocket::tcp::TcpClient connection_to_preceding(
-      MinimalSocket::Address{preceding_host, preceding_port});
+  MinimalSocket::tcp::TcpClient connection_to_preceding(preceding_address);
   if (connection_to_preceding.open()) {
     cout << "Unable to connect to preceding" << endl;
     return EXIT_FAILURE;
   }
   // wait connection request from follower
-  MinimalSocket::tcp::TcpServer acceptor(port_to_reserve);
+  MinimalSocket::tcp::TcpServer acceptor(port_to_reserve,
+                                         preceding_address.getFamily());
   if (acceptor.open()) {
     cout << "Unable to reserve port" << std::to_string(port_to_reserve) << endl;
     return EXIT_FAILURE;
