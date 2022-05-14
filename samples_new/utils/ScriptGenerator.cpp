@@ -8,6 +8,7 @@
 #include <ScriptGenerator.h>
 
 #include <fstream>
+#include <sstream>
 
 namespace MinimalSocket::samples {
 namespace {
@@ -16,27 +17,48 @@ static const std::string SCRIPT_EXTENSION = std::string{".bat"};
 #elif __linux__
 static const std::string SCRIPT_EXTENSION = std::string{".sh"};
 #endif
+
+std::string to_string(const ProcessAndArgs &subject) {
+  std::stringstream stream;
+#ifdef _WIN32
+  stream << '\"' << subject.process_name << '\"';
+  for (const auto &[name, val] : subject.arguments) {
+    stream << " \"--" << name << "\" \"" << val << "\"";
+  }
+#elif __linux__
+  stream << "./" << subject.process_name;
+  for (const auto &[name, val] : subject.arguments) {
+    stream << " --" << name << ' ' << val;
+  }
+#endif
+  return stream.str();
+}
+
+void add_process(std::ofstream &stream, const ProcessAndArgs &proc_and_args,
+                 const bool new_terminal) {
+#ifdef _WIN32
+  if (new_terminal) {
+    stream << "start \"\" ";
+  }
+  stream << to_string(proc_and_args);
+#elif __linux__
+  if (new_terminal) {
+    stream << "gnome-terminal -x sh -c \"" << to_string(proc_and_args)
+           << " ; bash\"";
+  } else {
+    stream << to_string(proc_and_args);
+  }
+#endif
+  stream << std::endl;
+}
 } // namespace
 
 void ScriptGenerator::generate(const std::string &file_name) {
-  std::string complete_file_name = file_name + SCRIPT_EXTENSION;
-  std::ofstream stream(complete_file_name);
-  for (const auto &process : processes) {
-#ifdef _WIN32
-    stream << "start \"\" \"" << process.process_name << "\"";
-    for (const auto &[name, val] : process.arguments) {
-      stream << " \"--" << name << "\" \"" << val << "\"";
-    }
-#elif __linux__
-    stream << "gnome-terminal -x sh -c \"./" << process.process_name;
-    for (const auto &[name, val] : process.arguments) {
-      stream << " --" << name << ' ' << val;
-    }
-    stream << " ; bash\"";
-#endif
-    stream << std::endl;
-  }
+  std::ofstream stream(file_name + SCRIPT_EXTENSION);
 
-  // "start \"\" \""
+  for (std::size_t k = 0; k < (processes.size() - 1); ++k) {
+    add_process(stream, processes[k], true);
+  }
+  add_process(stream, processes.back(), false);
 }
 } // namespace MinimalSocket::samples
