@@ -5,30 +5,26 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef SAMPLE_ASKER_H
-#define SAMPLE_ASKER_H
+#pragma once
 
-#include <core/Messanger.h>
+#include <MinimalSocket/
+
 #include <Names.h>
-#include <Logger.h>
 
-namespace sck::sample {
-    class Asker
-        : public Logger {
-    public:
-        Asker(std::unique_ptr<sck::Messanger> socket);
+namespace MinimalSocket::test {
+class Asker : public Logger {
+public:
+  Asker(std::unique_ptr<sck::Messanger> socket);
 
-        void ask();
+  void ask();
 
-        void ask(const std::size_t times);
+  void ask(const std::size_t times);
 
-        void askForever(const std::chrono::milliseconds& sampleTime);
+  void askForever(const std::chrono::milliseconds &sampleTime);
 
-    private:
-        std::unique_ptr<sck::Messanger> socket;
-        NamesMap cursor;
-        char recvBuffer[1000];
-    };
-}
-
-#endif
+private:
+  std::unique_ptr<sck::Messanger> socket;
+  NamesMap cursor;
+  char recvBuffer[1000];
+};
+} // namespace MinimalSocket::test
