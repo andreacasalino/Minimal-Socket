@@ -12,9 +12,11 @@
 #include <vector>
 
 namespace MinimalSocket::samples {
+using ProcessArgs = std::unordered_map<std::string, std::string>;
+
 struct ProcessAndArgs {
   std::string process_name;
-  std::unordered_map<std::string, std::string> arguments;
+  ProcessArgs arguments;
 };
 
 class ScriptGenerator {
