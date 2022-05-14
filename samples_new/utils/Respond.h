@@ -8,19 +8,15 @@
 #pragma once
 
 #include <Names.h>
-#include <iostream>
 
 namespace MinimalSocket::samples {
 namespace {
 template <typename SocketT> void respond_one(SocketT &channel) {
   // receive name to search
-  std::cout << "Receiving ";
   auto request = channel.receive(500);
-  std::cout << " , got as request: " << request;
   // respond with corresponding surname
   const auto &response =
       NamesCircularIterator::NAMES_SURNAMES.find(request)->second;
-  std::cout << " , sending back: " << response;
   channel.send(response);
 }
 } // namespace
