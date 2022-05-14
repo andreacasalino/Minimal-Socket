@@ -38,10 +38,12 @@ public:
   // leave this socket empty after success
   UdpConnected connect(const Address &remote_address);
 
-  UdpConnected connect(); // to first sending 1 byte, inf timeout
+  UdpConnected connect(std::string *initial_message =
+                           nullptr); // to first sending 1 byte, inf timeout
 
   std::optional<UdpConnected>
-  connect(const Timeout &timeout); // to first sending 1 byte
+  connect(const Timeout &timeout,
+          std::string *initial_message = nullptr); // to first sending 1 byte
 
 protected:
   void open_() override;
@@ -67,12 +69,14 @@ protected:
   void open_() override;
 };
 
+// to first sending 1 byte
 UdpConnected
 makeUdpConnectedToUnknown(const Port &port,
-                          const AddressFamily &accepted_connection_family);
-
-std::optional<UdpConnected>
-makeUdpConnectedToUnknown(const Port &port,
                           const AddressFamily &accepted_connection_family,
-                          const Timeout &timeout);
+                          std::string *initial_message = nullptr);
+
+// to first sending 1 byte
+std::optional<UdpConnected> makeUdpConnectedToUnknown(
+    const Port &port, const AddressFamily &accepted_connection_family,
+    const Timeout &timeout, std::string *initial_message = nullptr);
 } // namespace MinimalSocket::udp

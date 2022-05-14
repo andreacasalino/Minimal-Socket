@@ -47,15 +47,19 @@ UdpConnected UdpBinded::connect(const Address &remote_address) {
   return std::move(result);
 }
 
-UdpConnected UdpBinded::connect() {
-  auto result = this->connect(NULL_TIMEOUT);
+UdpConnected UdpBinded::connect(std::string *initial_message) {
+  auto result = this->connect(NULL_TIMEOUT, initial_message);
   return std::move(result.value());
 }
 
-std::optional<UdpConnected> UdpBinded::connect(const Timeout &timeout) {
+std::optional<UdpConnected> UdpBinded::connect(const Timeout &timeout,
+                                               std::string *initial_message) {
   auto maybe_received = this->receive(MAX_UDP_RECV_MESSAGE, timeout);
   if (!maybe_received) {
     return std::nullopt;
+  }
+  if (nullptr != initial_message) {
+    *initial_message = std::move(maybe_received->received_message);
   }
   return connect(maybe_received->sender);
 }
@@ -93,21 +97,21 @@ UdpBinded UdpConnected::disconnect() {
 
 UdpConnected
 makeUdpConnectedToUnknown(const Port &port,
-                          const AddressFamily &accepted_connection_family) {
-  auto result =
-      makeUdpConnectedToUnknown(port, accepted_connection_family, NULL_TIMEOUT);
+                          const AddressFamily &accepted_connection_family,
+                          std::string *initial_message) {
+  auto result = makeUdpConnectedToUnknown(port, accepted_connection_family,
+                                          NULL_TIMEOUT, initial_message);
   return std::move(result.value());
 }
 
-std::optional<UdpConnected>
-makeUdpConnectedToUnknown(const Port &port,
-                          const AddressFamily &accepted_connection_family,
-                          const Timeout &timeout) {
+std::optional<UdpConnected> makeUdpConnectedToUnknown(
+    const Port &port, const AddressFamily &accepted_connection_family,
+    const Timeout &timeout, std::string *initial_message) {
   UdpBinded primal_socket(port, accepted_connection_family);
   auto success = primal_socket.open();
   if (!success) {
     return std::nullopt;
   }
-  return primal_socket.connect(timeout);
+  return primal_socket.connect(timeout, initial_message);
 }
 } // namespace MinimalSocket::udp
