@@ -12,70 +12,71 @@ using namespace std;
 
 int main() {
   {
-    // 1 server 1 client
-    const std::string sample_name = "tcp_server_client";
+    // 1 responder 1 asker
+    const std::string sample_name = "udp_responder_asker";
     MinimalSocket::samples::ScriptGenerator generator;
 
-    const std::string port = "35998";
+    const std::size_t port_asker = 36995;
+    const std::size_t port_responder = port_asker + 10;
 
     generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpServer",
-        MinimalSocket::samples::ProcessArgs{{"port", port}, {"clients", "1"}}});
+        "UdpResponder", MinimalSocket::samples::ProcessArgs{
+                            {"port_this", std::to_string(port_responder)}}});
 
     generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpClient", MinimalSocket::samples::ProcessArgs{{"port", port}}});
+        "UdpAsker", MinimalSocket::samples::ProcessArgs{
+                        {"port", std::to_string(port_responder)},
+                        {"port_this", std::to_string(port_asker)}}});
 
     cout << "generating " << sample_name << endl;
     generator.generate(sample_name);
   }
 
   {
-    // 1 server 2 clients
-    const std::string sample_name = "tcp_server_2_clients";
+    // 1 connecting responder 1 asker
+    const std::string sample_name = "udp_connecting_responder_asker";
     MinimalSocket::samples::ScriptGenerator generator;
 
-    const std::string port = "35998";
+    const std::size_t port_asker = 36995;
+    const std::size_t port_responder = port_asker + 10;
 
     generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpServer",
-        MinimalSocket::samples::ProcessArgs{{"port", port}, {"clients", "1"}}});
+        "UdpResponder", MinimalSocket::samples::ProcessArgs{
+                            {"port_this", std::to_string(port_responder)},
+                            {"connect", "yes"}}});
 
     generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpClient", MinimalSocket::samples::ProcessArgs{{"port", port}}});
-
-    generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpClient",
-        MinimalSocket::samples::ProcessArgs{{"port", port}, {"rate", "300"}}});
+        "UdpAsker", MinimalSocket::samples::ProcessArgs{
+                        {"port", std::to_string(port_responder)},
+                        {"port_this", std::to_string(port_asker)}}});
 
     cout << "generating " << sample_name << endl;
     generator.generate(sample_name);
   }
 
   {
-    // repeaters
-    const std::size_t repeaters = 1;
-    const std::string sample_name =
-        "tcp_chain_size_" + std::to_string(repeaters + 2);
+    // 1 responder 2 askers
+    const std::string sample_name = "udp_responder_2_askers";
     MinimalSocket::samples::ScriptGenerator generator;
 
-    std::size_t port = 35998;
+    const std::size_t port_responder = 36995;
+    const std::size_t port_asker_1 = port_responder + 10;
+    const std::size_t port_asker_2 = port_responder + 20;
 
     generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpServer", MinimalSocket::samples::ProcessArgs{
-                         {"port", std::to_string(port)}, {"clients", "1"}}});
-
-    for (std::size_t r = 0; r < repeaters; ++r) {
-      auto new_port = port + 10;
-      generator.add(MinimalSocket::samples::ProcessAndArgs{
-          "TcpRepeater", MinimalSocket::samples::ProcessArgs{
-                             {"port", std::to_string(new_port)},
-                             {"prec_port", std::to_string(port)}}});
-      port = new_port;
-    }
+        "UdpResponder", MinimalSocket::samples::ProcessArgs{
+                            {"port_this", std::to_string(port_responder)}}});
 
     generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpClient",
-        MinimalSocket::samples::ProcessArgs{{"port", std::to_string(port)}}});
+        "UdpAsker", MinimalSocket::samples::ProcessArgs{
+                        {"port", std::to_string(port_responder)},
+                        {"port_this", std::to_string(port_asker_1)}}});
+
+    generator.add(MinimalSocket::samples::ProcessAndArgs{
+        "UdpAsker", MinimalSocket::samples::ProcessArgs{
+                        {"port", std::to_string(port_responder)},
+                        {"port_this", std::to_string(port_asker_2)},
+                        {"rate", "300"}}});
 
     cout << "generating " << sample_name << endl;
     generator.generate(sample_name);
