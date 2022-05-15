@@ -15,12 +15,14 @@
 #include <winsock2.h>
 #include <ws2ipdef.h>
 #include <ws2tcpip.h>
-#else
+#elif __linux__
 #include <arpa/inet.h>
 #include <errno.h>
 #include <string.h> //memset
 #include <sys/socket.h>
 #include <unistd.h> //close
+#else
+#error "Not supported system by MinimalSocket"
 #endif
 
 namespace MinimalSocket {
@@ -85,7 +87,7 @@ public:
   ~WSALazyInitializer();
 
 private:
-  WSALazyInitializer(const WSAVersion& version);
+  WSALazyInitializer(const WSAVersion &version);
 
   static std::mutex lazy_proxy_mtx;
   static std::unique_ptr<WSALazyInitializer> lazy_proxy;
