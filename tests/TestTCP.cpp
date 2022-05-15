@@ -32,7 +32,6 @@ Peers make_peers(const Port &port, const AddressFamily &family) {
         REQUIRE(server.open());
 #pragma omp barrier
         auto accepted = server.acceptNewClient();
-        REQUIRE_FALSE(nullptr == accepted);
         server_side = std::make_unique<TcpConnection>(std::move(accepted));
       },
       [&]() {
@@ -40,7 +39,6 @@ Peers make_peers(const Port &port, const AddressFamily &family) {
         TcpClient client(Address(port, family));
 #pragma omp barrier
         REQUIRE(client.open());
-        REQUIRE_FALSE(nullptr == client);
         REQUIRE(client.wasOpened());
         client_side = std::make_unique<TcpClient>(std::move(client));
       });
@@ -100,9 +98,7 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
     auto &server_side = *peers.server_side.get();
     auto &client_side = *peers.client_side.get();
 
-    REQUIRE_FALSE(nullptr == client_side);
     REQUIRE(client_side.wasOpened());
-    REQUIRE_FALSE(nullptr == server_side);
 
     const std::size_t cycles = 5;
     const std::string request = "Hello";
@@ -262,7 +258,6 @@ TEST_CASE("Reserve random port for tcp server", "[tcp]") {
       [&]() {
 #pragma omp barrier
         auto accepted = server.acceptNewClient();
-        REQUIRE_FALSE(nullptr == accepted);
         auto received_request = accepted.receive(request.size());
         CHECK(received_request == request);
       },
@@ -271,7 +266,6 @@ TEST_CASE("Reserve random port for tcp server", "[tcp]") {
         TcpClient client(Address(port, family));
 #pragma omp barrier
         REQUIRE(client.open());
-        REQUIRE_FALSE(nullptr == client);
         REQUIRE(client.wasOpened());
         client.send(request);
       });

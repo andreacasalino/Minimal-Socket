@@ -31,19 +31,8 @@ Socket::~Socket() = default;
 
 Socket::Socket() { resetIDWrapper(); }
 
-bool Socket::empty() const {
-  return socket_id_wrapper->accessId() == SCK_INVALID_SOCKET;
-}
-
 int Socket::accessSocketID() const {
   return static_cast<int>(getIDWrapper().accessId());
-}
-
-bool operator==(std::nullptr_t, const Socket &subject) {
-  return subject.empty();
-}
-bool operator==(const Socket &subject, std::nullptr_t) {
-  return subject.empty();
 }
 
 void Socket::transfer(Socket &receiver, Socket &giver) {

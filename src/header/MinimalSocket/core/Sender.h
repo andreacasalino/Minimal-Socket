@@ -16,29 +16,55 @@
 #include <unordered_map>
 
 namespace MinimalSocket {
+/**
+ * @brief Typically associated to a connected socket, whose remote peer
+ * exchanging messages is known.
+ * Attention!! Even when calling from different threads some simultaneously
+ * send, they will be satisfited one at a time, as an internal mutex must be
+ * locked before starting to receive.
+ */
 class Sender : public virtual Socket {
 public:
   /**
-   * @return true if the message was completely sent
-   * @param[in] the message to send
+   * @param message the buffer storing the bytes to send
+   * @return true in case all the bytes were successfully sent
    */
   bool send(const ConstBuffer &message);
 
+  /**
+   * @param message the buffer storing the bytes to send as a string
+   * @return true in case all the bytes were successfully sent
+   */
   bool send(const std::string &message);
 
 private:
   std::mutex send_mtx;
 };
 
+/**
+ * @brief Typically associated to a non connected socket, whose remote peer that
+ * sends bytes is known and may change over the time.
+ * Attention!! It is thread safe to simultaneously send messages from different
+ * threads to many different recipients.
+ * However, be aware that in case 2 or more threads are sending a message to the
+ * same recipient, sendTo request will be queued and executed one at a time.
+ */
 class SenderTo : public virtual Socket {
 public:
   /**
-   * @return true if the message was completely sent
-   * @param[in] the message to send
+   * @param message the buffer storing the bytes to send
+   * @param recipient the recpient of the message
+   * @return true in case all the bytes were successfully sent to the specified
+   * recipient
    */
-  // TODO spiegare che possono essere concorrenti e come funziona
   bool sendTo(const ConstBuffer &message, const Address &recipient);
 
+  /**
+   * @param message the buffer storing the bytes to send as a string
+   * @param recipient the recpient of the message
+   * @return true in case all the bytes were successfully sent to the specified
+   * recipient
+   */
   bool sendTo(const std::string &message, const Address &recipient);
 
 private:

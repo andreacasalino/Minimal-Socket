@@ -12,12 +12,20 @@
 namespace MinimalSocket {
 class RemoteAddressAware {
 public:
+  /**
+   * @return the address of the peer that can exchange messages with this
+   * socket.
+   */
   const Address &getRemoteAddress() const { return remote_address; }
 
   RemoteAddressAware(const RemoteAddressAware &) = default;
   RemoteAddressAware &operator=(const RemoteAddressAware &) = default;
 
 protected:
+  /**
+   * @throw in case the passed address is invalid (i.e. address == nullptr is
+   * true).
+   */
   RemoteAddressAware(const Address &address);
 
 private:
@@ -26,6 +34,10 @@ private:
 
 class PortToBindAware {
 public:
+  /**
+   * @return the port that will be reserved, in case the socket was not already
+   * opened, or the port actually reserved when the socket was opened.
+   */
   Port getPortToBind() const { return port_to_bind; }
 
   PortToBindAware(const PortToBindAware &) = default;
@@ -42,6 +54,10 @@ private:
 
 class RemoteAddressFamilyAware {
 public:
+  /**
+   * @return the address family of the peer that can exchange messages with this
+   * socket.
+   */
   AddressFamily getRemoteAddressFamily() const { return remote_address_family; }
 
   RemoteAddressFamilyAware(const RemoteAddressFamilyAware &) = default;
