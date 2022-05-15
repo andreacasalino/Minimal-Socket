@@ -21,7 +21,6 @@ int main(const int argc, const char **argv) {
       std::atoi(options->getValue("port").c_str()));
   const auto rate = std::chrono::milliseconds{
       std::atoi(options->getValue("rate", "100").c_str())};
-  const auto cycles = std::atoi(options->getValue("cycles", "0").c_str());
 
   const MinimalSocket::Address server_address(server_host, server_port);
   MinimalSocket::tcp::TcpClient client(server_address);
@@ -31,11 +30,7 @@ int main(const int argc, const char **argv) {
     return EXIT_FAILURE;
   }
 
-  if (0 == cycles) {
-    MinimalSocket::samples::ask_forever(client, rate);
-  } else {
-    MinimalSocket::samples::ask(client, cycles, rate);
-  }
+  MinimalSocket::samples::ask_forever(client, rate);
 
   // the connection will be close when destroying the client object
   return EXIT_SUCCESS;
