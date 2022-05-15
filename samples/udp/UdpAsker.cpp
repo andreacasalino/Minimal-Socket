@@ -22,7 +22,7 @@ int main(const int argc, const char **argv) {
   const auto port_this = static_cast<MinimalSocket::Port>(
       std::atoi(options->getValue("port_this").c_str()));
   const auto rate = std::chrono::milliseconds{
-      std::atoi(options->getValue("rate", "100").c_str())};
+      std::atoi(options->getValue("rate", "250").c_str())};
 
   const MinimalSocket::Address remote_address(remote_host, remote_port);
   MinimalSocket::udp::UdpBinded asker(port_this, remote_address.getFamily());

@@ -37,15 +37,14 @@ int main() {
     const std::string port = "35998";
 
     generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpServer",
-        MinimalSocket::samples::ProcessArgs{{"port", port}, {"clients", "1"}}});
+        "TcpServer", MinimalSocket::samples::ProcessArgs{{"port", port}}});
 
     generator.add(MinimalSocket::samples::ProcessAndArgs{
         "TcpClient", MinimalSocket::samples::ProcessArgs{{"port", port}}});
 
     generator.add(MinimalSocket::samples::ProcessAndArgs{
         "TcpClient",
-        MinimalSocket::samples::ProcessArgs{{"port", port}, {"rate", "300"}}});
+        MinimalSocket::samples::ProcessArgs{{"port", port}, {"rate", "800"}}});
 
     cout << "generating " << sample_name << endl;
     generator.generate(sample_name);
@@ -61,8 +60,8 @@ int main() {
     std::size_t port = 35998;
 
     generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpServer", MinimalSocket::samples::ProcessArgs{
-                         {"port", std::to_string(port)}, {"clients", "1"}}});
+        "TcpServer",
+        MinimalSocket::samples::ProcessArgs{{"port", std::to_string(port)}}});
 
     for (std::size_t r = 0; r < repeaters; ++r) {
       auto new_port = port + 10;

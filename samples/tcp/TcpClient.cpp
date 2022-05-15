@@ -20,15 +20,17 @@ int main(const int argc, const char **argv) {
   const auto server_port = static_cast<MinimalSocket::Port>(
       std::atoi(options->getValue("port").c_str()));
   const auto rate = std::chrono::milliseconds{
-      std::atoi(options->getValue("rate", "100").c_str())};
+      std::atoi(options->getValue("rate", "250").c_str())};
 
   const MinimalSocket::Address server_address(server_host, server_port);
   MinimalSocket::tcp::TcpClient client(server_address);
 
+  cout << "Connecting to " << MinimalSocket::to_string(server_address) << endl;
   if (!client.open()) {
     cout << "Failed to open connection" << endl;
     return EXIT_FAILURE;
   }
+  cout << "Connected" << endl;
 
   MinimalSocket::samples::ask_forever(client, rate);
 

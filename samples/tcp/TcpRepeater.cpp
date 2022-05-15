@@ -44,20 +44,25 @@ int main(const int argc, const char **argv) {
   const auto port_to_reserve = static_cast<MinimalSocket::Port>(
       std::atoi(options->getValue("port").c_str()));
 
-  // ask connection to preceding
-  MinimalSocket::tcp::TcpClient connection_to_preceding(preceding_address);
-  if (connection_to_preceding.open()) {
-    cout << "Unable to connect to preceding" << endl;
-    return EXIT_FAILURE;
-  }
   // wait connection request from follower
   MinimalSocket::tcp::TcpServer acceptor(port_to_reserve,
                                          preceding_address.getFamily());
   if (acceptor.open()) {
-    cout << "Unable to reserve port" << std::to_string(port_to_reserve) << endl;
+    cout << "Failed to bind and listen to specified port" << endl;
     return EXIT_FAILURE;
   }
+  cout << "Waiting follower on port " << port_to_reserve << endl;
   auto connection_to_following = acceptor.acceptNewClient();
+
+  // ask connection to preceding
+  MinimalSocket::tcp::TcpClient connection_to_preceding(preceding_address);
+  cout << "Connecting to preceding on "
+       << MinimalSocket::to_string(preceding_address) << endl;
+  if (connection_to_preceding.open()) {
+    cout << "Unable to connect to preceding" << endl;
+    return EXIT_FAILURE;
+  }
+  cout << "Connected" << endl;
 
   Repeater repeater(std::move(connection_to_preceding),
                     std::move(connection_to_following));
