@@ -18,12 +18,9 @@ int main() {
 
     const std::string port = "35998";
 
-    generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpServer",
-        MinimalSocket::samples::ProcessArgs{{"port", port}, {"clients", "1"}}});
+    generator.add("TcpServer", {{"port", port}, {"clients", "1"}});
 
-    generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpClient", MinimalSocket::samples::ProcessArgs{{"port", port}}});
+    generator.add("TcpClient", {{"port", port}});
 
     cout << "generating " << sample_name << endl;
     generator.generate(sample_name);
@@ -36,15 +33,11 @@ int main() {
 
     const std::string port = "35998";
 
-    generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpServer", MinimalSocket::samples::ProcessArgs{{"port", port}}});
+    generator.add("TcpServer", {{"port", port}});
 
-    generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpClient", MinimalSocket::samples::ProcessArgs{{"port", port}}});
+    generator.add("TcpClient", {{"port", port}});
 
-    generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpClient",
-        MinimalSocket::samples::ProcessArgs{{"port", port}, {"rate", "800"}}});
+    generator.add("TcpClient", {{"port", port}, {"rate", "800"}});
 
     cout << "generating " << sample_name << endl;
     generator.generate(sample_name);
@@ -59,22 +52,17 @@ int main() {
 
     std::size_t port = 35998;
 
-    generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpServer",
-        MinimalSocket::samples::ProcessArgs{{"port", std::to_string(port)}}});
+    generator.add("TcpServer",
+                  {{"port", std::to_string(port)}, {"clients", "1"}});
 
     for (std::size_t r = 0; r < repeaters; ++r) {
       auto new_port = port + 10;
-      generator.add(MinimalSocket::samples::ProcessAndArgs{
-          "TcpRepeater", MinimalSocket::samples::ProcessArgs{
-                             {"port", std::to_string(new_port)},
-                             {"prec_port", std::to_string(port)}}});
+      generator.add("TcpRepeater", {{"port", std::to_string(new_port)},
+                                    {"next_port", std::to_string(port)}});
       port = new_port;
     }
 
-    generator.add(MinimalSocket::samples::ProcessAndArgs{
-        "TcpClient",
-        MinimalSocket::samples::ProcessArgs{{"port", std::to_string(port)}}});
+    generator.add("TcpClient", {{"port", std::to_string(port)}});
 
     cout << "generating " << sample_name << endl;
     generator.generate(sample_name);

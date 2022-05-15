@@ -13,61 +13,54 @@
 #include <iostream>
 using namespace std;
 
-class Repeater {
-public:
-  Repeater(MinimalSocket::tcp::TcpClient &&connection_to_preceding,
-           MinimalSocket::tcp::TcpConnection &&connection_to_following)
-      : preceding(std::move(connection_to_preceding)),
-        following(std::move(connection_to_following)) {}
-
-  void repeat() {
-    auto request = following.receive(500);
-    preceding.send(request);
-    auto response = preceding.receive(500);
-    following.send(response);
-  }
-
-private:
-  MinimalSocket::tcp::TcpClient preceding;
-  MinimalSocket::tcp::TcpConnection following;
-};
+void repeat(MinimalSocket::tcp::TcpConnection &preceding,
+            MinimalSocket::tcp::TcpClient &following) {
+  auto request = preceding.receive(500);
+  cout << "forwarding request: " << request << endl;
+  following.send(request);
+  auto response = following.receive(500);
+  cout << "backwarding response: " << response << endl;
+  preceding.send(response);
+}
 
 int main(const int argc, const char **argv) {
   cout << "-----------------------  Repeater  -----------------------" << endl;
   PARSE_ARGS
 
-  const auto preceding_host = options->getValue("host", "127.0.0.1");
-  const auto preceding_port = static_cast<MinimalSocket::Port>(
-      std::atoi(options->getValue("prec_port").c_str()));
-  MinimalSocket::Address preceding_address(preceding_host, preceding_port);
+  const auto following_host = options->getValue("host", "127.0.0.1");
+  const auto following_port = static_cast<MinimalSocket::Port>(
+      std::atoi(options->getValue("next_port").c_str()));
+  MinimalSocket::Address following_address(following_host, following_port);
 
   const auto port_to_reserve = static_cast<MinimalSocket::Port>(
       std::atoi(options->getValue("port").c_str()));
 
-  // wait connection request from follower
+  // reserve port
   MinimalSocket::tcp::TcpServer acceptor(port_to_reserve,
-                                         preceding_address.getFamily());
-  if (acceptor.open()) {
+                                         following_address.getFamily());
+  if (!acceptor.open()) {
     cout << "Failed to bind and listen to specified port" << endl;
     return EXIT_FAILURE;
   }
-  cout << "Waiting follower on port " << port_to_reserve << endl;
-  auto connection_to_following = acceptor.acceptNewClient();
+  cout << "Listening on port " << port_to_reserve << endl;
 
-  // ask connection to preceding
-  MinimalSocket::tcp::TcpClient connection_to_preceding(preceding_address);
-  cout << "Connecting to preceding on "
-       << MinimalSocket::to_string(preceding_address) << endl;
-  if (connection_to_preceding.open()) {
-    cout << "Unable to connect to preceding" << endl;
+  // ask connection to follower
+  MinimalSocket::tcp::TcpClient connection_to_following(following_address);
+  cout << "Connecting to next on chain at "
+       << MinimalSocket::to_string(following_address) << endl;
+  if (!connection_to_following.open()) {
+    cout << "Unable to connect to next on chain" << endl;
     return EXIT_FAILURE;
   }
-  cout << "Connected" << endl;
+  cout << "Connected to next on chain" << endl;
 
-  Repeater repeater(std::move(connection_to_preceding),
-                    std::move(connection_to_following));
+  // wait connection request from preceding
+  cout << "Waiting preceding on chain on port " << port_to_reserve << endl;
+  auto connection_to_previous = acceptor.acceptNewClient();
+  cout << "Connected to preceding on chain" << endl;
+
   while (true) {
-    repeater.repeat();
+    repeat(connection_to_previous, connection_to_following);
   }
 
   return EXIT_SUCCESS;
