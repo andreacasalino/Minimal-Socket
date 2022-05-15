@@ -13,7 +13,7 @@ using namespace std;
 int main() {
   {
     // 1 responder 1 asker
-    const std::string sample_name = "udp_responder_asker";
+    const std::string sample_name = "udp01_responder_asker";
     MinimalSocket::samples::ScriptGenerator generator;
 
     const std::size_t port_asker = 36995;
@@ -34,7 +34,7 @@ int main() {
 
   {
     // 1 connecting responder 1 asker
-    const std::string sample_name = "udp_connecting_responder_asker";
+    const std::string sample_name = "udp02_connecting_responder_asker";
     MinimalSocket::samples::ScriptGenerator generator;
 
     const std::size_t port_asker = 36995;
@@ -56,7 +56,7 @@ int main() {
 
   {
     // 1 responder 2 askers
-    const std::string sample_name = "udp_responder_2_askers";
+    const std::string sample_name = "udp03_responder_2_askers";
     MinimalSocket::samples::ScriptGenerator generator;
 
     const std::size_t port_responder = 36995;

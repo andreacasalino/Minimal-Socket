@@ -13,7 +13,7 @@ using namespace std;
 int main() {
   {
     // 1 server 1 client
-    const std::string sample_name = "tcp_server_client";
+    const std::string sample_name = "tcp01_server_client";
     MinimalSocket::samples::ScriptGenerator generator;
 
     const std::string port = "35998";
@@ -31,7 +31,7 @@ int main() {
 
   {
     // 1 server 2 clients
-    const std::string sample_name = "tcp_server_2_clients";
+    const std::string sample_name = "tcp02_server_2_clients";
     MinimalSocket::samples::ScriptGenerator generator;
 
     const std::string port = "35998";
@@ -53,9 +53,9 @@ int main() {
 
   {
     // repeaters
-    const std::size_t repeaters = 1;
+    const std::size_t repeaters = 2;
     const std::string sample_name =
-        "tcp_chain_size_" + std::to_string(repeaters + 2);
+        "tcp03_chain_size_" + std::to_string(repeaters + 2);
     MinimalSocket::samples::ScriptGenerator generator;
 
     std::size_t port = 35998;
