@@ -28,9 +28,10 @@ int main(const int argc, const char **argv) {
   MinimalSocket::udp::UdpBinded asker(port_this, remote_address.getFamily());
 
   if (!asker.open()) {
-    cout << "Failed to reserve port " << port_this << endl;
+    cout << "Failed to reserve specified port" << endl;
     return EXIT_FAILURE;
   }
+  cout << "Port successfully reserved" << endl;
 
   MinimalSocket::samples::ask_forever(asker, remote_address, rate);
 
