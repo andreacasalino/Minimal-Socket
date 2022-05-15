@@ -8,7 +8,7 @@
 #include <MinimalSocket/udp/UdpSocket.h>
 
 #include <Args.h>
-#include <Ask.h>
+#include <Respond.h>
 
 using namespace std;
 
@@ -32,8 +32,19 @@ int main(const int argc, const char **argv) {
 
   if (connect) {
     // connect to first sending a request
+    std::string first_request;
+    auto connected_responder = responder.connect(&first_request);
 
+    const auto &first_response =
+        MinimalSocket::samples::NamesCircularIterator::NAMES_SURNAMES
+            .find(first_request)
+            ->second;
+    connected_responder.send(first_response);
+
+    MinimalSocket::samples::respond_forever(connected_responder);
   } else {
+    // use as un-connected udp
+    MinimalSocket::samples::respond_forever(responder);
   }
 
   return EXIT_SUCCESS;

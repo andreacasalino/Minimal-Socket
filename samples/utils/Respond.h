@@ -7,30 +7,31 @@
 
 #pragma once
 
+#include <MinimalSocket/udp/UdpSocket.h>
+
 #include <Names.h>
 
 namespace MinimalSocket::samples {
-namespace {
-template <typename SocketT> void respond_one(SocketT &channel) {
-  // receive name to search
-  auto request = channel.receive(500);
-  // respond with corresponding surname
-  const auto &response =
-      NamesCircularIterator::NAMES_SURNAMES.find(request)->second;
-  channel.send(response);
-}
-} // namespace
-
-template <typename SocketT>
-void respond(SocketT &channel, const std::size_t times) {
-  for (std::size_t k = 0; k < times; ++k) {
-    respond_one(channel);
+template <typename SocketT> void respond_forever(SocketT &channel) {
+  while (true) {
+    // receive name to search
+    auto request = channel.receive(500);
+    // respond with corresponding surname
+    const auto &response =
+        NamesCircularIterator::NAMES_SURNAMES.find(request)->second;
+    channel.send(response);
   }
 }
 
-template <typename SocketT> void respond_forever(SocketT &channel) {
+void respond_forever(MinimalSocket::udp::UdpBinded &channel) {
   while (true) {
-    respond_one(channel);
+    // receive name to search
+    auto request = channel.receive(500);
+    // respond with corresponding surname
+    const auto &response =
+        NamesCircularIterator::NAMES_SURNAMES.find(request->received_message)
+            ->second;
+    channel.sendTo(response, request->sender);
   }
 }
 } // namespace MinimalSocket::samples

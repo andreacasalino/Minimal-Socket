@@ -23,7 +23,6 @@ int main(const int argc, const char **argv) {
       std::atoi(options->getValue("port_this").c_str()));
   const auto rate = std::chrono::milliseconds{
       std::atoi(options->getValue("rate", "100").c_str())};
-  const auto cycles = std::atoi(options->getValue("cycles", "0").c_str());
 
   const MinimalSocket::Address remote_address(remote_host, remote_port);
   MinimalSocket::udp::UdpBinded asker(port_this, remote_address.getFamily());
@@ -33,12 +32,7 @@ int main(const int argc, const char **argv) {
     return EXIT_FAILURE;
   }
 
-  // if (0 == cycles) {
-  //   MinimalSocket::samples::ask_forever(client, rate);
-  // } else {
-  //   MinimalSocket::samples::ask(client, cycles, rate);
-  // }
+  MinimalSocket::samples::ask_forever(asker, remote_address, rate);
 
-  // the connection will be close when destroying the client object
   return EXIT_SUCCESS;
 }
