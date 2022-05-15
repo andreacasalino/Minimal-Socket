@@ -23,7 +23,9 @@ class ScriptGenerator {
 public:
   ScriptGenerator() = default;
 
-  void add(const ProcessAndArgs &info) { processes.push_back(info); };
+  void add(const std::string &process_name, const ProcessArgs &args) {
+    processes.push_back(ProcessAndArgs{process_name, args});
+  };
 
   void generate(const std::string &file_name);
 
