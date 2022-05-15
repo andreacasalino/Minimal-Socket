@@ -27,7 +27,7 @@ TcpClient::TcpClient(const Address &server_address)
 void TcpClient::open_() {
   auto &socket = getIDWrapper();
   const auto remote_address = getRemoteAddress();
-  socket.reset(TCP, remote_address.getFamily());
+  socket.reset(SocketType::TCP, remote_address.getFamily());
   MinimalSocket::connect(socket.accessId(), remote_address);
 }
 } // namespace MinimalSocket::tcp

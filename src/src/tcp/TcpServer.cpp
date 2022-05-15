@@ -33,7 +33,7 @@ void TcpServer::open_() {
   auto &socket = getIDWrapper();
   const auto port = getPortToBind();
   const auto family = getRemoteAddressFamily();
-  socket.reset(TCP, family);
+  socket.reset(SocketType::TCP, family);
   auto binded_port = MinimalSocket::bind(socket.accessId(), family, port);
   setPort(binded_port);
   MinimalSocket::listen(socket.accessId(), client_queue_size);
