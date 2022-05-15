@@ -49,7 +49,7 @@ int main(const int argc, const char **argv) {
     cout << "Failed to bind and listen to specified port" << endl;
     return EXIT_FAILURE;
   }
-  cout << "Listening for new clients" << endl;
+  cout << "Listening for new clients on port " << server_port << endl;
 
   std::list<ActiveConnection> active_connections;
   auto accept_clients_task = std::async([&]() {

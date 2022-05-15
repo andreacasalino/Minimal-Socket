@@ -76,7 +76,7 @@ int main() {
         "UdpAsker", MinimalSocket::samples::ProcessArgs{
                         {"port", std::to_string(port_responder)},
                         {"port_this", std::to_string(port_asker_2)},
-                        {"rate", "300"}}});
+                        {"rate", "800"}}});
 
     cout << "generating " << sample_name << endl;
     generator.generate(sample_name);
