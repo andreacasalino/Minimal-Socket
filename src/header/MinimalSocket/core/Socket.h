@@ -60,6 +60,26 @@ public:
   Socket(const Socket &) = delete;
   Socket &operator=(const Socket &) = delete;
 
+  /**
+   * @return the socket id associated to this object.
+   *
+   * This might be:
+   *
+   * https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-socket
+   * in windows is the SOCKET (cast as in integer) data used to identify the
+   * underlying socket and returned by ::socket(...)
+   *
+   * https://man7.org/linux/man-pages/man2/socket.2.html
+   * in UNIX is the integer used to identify the underlying socket and returned
+   * by ::socket(...)
+   *
+   * Normally, all the operations involving the socket should be handled by the
+   * functions provided by this library. Therefore, you shouldn't need to
+   * access this number However, it might happen that sometimes you want to
+   * specify additional socket option, and in order to do that you need this
+   * number. Beware that you should really know what you are doing when using
+   * this number.
+   */
   int accessSocketID() const;
 
 protected:
@@ -78,6 +98,17 @@ private:
 class Openable : public virtual Socket {
 public:
   bool wasOpened() const { return opened; }
+
+  /**
+   * @brief Tries to do all the steps required to open this socket. In case
+   * potentially expected expections are raised, they are interally catched and
+   asserted.
+   * On the opposite, unexpected expections are passed to the caller.
+   * In both cases, the object is inernally closed and left in a state for which
+   * open may be tried again.
+   * @param timeout the timeout to consider. A NULL_TIMEOUT means actually to
+   * begin a blocking open.
+   */
   bool open(const Timeout &timeout = NULL_TIMEOUT);
 
 protected:
