@@ -20,6 +20,12 @@ public:
   TcpClient(TcpClient &&o);
   TcpClient &operator=(TcpClient &&o);
 
+  /**
+   * @brief The connection to the server is not asked in this c'tor which
+   * simply initialize this object. Such a connection is tried to be established
+   * when calling open(...)
+   * @param server_address the server to reach when opening this socket
+   */
   TcpClient(const Address &server_address);
 
 protected:
