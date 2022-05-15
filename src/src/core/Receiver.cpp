@@ -48,9 +48,9 @@ ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
 
 namespace {
 #ifdef _WIN32
-    static constexpr int TIMEOUT_CODE = 10060;
+static constexpr int TIMEOUT_CODE = 10060;
 #else
-    static constexpr int TIMEOUT_CODE = EAGAIN;
+static constexpr int TIMEOUT_CODE = EAGAIN;
 #endif
 
 void check_received_bytes(int &recvBytes, const Timeout &timeout) {
@@ -59,7 +59,8 @@ void check_received_bytes(int &recvBytes, const Timeout &timeout) {
   }
   SocketError error_with_code("receive failed");
   recvBytes = 0;
-  if ((error_with_code.getErrorCode() == TIMEOUT_CODE) && (timeout != NULL_TIMEOUT)) {
+  if ((error_with_code.getErrorCode() == TIMEOUT_CODE) &&
+      (timeout != NULL_TIMEOUT)) {
     // just out of time: tolerate
     return;
   }
@@ -127,7 +128,7 @@ ReceiverUnkownSender::receive(std::size_t expected_max_bytes,
   if (!result) {
     return std::nullopt;
   }
-  buffer.resize(buffer_temp.buffer_size);
+  buffer.resize(result->received_bytes);
   return ReceiveStringResult{result->sender, std::move(buffer)};
 }
 } // namespace MinimalSocket

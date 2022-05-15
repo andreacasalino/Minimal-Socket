@@ -26,14 +26,19 @@ int main(const int argc, const char **argv) {
   MinimalSocket::udp::UdpBinded responder(port_this, family);
 
   if (!responder.open()) {
-    cout << "Failed to reserve port " << port_this << endl;
+    cout << "Failed to reserve specified port" << endl;
     return EXIT_FAILURE;
   }
+  cout << "Port successfully reserved" << endl;
 
   if (connect) {
     // connect to first sending a request
     std::string first_request;
     auto connected_responder = responder.connect(&first_request);
+
+    cout << "Connected to "
+         << MinimalSocket::to_string(connected_responder.getRemoteAddress())
+         << endl;
 
     const auto &first_response =
         MinimalSocket::samples::NamesCircularIterator::NAMES_SURNAMES

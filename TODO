@@ -29,3 +29,5 @@ add test for udp concurrent send to
 error se os non e' win32 o linux
 
 mettere bene in evidenza il fatto che udp possono essere usati da connessi o no
+
+cambiare nome a repository git (MinimalSocket)
