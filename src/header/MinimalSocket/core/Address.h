@@ -15,7 +15,7 @@ namespace MinimalSocket {
  * @brief The address family. Refer to
  * https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_73/rzab6/address.htm
  */
-enum AddressFamily { IP_V4, IP_V6 };
+enum class AddressFamily { IP_V4, IP_V6 };
 
 using Port = std::uint16_t;
 

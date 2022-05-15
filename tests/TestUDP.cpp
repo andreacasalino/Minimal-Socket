@@ -24,7 +24,7 @@ bool are_same(const Address &a, const Address &b, const AddressFamily &family) {
 } // namespace
 
 TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
-  const auto family = GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
   const std::size_t cycles = 5;
 
   const auto requester_port = PortFactory::makePort();
@@ -90,7 +90,7 @@ TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
 }
 
 TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
-  const auto family = GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
   const std::size_t cycles = 5;
 
   const auto requester_port = PortFactory::makePort();
@@ -152,7 +152,7 @@ TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
 TEST_CASE(
     "Receive from thirdy peer expected to fail after udp socket connected",
     "[udp]") {
-  const auto family = GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   const auto requester_port = PortFactory::makePort();
   const Address requester_address = Address(requester_port, family);
@@ -202,7 +202,7 @@ TEST_CASE(
 }
 
 TEST_CASE("Metamorphosis of udp connections", "[udp]") {
-  const auto family = GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
   const std::size_t cycles = 5;
 
   const auto requester_port = PortFactory::makePort();
@@ -294,7 +294,7 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
 }
 
 TEST_CASE("Open connection with timeout", "[udp]") {
-  const auto family = GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   const auto requester_port = PortFactory::makePort();
   const Address requester_address = Address(requester_port, family);
@@ -331,7 +331,7 @@ TEST_CASE("Open connection with timeout", "[udp]") {
 }
 
 TEST_CASE("Reserve random port for udp connection", "[udp]") {
-  const auto family = GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   auto requester_port = ANY_PORT;
   UdpBinded requester(requester_port, family);

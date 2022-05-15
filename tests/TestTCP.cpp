@@ -85,7 +85,7 @@ void send_response(const SenderReceiver &requester,
 
 TEST_CASE("Establish tcp connection", "[tcp]") {
   const auto port = PortFactory::makePort();
-  const auto family = GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
 #if !defined(_WIN32)
   SECTION("expected failure") {
@@ -147,7 +147,7 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
 
 TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
   const auto port = PortFactory::makePort();
-  const auto family = GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   TcpServer server(port, family);
   server.open();
@@ -191,7 +191,7 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
 
 TEST_CASE("Open multiple times tcp clients", "[tcp]") {
   const auto port = PortFactory::makePort();
-  const auto family = GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   TcpServer server(port, family);
   server.open();
@@ -212,7 +212,7 @@ TEST_CASE("Open multiple times tcp clients", "[tcp]") {
 
 TEST_CASE("Open tcp client with timeout", "[tcp]") {
   const auto port = PortFactory::makePort();
-  const auto family = GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   const auto timeout = Timeout{500};
 
@@ -251,7 +251,7 @@ TEST_CASE("Open tcp client with timeout", "[tcp]") {
 }
 
 TEST_CASE("Reserve random port for tcp server", "[tcp]") {
-  const auto family = GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   TcpServer server(ANY_PORT, family);
   REQUIRE(server.open());
@@ -278,7 +278,7 @@ TEST_CASE("Reserve random port for tcp server", "[tcp]") {
 }
 
 TEST_CASE("Accept client with timeout", "[tcp]") {
-  const auto family = GENERATE(IP_V4, IP_V6);
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
   const auto port = PortFactory::makePort();
 
   TcpServer server(port, family);

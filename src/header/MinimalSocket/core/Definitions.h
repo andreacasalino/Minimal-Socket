@@ -24,7 +24,7 @@ struct ConstBuffer {
 };
 ConstBuffer makeStringConstBuffer(const std::string &subject);
 
-enum SocketType { UDP, TCP };
+enum class SocketType { UDP, TCP };
 
 using Timeout = std::chrono::milliseconds;
 
