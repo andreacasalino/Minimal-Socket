@@ -40,7 +40,8 @@ public:
    * message. It can be also lower then buffer size, as less bytes might be
    * received.
    */
-  std::size_t receive(Buffer &message, const Timeout &timeout = NULL_TIMEOUT);
+  std::size_t receive(const Buffer &message,
+                      const Timeout &timeout = NULL_TIMEOUT);
 
   /**
    * @brief Similar to Receiver::receive(Buffer &, const Timeout &), but
@@ -80,7 +81,7 @@ public:
    * also lower then buffer size, as less bytes might be received.
    * In case no bytes were received within the timeout, a nullopt is returned.
    */
-  std::optional<ReceiveResult> receive(Buffer &message,
+  std::optional<ReceiveResult> receive(const Buffer &message,
                                        const Timeout &timeout = NULL_TIMEOUT);
 
   struct ReceiveStringResult {

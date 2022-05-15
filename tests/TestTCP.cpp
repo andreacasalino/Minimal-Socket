@@ -346,3 +346,56 @@ TEST_CASE("Accept client with timeout", "[tcp]") {
         });
   }
 }
+
+TEST_CASE("Send Receive messages split into multiple pieces", "[tcp]") {
+  const auto port = PortFactory::makePort();
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
+
+  auto peers = make_peers(port, family);
+  auto &server_side = *peers.server_side.get();
+  auto &client_side = *peers.client_side.get();
+
+  const std::string request = "This is a simulated long message";
+
+  const std::size_t delta = 4;
+
+  SECTION("split receive") {
+    parallel([&]() { client_side.send(request); },
+             [&]() {
+               std::size_t received_bytes = 0;
+               std::string buffer;
+               buffer.resize(request.size());
+               char *buffer_data = buffer.data();
+               while (received_bytes != request.size()) {
+                 std::size_t bytes_to_receive = std::min<std::size_t>(
+                     delta, request.size() - received_bytes);
+                 auto received_bytes_delta =
+                     server_side.receive(Buffer{buffer_data, bytes_to_receive});
+                 received_bytes += received_bytes_delta;
+                 buffer_data += received_bytes_delta;
+               }
+               CHECK(buffer == request);
+             });
+  }
+
+  SECTION("split send") {
+    parallel(
+        [&]() {
+          std::size_t sent_bytes = 0;
+          const char *buffer_data = request.data();
+          while (sent_bytes != request.size()) {
+            std::size_t bytes_to_send =
+                std::min<std::size_t>(delta, request.size() - sent_bytes);
+            client_side.send(ConstBuffer{buffer_data, bytes_to_send});
+            sent_bytes += bytes_to_send;
+            buffer_data += bytes_to_send;
+          }
+#pragma omp barrier
+        },
+        [&]() {
+#pragma omp barrier
+          auto received_request = server_side.receive(request.size());
+          CHECK(received_request == request);
+        });
+  }
+}

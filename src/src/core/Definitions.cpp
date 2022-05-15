@@ -10,7 +10,7 @@
 #include "../SocketId.h"
 
 namespace MinimalSocket {
-void clear(Buffer &subject) {
+void clear(const Buffer &subject) {
   ::memset(subject.buffer, 0, subject.buffer_size);
 }
 
