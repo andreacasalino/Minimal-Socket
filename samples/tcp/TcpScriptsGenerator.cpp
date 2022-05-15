@@ -27,8 +27,10 @@ int main() {
   }
 
   {
-    // 1 server 2 clients
-    const std::string sample_name = "tcp02_server_2_clients";
+    // 1 server many clients
+    const std::size_t clients = 3;
+
+    const std::string sample_name = "tcp02_server_" + std::to_string(clients) + "_clients";
     MinimalSocket::samples::ScriptGenerator generator;
 
     const std::string port = "35998";
@@ -37,7 +39,9 @@ int main() {
 
     generator.add("TcpClient", {{"port", port}});
 
-    generator.add("TcpClient", {{"port", port}, {"rate", "800"}});
+    for (std::size_t c = 1; c < clients; ++c) {
+        generator.add("TcpClient", { {"port", port}, {"rate", "800"} });
+    }
 
     cout << "generating " << sample_name << endl;
     generator.generate(sample_name);
