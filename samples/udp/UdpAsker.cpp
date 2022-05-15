@@ -26,7 +26,8 @@ int main(const int argc, const char **argv) {
 
   const MinimalSocket::Address remote_address(remote_host, remote_port);
   MinimalSocket::udp::UdpBinded asker(port_this, remote_address.getFamily());
-
+ 
+  std::this_thread::sleep_for(std::chrono::seconds{1}); // just to be sure the responder has already prepared the receive
   if (!asker.open()) {
     cout << "Failed to reserve specified port" << endl;
     return EXIT_FAILURE;
