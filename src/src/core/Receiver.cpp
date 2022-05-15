@@ -68,7 +68,7 @@ void check_received_bytes(int &recvBytes, const Timeout &timeout) {
 }
 } // namespace
 
-std::size_t Receiver::receive(Buffer &message, const Timeout &timeout) {
+std::size_t Receiver::receive(const Buffer &message, const Timeout &timeout) {
   auto lock = lazyUpdateReceiveTimeout(timeout);
   clear(message);
   int recvBytes = ::recv(getIDWrapper().accessId(), message.buffer,
@@ -92,7 +92,7 @@ std::string Receiver::receive(std::size_t expected_max_bytes,
 }
 
 std::optional<ReceiverUnkownSender::ReceiveResult>
-ReceiverUnkownSender::receive(Buffer &message, const Timeout &timeout) {
+ReceiverUnkownSender::receive(const Buffer &message, const Timeout &timeout) {
   auto lock = lazyUpdateReceiveTimeout(timeout);
   clear(message);
 

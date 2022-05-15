@@ -19,7 +19,7 @@ struct Buffer {
 /**
  * @brief sets all values inside the passed buffer to 0
  */
-void clear(Buffer &subject);
+void clear(const Buffer &subject);
 
 /**
  * @param subject the string buffer to convert
