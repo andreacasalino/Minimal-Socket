@@ -2,10 +2,6 @@ use inet_pton also in windows
 
 support for bluetooth connection
 
-e' thread safety assicurata nelle varie funzioni?
-
-add negative test per capire se vegono thrownati giusti SocketError
-
 cambiare nome a repository git (MinimalSocket)
 
 document throw
