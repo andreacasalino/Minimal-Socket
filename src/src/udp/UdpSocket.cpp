@@ -30,8 +30,9 @@ UdpBinded &UdpBinded::operator=(UdpBinded &&o) {
 
 void UdpBinded::open_() {
   getIDWrapper().reset(SocketType::UDP, getRemoteAddressFamily());
-  auto binded_port = MinimalSocket::bind(
-      getIDWrapper().accessId(), getRemoteAddressFamily(), getPortToBind());
+  auto binded_port =
+      MinimalSocket::bind(getIDWrapper().accessId(), getRemoteAddressFamily(),
+                          getPortToBind(), shallBeFreePort());
   setPort(binded_port);
 }
 
@@ -83,7 +84,7 @@ void UdpConnected::open_() {
   const auto &remote_address = getRemoteAddress();
   getIDWrapper().reset(SocketType::UDP, remote_address.getFamily());
   auto binded_port = MinimalSocket::bind(socket_id, remote_address.getFamily(),
-                                         getPortToBind());
+                                         getPortToBind(), shallBeFreePort());
   setPort(binded_port);
   MinimalSocket::connect(socket_id, remote_address);
 }

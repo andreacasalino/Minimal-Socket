@@ -9,6 +9,8 @@
 
 #include <MinimalSocket/core/Address.h>
 
+#include <atomic>
+
 namespace MinimalSocket {
 class RemoteAddressAware {
 public:
@@ -40,8 +42,17 @@ public:
    */
   Port getPortToBind() const { return port_to_bind; }
 
-  PortToBindAware(const PortToBindAware &) = default;
-  PortToBindAware &operator=(const PortToBindAware &) = default;
+  PortToBindAware(const PortToBindAware &);
+  PortToBindAware &operator=(const PortToBindAware &);
+
+  /**
+   * @brief Used to enforce the fact that this port should be not binded by
+   * anyone else when opening the socket.
+   * Beware that the default behaviour is the opposite: you don't call this
+   * function the port will be possibly re-used.
+   */
+  void mustBeFreePort() { must_be_free_port = true; };
+  bool shallBeFreePort() const { return must_be_free_port; }
 
 protected:
   PortToBindAware(const Port &port) : port_to_bind(port){};
@@ -50,6 +61,7 @@ protected:
 
 private:
   Port port_to_bind;
+  std::atomic_bool must_be_free_port = false;
 };
 
 class RemoteAddressFamilyAware {
