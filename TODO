@@ -13,3 +13,4 @@ in the main README.md:
     - stressare bene il fatto che c'e' possibilita' di usare con timeout varie operazioni
     - stressare che si possono fare in maniera safe send concorrenti per udp
     - mettere bene in evidenza il fatto che udp possono essere usati da connessi o no
+    - le funzionalita offerte sono perfettamente thread safe
