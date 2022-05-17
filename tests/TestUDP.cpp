@@ -4,8 +4,7 @@
 #include <omp.h>
 #include <thread>
 
-#include <MinimalSocket/udp/UdpSocket.h>
-
+#include "ConnectionsUtils.h"
 #include "Parallel.h"
 #include "PortFactory.h"
 #include "SlicedOps.h"
@@ -28,15 +27,7 @@ TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
   const std::size_t cycles = 5;
 
-  const auto requester_port = PortFactory::makePort();
-  const Address requester_address = Address(requester_port, family);
-  UdpBinded requester(requester_port, family);
-  REQUIRE(requester.open());
-
-  const auto responder_port = PortFactory::makePort();
-  const Address responder_address = Address(responder_port, family);
-  UdpBinded responder(responder_port, family);
-  REQUIRE(responder.open());
+  UDP_PEERS(PortFactory::makePort(), PortFactory::makePort(), family);
 
   parallel(
       [&]() {
@@ -297,15 +288,7 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
 TEST_CASE("Open connection with timeout", "[udp]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-  const auto requester_port = PortFactory::makePort();
-  const Address requester_address = Address(requester_port, family);
-  UdpBinded requester(requester_port, family);
-  REQUIRE(requester.open());
-
-  const auto responder_port = PortFactory::makePort();
-  const Address responder_address = Address(responder_port, family);
-  UdpBinded responder(responder_port, family);
-  REQUIRE(responder.open());
+  UDP_PEERS(PortFactory::makePort(), PortFactory::makePort(), family);
 
   const auto timeout = Timeout{500};
 
@@ -371,17 +354,7 @@ TEST_CASE("Send Receive messages split into multiple pieces (udp)",
           "[udp][!mayfail]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-  auto requester_port = ANY_PORT;
-  UdpBinded requester(requester_port, family);
-  REQUIRE(requester.open());
-  requester_port = requester.getPortToBind();
-  const Address requester_address = Address(requester_port, family);
-
-  auto responder_port = GENERATE(PortFactory::makePort(), ANY_PORT);
-  UdpBinded responder(responder_port, family);
-  REQUIRE(responder.open());
-  responder_port = responder.getPortToBind();
-  const Address responder_address = Address(responder_port, family);
+  UDP_PEERS(PortFactory::makePort(), PortFactory::makePort(), family);
 
   const std::string request = "This is a simulated long message";
 

@@ -6,9 +6,8 @@
 #include <thread>
 
 #include <MinimalSocket/Error.h>
-#include <MinimalSocket/tcp/TcpClient.h>
-#include <MinimalSocket/tcp/TcpServer.h>
 
+#include "ConnectionsUtils.h"
 #include "Parallel.h"
 #include "PortFactory.h"
 #include "SlicedOps.h"
@@ -18,35 +17,6 @@ using namespace MinimalSocket::tcp;
 using namespace MinimalSocket::test;
 
 namespace {
-struct Peers {
-  std::unique_ptr<TcpConnection> server_side;
-  std::unique_ptr<TcpClient> client_side;
-};
-Peers make_peers(const Port &port, const AddressFamily &family) {
-  std::unique_ptr<TcpConnection> server_side;
-  std::unique_ptr<TcpClient> client_side;
-
-  parallel(
-      [&]() {
-        // server
-        TcpServer server(port, family);
-        REQUIRE(server.open());
-#pragma omp barrier
-        auto accepted = server.acceptNewClient();
-        server_side = std::make_unique<TcpConnection>(std::move(accepted));
-      },
-      [&]() {
-        // client
-        TcpClient client(Address(port, family));
-#pragma omp barrier
-        REQUIRE(client.open());
-        REQUIRE(client.wasOpened());
-        client_side = std::make_unique<TcpClient>(std::move(client));
-      });
-
-  return Peers{std::move(server_side), std::move(client_side)};
-}
-
 static const std::string request = "Hello";
 static const std::string response = "Welcome";
 
@@ -95,9 +65,9 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
 #endif
 
   SECTION("expected success") {
-    auto peers = make_peers(port, family);
-    auto &server_side = *peers.server_side.get();
-    auto &client_side = *peers.client_side.get();
+    test::TcpPeers peers(port, family);
+    auto &server_side = peers.getServerSide();
+    auto &client_side = peers.getClientSide();
 
     REQUIRE(client_side.wasOpened());
 
@@ -352,9 +322,9 @@ TEST_CASE("Send Receive messages split into multiple pieces (tcp)", "[tcp]") {
   const auto port = PortFactory::makePort();
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-  auto peers = make_peers(port, family);
-  auto &server_side = *peers.server_side.get();
-  auto &client_side = *peers.client_side.get();
+  TcpPeers peers(port, family);
+  auto &server_side = peers.getServerSide();
+  auto &client_side = peers.getClientSide();
 
   const std::string request = "This is a simulated long message";
 
