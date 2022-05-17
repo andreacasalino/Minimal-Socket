@@ -367,7 +367,8 @@ TEST_CASE("Reserve random port for udp connection", "[udp]") {
       });
 }
 
-TEST_CASE("Send Receive messages split into multiple pieces (udp)", "[udp]") {
+TEST_CASE("Send Receive messages split into multiple pieces (udp)",
+          "[udp][!mayfail]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   auto requester_port = ANY_PORT;
