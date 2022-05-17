@@ -47,6 +47,6 @@ private:
   UdpPeers peers(PORT_A, PORT_B, FAMILY);                                      \
   auto &requester = peers.getPeerA();                                          \
   const auto requester_address = peers.addressPeerA();                         \
-  auto &responder = peers.getPeerA();                                          \
+  auto &responder = peers.getPeerB();                                          \
   const auto responder_address = peers.addressPeerB();
 } // namespace MinimalSocket::test
