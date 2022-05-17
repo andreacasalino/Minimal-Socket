@@ -15,62 +15,6 @@ using namespace MinimalSocket;
 using namespace MinimalSocket::udp;
 using namespace MinimalSocket::test;
 
-TEST_CASE("Thread safe d'tor tcp case", "[robustness]") {
-  const auto port = PortFactory::makePort();
-  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
-
-  SECTION("on connected sockets") {
-    test::TcpPeers peers(port, family);
-
-    SECTION("close client while receiving") {
-      std::unique_ptr<tcp::TcpClient> client =
-          std::make_unique<tcp::TcpClient>(std::move(peers.getClientSide()));
-      parallel(
-          [&]() {
-#pragma omp barrier
-            client->receive(500);
-          },
-          [&]() {
-#pragma omp barrier
-            std::this_thread::sleep_for(std::chrono::milliseconds{50});
-            client.reset();
-          });
-    }
-
-    SECTION("close server side while receiving") {
-      std::unique_ptr<tcp::TcpConnection> server =
-          std::make_unique<tcp::TcpConnection>(
-              std::move(peers.getServerSide()));
-      parallel(
-          [&]() {
-#pragma omp barrier
-            server->receive(500);
-          },
-          [&]() {
-#pragma omp barrier
-            std::this_thread::sleep_for(std::chrono::milliseconds{50});
-            server.reset();
-          });
-    }
-  }
-
-  SECTION("close while accepting client") {
-    std::unique_ptr<tcp::TcpServer> server =
-        std::make_unique<tcp::TcpServer>(port, family);
-    REQUIRE(server->open());
-    parallel(
-        [&]() {
-#pragma omp barrier
-          server->acceptNewClient();
-        },
-        [&]() {
-#pragma omp barrier
-          std::this_thread::sleep_for(std::chrono::milliseconds{50});
-          server.reset();
-        });
-  }
-}
-
 namespace {
 std::string make_repeated_message(const std::string &to_repeat,
                                   const std::size_t times) {
@@ -82,7 +26,61 @@ std::string make_repeated_message(const std::string &to_repeat,
 }
 
 static const std::string MESSAGE = "A simple message";
+
+template <typename SocketT> void close(SocketT &subject) {
+  SocketT{std::move(subject)};
+}
 } // namespace
+
+TEST_CASE("Thread safe d'tor tcp case", "[robustness]") {
+  const auto port = PortFactory::makePort();
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
+
+  SECTION("on connected sockets") {
+    test::TcpPeers peers(port, family);
+
+    SECTION("close client while receiving") {
+      parallel(
+          [&]() {
+#pragma omp barrier
+            CHECK(peers.getClientSide().receive(500).empty());
+          },
+          [&]() {
+#pragma omp barrier
+            std::this_thread::sleep_for(std::chrono::milliseconds{50});
+            close(peers.getClientSide());
+          });
+    }
+
+    SECTION("close server side while receiving") {
+      parallel(
+          [&]() {
+#pragma omp barrier
+            CHECK(peers.getClientSide().receive(500).empty());
+          },
+          [&]() {
+#pragma omp barrier
+            std::this_thread::sleep_for(std::chrono::milliseconds{50});
+            close(peers.getServerSide());
+          });
+    }
+  }
+
+  SECTION("close while accepting client") {
+    tcp::TcpServer server(port, family);
+    REQUIRE(server.open());
+    parallel(
+        [&]() {
+#pragma omp barrier
+          CHECK_THROWS_AS(server.acceptNewClient(), SocketError);
+        },
+        [&]() {
+#pragma omp barrier
+          std::this_thread::sleep_for(std::chrono::milliseconds{50});
+          close(server);
+        });
+  }
+}
 
 TEST_CASE("Receive from multiple threads tcp case", "[robustness]") {
   const auto port = PortFactory::makePort();
@@ -130,18 +128,17 @@ TEST_CASE("Send from multiple threads tcp case", "[robustness]") {
 TEST_CASE("Thread safe d'tor udp case", "[robustness]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-  std::unique_ptr<udp::UdpBinded> connection =
-      std::make_unique<udp::UdpBinded>(PortFactory::makePort());
+  udp::UdpBinded connection(PortFactory::makePort());
 
   parallel(
       [&]() {
 #pragma omp barrier
-        connection->receive(500);
+        CHECK_THROWS_AS(connection.receive(500), Error);
       },
       [&]() {
 #pragma omp barrier
         std::this_thread::sleep_for(std::chrono::milliseconds{50});
-        connection.reset();
+        close(connection);
       });
 }
 
@@ -192,13 +189,13 @@ TEST_CASE("Use tcp socket before opening it", "[robustness]") {
 
   SECTION("server") {
     tcp::TcpServer socket(port, family);
-    socket.acceptNewClient();
+    CHECK_THROWS_AS(socket.acceptNewClient(), Error);
   }
 
   SECTION("client") {
     tcp::TcpClient socket(Address{port, family});
-    socket.receive(500);
-    socket.send("dummy");
+    CHECK_THROWS_AS(socket.receive(500), SocketError);
+    CHECK_THROWS_AS(socket.send("dummy"), SocketError);
   }
 }
 
@@ -206,7 +203,9 @@ TEST_CASE("Use udp socket before opening it", "[robustness]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   udp::UdpBinded socket(PortFactory::makePort(), family);
-  socket.receive(500);
-  socket.sendTo("dummy", Address{PortFactory::makePort(), family});
-  socket.connect();
+  CHECK_THROWS_AS(socket.receive(500), SocketError);
+  CHECK_THROWS_AS(
+      socket.sendTo("dummy", Address{PortFactory::makePort(), family}),
+      SocketError);
+  CHECK_THROWS_AS(socket.connect(), SocketError);
 }
