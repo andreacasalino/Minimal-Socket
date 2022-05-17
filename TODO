@@ -6,8 +6,6 @@ e' thread safety assicurata nelle varie funzioni?
 
 add negative test per capire se vegono thrownati giusti SocketError
 
-add test dove request e spezzettata in piu frammenti (piu send diverse)
-
 negative test provando a bindare piu' volte la stessa porta per tcp e udp
 
 add test for udp concurrent send to

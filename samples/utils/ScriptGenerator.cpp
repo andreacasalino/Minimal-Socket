@@ -56,6 +56,10 @@ void add_process(std::ofstream &stream, const ProcessAndArgs &proc_and_args,
 void ScriptGenerator::generate(const std::string &file_name) {
   std::ofstream stream(file_name + SCRIPT_EXTENSION);
 
+#ifdef __linux__
+  stream << "#!/bin/sh" << std::endl;
+#endif
+
   for (std::size_t k = 0; k < (processes.size() - 1); ++k) {
     add_process(stream, processes[k], true);
   }
