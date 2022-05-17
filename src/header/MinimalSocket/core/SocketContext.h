@@ -10,6 +10,7 @@
 #include <MinimalSocket/core/Address.h>
 
 #include <atomic>
+#include <mutex>
 
 namespace MinimalSocket {
 class RemoteAddressAware {
@@ -18,10 +19,10 @@ public:
    * @return the address of the peer that can exchange messages with this
    * socket.
    */
-  const Address &getRemoteAddress() const { return remote_address; }
+  Address getRemoteAddress() const;
 
-  RemoteAddressAware(const RemoteAddressAware &) = default;
-  RemoteAddressAware &operator=(const RemoteAddressAware &) = default;
+  RemoteAddressAware(const RemoteAddressAware &);
+  RemoteAddressAware &operator=(const RemoteAddressAware &);
 
 protected:
   /**
@@ -31,6 +32,7 @@ protected:
   RemoteAddressAware(const Address &address);
 
 private:
+  mutable std::mutex remote_address_mtx;
   Address remote_address;
 };
 
@@ -60,7 +62,7 @@ protected:
   void setPort(const Port &port) { port_to_bind = port; };
 
 private:
-  Port port_to_bind;
+  std::atomic<Port> port_to_bind;
   std::atomic_bool must_be_free_port = false;
 };
 
@@ -72,15 +74,14 @@ public:
    */
   AddressFamily getRemoteAddressFamily() const { return remote_address_family; }
 
-  RemoteAddressFamilyAware(const RemoteAddressFamilyAware &) = default;
-  RemoteAddressFamilyAware &
-  operator=(const RemoteAddressFamilyAware &) = default;
+  RemoteAddressFamilyAware(const RemoteAddressFamilyAware &);
+  RemoteAddressFamilyAware &operator=(const RemoteAddressFamilyAware &);
 
 protected:
   RemoteAddressFamilyAware(const AddressFamily &family)
       : remote_address_family(family){};
 
 private:
-  AddressFamily remote_address_family;
+  std::atomic<AddressFamily> remote_address_family;
 };
 } // namespace MinimalSocket

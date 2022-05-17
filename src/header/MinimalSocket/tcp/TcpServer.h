@@ -11,6 +11,7 @@
 #include <MinimalSocket/core/Sender.h>
 #include <MinimalSocket/core/SocketContext.h>
 
+#include <atomic>
 #include <mutex>
 
 namespace MinimalSocket::tcp {
@@ -82,7 +83,7 @@ protected:
   void open_() override;
 
 private:
-  std::size_t client_queue_size =
+  std::atomic<std::size_t> client_queue_size =
       50; // maximum number of clients put in the queue wiating for connection
   // to be accepted
 
