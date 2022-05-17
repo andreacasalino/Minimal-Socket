@@ -8,6 +8,7 @@
 
 #include "Parallel.h"
 #include "PortFactory.h"
+#include "SlicedOps.h"
 
 using namespace MinimalSocket;
 using namespace MinimalSocket::udp;
@@ -364,4 +365,85 @@ TEST_CASE("Reserve random port for udp connection", "[udp]") {
         responder.sendTo(response, requester_address);
 #pragma omp barrier
       });
+}
+
+TEST_CASE("Send Receive messages split into multiple pieces (udp)", "[udp]") {
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
+
+  auto requester_port = ANY_PORT;
+  UdpBinded requester(requester_port, family);
+  REQUIRE(requester.open());
+  requester_port = requester.getPortToBind();
+  const Address requester_address = Address(requester_port, family);
+
+  auto responder_port = GENERATE(PortFactory::makePort(), ANY_PORT);
+  UdpBinded responder(responder_port, family);
+  REQUIRE(responder.open());
+  responder_port = responder.getPortToBind();
+  const Address responder_address = Address(responder_port, family);
+
+  const std::string request = "This is a simulated long message";
+
+  const std::size_t delta = 4;
+
+  SECTION("un connected") {
+    SECTION("split receive") {
+      parallel(
+          [&]() {
+            requester.sendTo(request, responder_address);
+#pragma omp barrier
+          },
+          [&]() {
+#pragma omp barrier
+            auto received_request =
+                sliced_receive(responder, request.size(), 4);
+            CHECK(received_request == request);
+          });
+    }
+
+    SECTION("split send") {
+      parallel(
+          [&]() {
+            sliced_send(requester, request, responder_address, 4);
+#pragma omp barrier
+          },
+          [&]() {
+#pragma omp barrier
+            auto received_request = responder.receive(request.size());
+            CHECK(received_request);
+            CHECK(received_request->received_message == request);
+          });
+    }
+  }
+
+  SECTION("connected") {
+    auto requester_conn = requester.connect(responder_address);
+    auto responder_conn = responder.connect(requester_address);
+    SECTION("split receive") {
+      parallel(
+          [&]() {
+            requester_conn.send(request);
+#pragma omp barrier
+          },
+          [&]() {
+#pragma omp barrier
+            auto received_request =
+                sliced_receive(responder_conn, request.size(), 4);
+            CHECK(received_request == request);
+          });
+    }
+
+    SECTION("split send") {
+      parallel(
+          [&]() {
+            sliced_send(requester_conn, request, 4);
+#pragma omp barrier
+          },
+          [&]() {
+#pragma omp barrier
+            auto received_request = responder_conn.receive(request.size());
+            CHECK(received_request == request);
+          });
+    }
+  }
 }

@@ -11,6 +11,7 @@
 
 #include "Parallel.h"
 #include "PortFactory.h"
+#include "SlicedOps.h"
 
 using namespace MinimalSocket;
 using namespace MinimalSocket::tcp;
@@ -347,7 +348,7 @@ TEST_CASE("Accept client with timeout", "[tcp]") {
   }
 }
 
-TEST_CASE("Send Receive messages split into multiple pieces", "[tcp]") {
+TEST_CASE("Send Receive messages split into multiple pieces (tcp)", "[tcp]") {
   const auto port = PortFactory::makePort();
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
@@ -362,34 +363,16 @@ TEST_CASE("Send Receive messages split into multiple pieces", "[tcp]") {
   SECTION("split receive") {
     parallel([&]() { client_side.send(request); },
              [&]() {
-               std::size_t received_bytes = 0;
-               std::string buffer;
-               buffer.resize(request.size());
-               char *buffer_data = buffer.data();
-               while (received_bytes != request.size()) {
-                 std::size_t bytes_to_receive = std::min<std::size_t>(
-                     delta, request.size() - received_bytes);
-                 auto received_bytes_delta =
-                     server_side.receive(Buffer{buffer_data, bytes_to_receive});
-                 received_bytes += received_bytes_delta;
-                 buffer_data += received_bytes_delta;
-               }
-               CHECK(buffer == request);
+               auto received_request =
+                   sliced_receive(server_side, request.size(), 4);
+               CHECK(received_request == request);
              });
   }
 
   SECTION("split send") {
     parallel(
         [&]() {
-          std::size_t sent_bytes = 0;
-          const char *buffer_data = request.data();
-          while (sent_bytes != request.size()) {
-            std::size_t bytes_to_send =
-                std::min<std::size_t>(delta, request.size() - sent_bytes);
-            client_side.send(ConstBuffer{buffer_data, bytes_to_send});
-            sent_bytes += bytes_to_send;
-            buffer_data += bytes_to_send;
-          }
+          sliced_send(client_side, request, 4);
 #pragma omp barrier
         },
         [&]() {
