@@ -12,7 +12,7 @@
 namespace MinimalSocket {
 // return port actually binded (as you could pass to the function also AnyPort)
 Port bind(const SocketID &socket_id, const AddressFamily &family,
-          const Port &port);
+          const Port &port, const bool must_be_free_port);
 
 void listen(const SocketID &socket_id, const std::size_t backlog_size);
 

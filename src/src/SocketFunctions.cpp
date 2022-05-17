@@ -21,18 +21,20 @@ namespace {
 } // namespace
 
 Port bind(const SocketID &socket_id, const AddressFamily &family,
-          const Port &port) {
-  int reusePortOptVal = 1;
-  ::setsockopt(socket_id, SOL_SOCKET, REBIND_OPTION,
-               reinterpret_cast<const
+          const Port &port, const bool must_be_free_port) {
+  if (!must_be_free_port) {
+    int reusePortOptVal = 1;
+    ::setsockopt(socket_id, SOL_SOCKET, REBIND_OPTION,
+                 reinterpret_cast<const
 #ifdef _WIN32
-                                char * // not sure it would work with void* also
-                                       // in Windows
+                                  char * // not sure it would work with void*
+                                         // also in Windows
 #else
-                                void *
+                                  void *
 #endif
-                                >(&reusePortOptVal),
-               sizeof(int));
+                                  >(&reusePortOptVal),
+                 sizeof(int));
+  }
 
   // bind the socket to the port
   visitAddress(
