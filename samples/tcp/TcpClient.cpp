@@ -5,8 +5,14 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+///////////////////////////////////////////////////////////////////////////
+//                     Have a look to README.md                          //
+///////////////////////////////////////////////////////////////////////////
+
+// elements from the MinimalSocket library
 #include <MinimalSocket/tcp/TcpClient.h>
 
+// just a bunch of utilities
 #include <Args.h>
 #include <Ask.h>
 

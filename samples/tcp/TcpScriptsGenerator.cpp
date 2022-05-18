@@ -5,6 +5,10 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+///////////////////////////////////////////////////////////////////////////
+//                     Have a look to README.md                          //
+///////////////////////////////////////////////////////////////////////////
+
 #include <ScriptGenerator.h>
 
 #include <iostream>
@@ -30,7 +34,8 @@ int main() {
     // 1 server many clients
     const std::size_t clients = 3;
 
-    const std::string sample_name = "tcp02_server_" + std::to_string(clients) + "_clients";
+    const std::string sample_name =
+        "tcp02_server_" + std::to_string(clients) + "_clients";
     MinimalSocket::samples::ScriptGenerator generator;
 
     const std::string port = "35998";
@@ -40,7 +45,7 @@ int main() {
     generator.add("TcpClient", {{"port", port}});
 
     for (std::size_t c = 1; c < clients; ++c) {
-        generator.add("TcpClient", { {"port", port}, {"rate", "800"} });
+      generator.add("TcpClient", {{"port", port}, {"rate", "800"}});
     }
 
     cout << "generating " << sample_name << endl;
