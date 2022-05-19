@@ -32,5 +32,9 @@ protected:
   void open_() override;
 };
 
+/**
+ * @return a client ready to ask the connection to the same server.
+ * Beware that a closed socket is returned, which can be later opened.
+ */
 TcpClient clone(const TcpClient &o);
 } // namespace MinimalSocket::tcp

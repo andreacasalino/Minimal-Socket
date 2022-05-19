@@ -84,8 +84,6 @@ protected:
   void open_() override;
 };
 
-UdpBinded clone(const UdpBinded &o);
-
 /**
  * @brief A udp that is permanently connected to a specific remote address.
  * Messages that are sent to this udp from different remote peer are ignored.
@@ -123,8 +121,6 @@ public:
 protected:
   void open_() override;
 };
-
-UdpConnected clone(const UdpConnected &o);
 
 /**
  * @brief builds from 0 a connected udp socket. The connection is done to the

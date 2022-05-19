@@ -112,8 +112,4 @@ TcpConnection &TcpConnection::operator=(TcpConnection &&o) {
   Socket::transfer(*this, o);
   return *this;
 }
-
-TcpServer clone(const TcpServer &o) {
-  return TcpServer{o.getPortToBind(), o.getRemoteAddressFamily()};
-}
 } // namespace MinimalSocket::tcp
