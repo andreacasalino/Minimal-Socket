@@ -14,7 +14,7 @@ namespace MinimalSocket::samples {
 namespace {
 #ifdef _WIN32
 static const std::string SCRIPT_EXTENSION = std::string{".bat"};
-#elif __linux__
+#elif defined(__linux__) || defined(__APPLE__)
 static const std::string SCRIPT_EXTENSION = std::string{".sh"};
 #endif
 
@@ -25,7 +25,7 @@ std::string to_string(const ProcessAndArgs &subject) {
   for (const auto &[name, val] : subject.arguments) {
     stream << " \"--" << name << "\" \"" << val << "\"";
   }
-#elif __linux__
+#elif defined(__linux__) || defined(__APPLE__)
   stream << "./" << subject.process_name;
   for (const auto &[name, val] : subject.arguments) {
     stream << " --" << name << ' ' << val;
@@ -41,7 +41,7 @@ void add_process(std::ofstream &stream, const ProcessAndArgs &proc_and_args,
     stream << "start \"\" ";
   }
   stream << to_string(proc_and_args);
-#elif __linux__
+#elif defined(__linux__) || defined(__APPLE__)
   if (new_terminal) {
     stream << "gnome-terminal -x sh -c \"" << to_string(proc_and_args)
            << " ; bash\"";
@@ -56,7 +56,7 @@ void add_process(std::ofstream &stream, const ProcessAndArgs &proc_and_args,
 void ScriptGenerator::generate(const std::string &file_name) {
   std::ofstream stream(file_name + SCRIPT_EXTENSION);
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
   stream << "#!/bin/sh" << std::endl;
 #endif
 
