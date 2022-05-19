@@ -2,12 +2,8 @@ use inet_pton also in windows
 
 support for bluetooth connection
 
-cambiare nome a repository git (MinimalSocket)
-
-document throw
-
 in sample far vedere come si potrebbe costruire server asincrono
 
 is mac supported with linux code?
 
-google protobuf in tag
+document usage in README

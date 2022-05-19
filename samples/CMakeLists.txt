@@ -1,3 +1,6 @@
+add_executable(README README.cpp)
+target_link_libraries(README PUBLIC MinimalSocket)	
+
 project(MinimalCppSocket-Samples)
 
 include(cmake/MakeSample.cmake)
