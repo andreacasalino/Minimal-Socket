@@ -48,10 +48,10 @@ public:
   PortToBindAware &operator=(const PortToBindAware &);
 
   /**
-   * @brief Used to enforce the fact that this port should be not binded by
-   * anyone else when opening the socket.
-   * Beware that the default behaviour is the opposite: you don't call this
-   * function the port will be possibly re-used.
+   * @brief Used to enforce the fact that this port should be not previously
+   * binded by anyone else when opening the socket. Beware that the default
+   * behaviour is the opposite: you don't call this function the port will be
+   * possibly re-used.
    */
   void mustBeFreePort() { must_be_free_port = true; };
   bool shallBeFreePort() const { return must_be_free_port; }

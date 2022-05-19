@@ -28,10 +28,11 @@ This are the most notable properties of **MinimalSocket**:
 - A modern **C++** interface allows you to set up and build connections in terms of objects. Sockets are not opened as soon as the wrapping object is created, but you after calling a proper method, allowing you to decouple socket creation from socket opening. Sockets are automatically closed (and all relevant information cleaned after destroying the wrapping object).
 - You don't need to access low level functions from system modules: let **MinimalSocket** do it for you. Actually, all the system specific modules, functions, linkages are kept completely private.
 - **AF_INET** (**ip v4**) and **AF_INET6** (**ip v6**), refer to [this](https://www.ibm.com/docs/en/i/7.1?topic=characteristics-socket-address-family) link, are both supported
-- Many sockets operations (like for instance receive, accept clients, wait for server acceptance, etc...) are by default blocking. However,
-**MinimalSocket** allows you also to opt for non-blocking versions off such operations, specifying the **timeout** to use.
-- **MinimalSocket** is tested to be **thread safe**. Morevoer, you can also send while receiving in different dedicated threads.
-- **Udp** sockets acn be used both as un-connected or connected, check [here](./samples/udp/README.md) for further details. Moreover, the same **udp** socket can be connected or sconnected during its lifetime.
+- Many sockets operations are by default blocking. However, **MinimalSocket** allows you also to opt for non-blocking versions off such operations, specifying a **timeout** to use, after which the operation terminates in any case. In particular, the operations allowing for such possibility are:
+    - non blocking receive (send are always intrinsically non blocking)
+    - acceptance of a new client from the tcp server side
+- **MinimalSocket** is tested to be **thread safe**. Morevoer, you can also send while receiving in different dedicated threads. This allows you to easily create your own asynchronous sockets, building upon the classes offered by this library.
+- **Udp** sockets can be used both as un-connected or connected, check [here](./samples/udp/README.md) for further details. Moreover, the same **udp** socket can be connected or sconnected during its lifetime.
 -Under **Windows** systems, [**WSAStartup**](https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsastartup) is automatically called before using any functionalities. From the outside, you can specify the Windows Sockets specification version.
 
 ## USAGE
