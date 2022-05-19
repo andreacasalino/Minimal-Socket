@@ -1,31 +1,72 @@
 ![binaries_compilation](https://github.com/andreacasalino/Cross-Platform-Socket/actions/workflows/installArtifacts.yml/badge.svg)
 ![binaries_compilation](https://github.com/andreacasalino/Cross-Platform-Socket/actions/workflows/runTests.yml/badge.svg)
 
-This repository contains the minimal functionalities to create and use from **C++** both **tcp** and **udp** sockets in a
-completely platform independent way. You can decide to compile just the very core package named SynchSocket, with the raw socket implementations or compile also the more advanced ones.
+- [What is this library about](#intro)
+- [Features](#features)
+- [Usage](#usage)
+- [Samples](#samples)
+- [CMake support](#cmake-support)
 
-**Content**
+## INTRO
 
-  * The core packages are contained in the ./CrossSocket folder:
-  	* SynchSocket implements the minimal functionalities to create and use raw tcp and udp connections, sending and receiving buffer of bytes
-  	* AsynchSocket contains implementation of asynchronous sockets, i.e. sockets storing a private service constantly receiving new messages. It is possible to subscribe to the received messages (and react to it) by attaching a listener to the asynchronous socket. You can decide to not compile this package by setting to OFF the CMake option named COMPILE_ASYNCH
-	* TypedSocket contains usefull functionalities to build typed messangers, i.e. sockets exchanging complex data structures. These functionalities can be used in combination with [Google Protocol Buffers](https://developers.google.com/protocol-buffers/docs/cpptutorial) or similar implementations like [NanoPb](https://jpa.kapsi.fi/nanopb/) to automatically encode and decode data. You can decide to not compile this package by setting to OFF the CMake option named COMPILE_TYPED
-  
-  * Samples showing the library usage are contained in the ./Samples folder. ATTENTION!!! The Samples execution might be blocked the first time by your firewall: set up properly your firewall or run the samples with the [administrator privileges](https://www.techopedia.com/definition/4961/administrative-privileges#:~:text=Administrative%20privileges%20are%20the%20ability,as%20a%20database%20management%20system.)
- 
-**Build from sources**
+**MinimalSocket** gives you a modern **C++** interface to create, connect and handle **tcp** and **udp** sockets, in a
+completely platform independent way. The supported systems are: **Windows**, any **Linux** distro and **MacOS**.
 
-Use [CMake](https://cmake.org) to configure and compile the library and the samples. By setting to ON the CMake option LIB_OPT, the above 3 packages will be compiled as shared libraries, otherwise as static.
+Check [Features](#features) to see details about the various features of **MinimalSocket**. You can refer to [Usage](#usage) and [Samples](#samples) to see how to use **MinimalSocket**.
 
-**Run the Samples**
+This is a **CMake** project, check [CMake support](#cmake-support) to see how this library can be integrated.
 
-Check the *README.md* inside Samples/Tcp/ and Samples/Udp/ to understand the samples purpose and how to run them
+Remember to leave a **star** in case you have found this library useful.
 
-**Download compiled binaries**
+## FEATURES
 
-You can simply download and use the binaries of the latest master version [here](https://github.com/andreacasalino/Cross-Platform-Socket/actions/runs/640613596)
+Haven't left a **star** already? Do it now ;)!
 
-**What Else?**
+**MinimalSocket** allows you to build and set up **tcp** and **udp** connections. Messages can be sent and received in terms of both low level buffer of chars or high level string. Indeed, this is actually the only capability you need for a socket, as more complex messages can be encoded and decoded using among the others approaches like [Google Protocol Buffers](https://developers.google.com/protocol-buffers/docs/cpptutorial) or [NanoPb](https://jpa.kapsi.fi/nanopb/).
 
-Have fun and leave a **star**.
+This are the most notable properties of **MinimalSocket**:
+- A modern **C++** interface allows you to set up and build connections in terms of objects. Sockets are not opened as soon as the wrapping object is created, but you after calling a proper method, allowing you to decouple socket creation from socket opening. Sockets are automatically closed (and all relevant information cleaned after destroying the wrapping object).
+- You don't need to access low level functions from system modules: let **MinimalSocket** do it for you. Actually, all the system specific modules, functions, linkages are kept completely private.
+- Many sockets operations (like for instance receive, accept clients, wait for server acceptance, etc...) are by default blocking. However,
+**MinimalSocket** allows you also to opt for non-blocking versions off such operations, specifying the **timeout** to use.
+- **MinimalSocket** is tested to be **thread safe**. Morevoer, you can also send while receiving in different dedicated threads.
+- **Udp** sockets acn be used both as un-connected or connected, check [here](./samples/udp/README.md) for further details. Moreover, the same **udp** socket can be connected or sconnected during its lifetime.
+-Under **Windows** systems, [**WSAStartup**](https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsastartup) is automatically called before using any functionalities. From the outside, you can specify the Windows Sockets specification version.
 
+## USAGE
+
+Haven't left a **star** already? Do it now ;)!
+
+## SAMPLES
+
+Haven't left a **star** already? Do it now ;)!
+
+Instructions about the **tcp** samples are contained [here](./samples/tcp/README.md), while [here](./samples/udp/README.md) the **udp** samples are explained.
+
+ATTENTION!!! The Samples execution might be blocked the first time by your firewall: set up properly your firewall or run the samples with the [administrator privileges](https://www.techopedia.com/definition/4961/administrative-privileges#:~:text=Administrative%20privileges%20are%20the%20ability,as%20a%20database%20management%20system.)
+
+## CMAKE SUPPORT
+
+Haven't left a **star** already? Do it now ;)!
+   
+To consume this library you can rely on [CMake](https://cmake.org).
+More precisely, You can fetch this package and link to the **MinimalSocket** library:
+```cmake
+include(FetchContent)
+FetchContent_Declare(
+min_sock
+GIT_REPOSITORY https://github.com/andreacasalino/MinimalSocket
+GIT_TAG        master
+)
+FetchContent_MakeAvailable(min_sock)
+```
+
+and then link to the **MinimalSocket** library:
+```cmake
+target_link_libraries(${TARGET_NAME}
+    MinimalSocket
+)
+```
+
+All the system specific modules are internally inlcluded and don't exposed to the outside.
+Moreover, under **Windows**, **wsock32** and **ws2_32** are privately linked and you don't need to link them again when integrating **MinimalSocket**.
