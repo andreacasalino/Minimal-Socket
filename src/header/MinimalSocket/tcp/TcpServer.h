@@ -89,4 +89,6 @@ private:
 
   std::mutex accept_mtx;
 };
+
+TcpServer clone(const TcpServer &o);
 } // namespace MinimalSocket::tcp
