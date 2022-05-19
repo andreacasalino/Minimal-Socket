@@ -7,7 +7,7 @@
 - [Samples](#samples)
 - [CMake support](#cmake-support)
 
-![Sockets](./sockets.svg)
+![Sockets](./sockets.png)
 
 ## INTRO
 
