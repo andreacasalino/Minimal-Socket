@@ -23,6 +23,9 @@ jobs:
             - name: windows-VS
               os: windows-2019
               compiler_opt: ""
+            - name: macOS
+              os: macos-latest
+              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++"
               
     runs-on: ${{ matrix.os }}
     steps:
