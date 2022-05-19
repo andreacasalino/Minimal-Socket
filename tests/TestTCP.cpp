@@ -318,7 +318,13 @@ TEST_CASE("Accept client with timeout", "[tcp]") {
   }
 }
 
-TEST_CASE("Send Receive messages split into multiple pieces (tcp)", "[tcp]") {
+TEST_CASE("Send Receive messages split into multiple pieces (tcp)",
+#ifdef __APPLE__
+          "[tcp][!mayfail]"
+#else
+          "[tcp]"
+#endif
+) {
   const auto port = PortFactory::makePort();
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
