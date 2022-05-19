@@ -7,6 +7,8 @@
 - [Samples](#samples)
 - [CMake support](#cmake-support)
 
+![Sockets](./sockets.svg)
+
 ## INTRO
 
 **MinimalSocket** gives you a modern **C++** interface to create, connect and handle **tcp** and **udp** sockets, in a
