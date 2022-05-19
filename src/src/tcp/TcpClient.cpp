@@ -30,4 +30,6 @@ void TcpClient::open_() {
   socket.reset(SocketType::TCP, remote_address.getFamily());
   MinimalSocket::connect(socket.accessId(), remote_address);
 }
+
+TcpClient clone(const TcpClient &o) { return TcpClient{o.getRemoteAddress()}; }
 } // namespace MinimalSocket::tcp

@@ -31,4 +31,6 @@ public:
 protected:
   void open_() override;
 };
+
+TcpClient clone(const TcpClient &o);
 } // namespace MinimalSocket::tcp
