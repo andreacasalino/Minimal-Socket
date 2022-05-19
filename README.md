@@ -27,6 +27,7 @@ Haven't left a **star** already? Do it now ;)!
 This are the most notable properties of **MinimalSocket**:
 - A modern **C++** interface allows you to set up and build connections in terms of objects. Sockets are not opened as soon as the wrapping object is created, but you after calling a proper method, allowing you to decouple socket creation from socket opening. Sockets are automatically closed (and all relevant information cleaned after destroying the wrapping object).
 - You don't need to access low level functions from system modules: let **MinimalSocket** do it for you. Actually, all the system specific modules, functions, linkages are kept completely private.
+- **AF_INET** (**ip v4**) and **AF_INET6** (**ip v6**), refer to [this](https://www.ibm.com/docs/en/i/7.1?topic=characteristics-socket-address-family) link, are both supported
 - Many sockets operations (like for instance receive, accept clients, wait for server acceptance, etc...) are by default blocking. However,
 **MinimalSocket** allows you also to opt for non-blocking versions off such operations, specifying the **timeout** to use.
 - **MinimalSocket** is tested to be **thread safe**. Morevoer, you can also send while receiving in different dedicated threads.
@@ -77,8 +78,88 @@ accepted_connection.send("a message to send");
 
 #### CLIENT
 
+To create a **tcp** client you just need to build a **tcp::TcpClient** object:
+```cpp
+#include <MinimalSocket/tcp/TcpClient.h>
+
+MinimalSocket::Port server_port = 15768;
+std::string server_address = "192.168.125.85";
+MinimalSocket::tcp::TcpClient tcp_client(
+    MinimalSocket::Address{server_address, server_port});
+```
+
+open it:
+```cpp
+// open the client: asks connection to server
+bool success = tcp_client.open();
+```
+
+you can now receive and send information with the remote server by simply doing this:
+```cpp
+// send a message
+tcp_client.send("a message to send");
+// receive a message
+std::size_t message_max_size = 1000;
+std::string
+    received_message // resized to the nunber of bytes actually received
+    = tcp_client.receive(message_max_size);
+```
 
 ### UDP
+
+To create a normal **udp** socket you just need to build a **udp::UdpBinded** object:
+```cpp
+#include <MinimalSocket/udp/UdpSocket.h>
+
+MinimalSocket::Port this_socket_port = 15768;
+MinimalSocket::udp::UdpBinded udp_socket(this_socket_port,
+                                        MinimalSocket::AddressFamily::IP_V6);
+```
+
+open it:
+```cpp
+// open the client: reserve port for this cocket
+bool success = udp_socket.open();
+```
+
+you can now receive and send information with any other opened **udp** socket:
+```cpp
+// send a message to another udp
+MinimalSocket::Address other_recipient_udp =
+    MinimalSocket::Address{"192.168.125.85", 15768};
+udp_socket.sendTo("a message to send", other_recipient_udp);
+// receive a message from another udp reaching this one
+std::size_t message_max_size = 1000;
+auto received_message = udp_socket.receive(message_max_size);
+// check the sender address
+MinimalSocket::Address other_sender_udp = received_message->sender;
+// access the received message
+std::string received_message_content // resized to the nunber of bytes
+                                    // actually received
+    = received_message->received_message;
+```
+
+you can also decide to connect an opened **udp** socket to a specific address. This simply means that messages incoming from other peers will be filtered out, as **udp** sockets are not connection oriented:
+```cpp
+MinimalSocket::Address permanent_sender_udp =
+    MinimalSocket::Address{"192.168.125.85", 15768};
+MinimalSocket::udp::UdpConnected udp_connected_socket = udp_socket.connect(
+    permanent_sender_udp); // ownership of the underlying socket is transfered
+                            // from udp_socket to udp_connected_socket, meaning
+                            // that you can't use anymore udp_socket (unless
+                            // you re-open it)
+```
+
+Now you can send and receive data without having to specify the recpient/sender:
+```cpp
+// receive a message
+std::size_t message_max_size = 1000;
+std::string
+    received_message // resized to the nunber of bytes actually received
+    = udp_connected_socket.receive(message_max_size);
+// send a message
+udp_connected_socket.send("a message to send");
+```
 
 ## SAMPLES
 
