@@ -10,12 +10,13 @@
 #include <MinimalSocket/core/Address.h>
 #include <MinimalSocket/core/Socket.h>
 
+// https://stackoverflow.com/questions/6649936/c-compiling-on-windows-and-linux-ifdef-switch
 #ifdef _WIN32
 #include <stdio.h>
 #include <winsock2.h>
 #include <ws2ipdef.h>
 #include <ws2tcpip.h>
-#elif __linux__
+#elif defined(__linux__) || defined(__APPLE__)
 #include <arpa/inet.h>
 #include <errno.h>
 #include <string.h> //memset
