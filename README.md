@@ -37,6 +37,49 @@ This are the most notable properties of **MinimalSocket**:
 
 Haven't left a **star** already? Do it now ;)!
 
+### TCP
+
+#### SERVER
+
+To create a **tcp** server you just need to build a **tcp::TcpServer** object:
+```cpp
+#include <MinimalSocket/tcp/TcpServer.h>
+
+MinimalSocket::Port port = 15768; // port the server needs to bind
+MinimalSocket::tcp::TcpServer tcp_server(port,
+                                        MinimalSocket::AddressFamily::IP_V4);
+```
+
+open it:
+```cpp
+// open the server: binds the port and start to listen on the port
+bool success = tcp_server.open();
+```
+
+and now you are ready to accept new clients:
+```cpp
+// accepts next client asking connection
+MinimalSocket::tcp::TcpConnection accepted_connection =
+    tcp_server.acceptNewClient(); // blocing till a client actually asks the
+                                // connection
+```
+
+you can now receive and send information with the accepted client by simply doing this:
+```cpp
+// receive a message
+std::size_t message_max_size = 1000;
+std::string
+    received_message // resized to the nunber of bytes actually received
+    = accepted_connection.receive(message_max_size);
+// send a message
+accepted_connection.send("a message to send");
+```
+
+#### CLIENT
+
+
+### UDP
+
 ## SAMPLES
 
 Haven't left a **star** already? Do it now ;)!
@@ -55,7 +98,7 @@ More precisely, You can fetch this package and link to the **MinimalSocket** lib
 include(FetchContent)
 FetchContent_Declare(
 min_sock
-GIT_REPOSITORY https://github.com/andreacasalino/MinimalSocket
+GIT_REPOSITORY https://github.com/andreacasalino/Minimal-Socket
 GIT_TAG        master
 )
 FetchContent_MakeAvailable(min_sock)
