@@ -65,10 +65,6 @@ std::optional<UdpConnected> UdpBinded::connect(const Timeout &timeout,
   return connect(maybe_received->sender);
 }
 
-UdpBinded clone(const UdpBinded &o) {
-  return UdpBinded{o.getPortToBind(), o.getRemoteAddressFamily()};
-}
-
 UdpConnected::UdpConnected(const Address &remote_address, const Port &port)
     : PortToBindAware(port), RemoteAddressAware(remote_address) {}
 
@@ -118,9 +114,5 @@ std::optional<UdpConnected> makeUdpConnectedToUnknown(
     return std::nullopt;
   }
   return primal_socket.connect(timeout, initial_message);
-}
-
-UdpConnected clone(const UdpConnected &o) {
-  return UdpConnected{o.getRemoteAddress(), o.getPortToBind()};
 }
 } // namespace MinimalSocket::udp
