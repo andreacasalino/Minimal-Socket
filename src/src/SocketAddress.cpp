@@ -29,12 +29,18 @@ std::optional<SocketAddressIpv4> toSocketAddressIpv4(const std::string &host,
   result->sin_family = AF_INET;
   result->sin_port = htons(port);
 
-  // try address conversion
-#if !defined(_WIN32)
+  // try address conversion with inet_pton first
+#ifdef _WIN32
   in_addr ia;
   if (1 == ::inet_pton(AF_INET, host.c_str(), &ia)) {
-    result->sin_addr.s_addr = ia.s_addr;
-    return result;
+      ::memcpy(&result->sin_addr, &ia, sizeof(in_addr));
+      return result;
+  }
+#else
+  in_addr ia;
+  if (1 == ::inet_pton(AF_INET, host.c_str(), &ia)) {
+      result->sin_addr.s_addr = ia.s_addr;
+      return result;
   }
 #endif
 
@@ -74,8 +80,14 @@ std::optional<SocketAddressIpv6> toSocketAddressIpv6(const std::string &host,
   result->sin6_flowinfo = 0;
   result->sin6_port = htons(port);
 
-  // try address conversion
-#if !defined(_WIN32)
+  // try address conversion with inet_pton first
+#ifdef _WIN32
+  in6_addr ia;
+  if (1 == ::inet_pton(AF_INET6, host.c_str(), &ia)) {
+      ::memcpy(&result->sin6_addr, &ia, sizeof(in6_addr));
+      return result;
+  }
+#else
   in6_addr ia;
   if (1 == ::inet_pton(AF_INET6, host.c_str(), &ia)) {
     result->sin6_addr = ia;
