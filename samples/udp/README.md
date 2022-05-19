@@ -4,6 +4,8 @@ This folder stores some examples showing how to set up and use the objects insid
 Each sample requires to run multiple processes at the same time. This is automatically done by some shell scripts, which are NOT contained in this folder. Indeed, such scipts are generated in the bin folder, after running **UdpScriptsGenerator**, which generates all scripts without launching it. 
 Each process pertaining to a sample is run in a dedicated window.
 
+ATTENTION!!! The Samples execution might be blocked the first time by your firewall: set up properly your firewall or run the samples with the [administrator privileges](https://www.techopedia.com/definition/4961/administrative-privileges#:~:text=Administrative%20privileges%20are%20the%20ability,as%20a%20database%20management%20system.)
+
 After generating the scripts, you can run them to see what the samples do.
 In particular, 3 scripts can be generated, representative of 3 classes of samples:
 
