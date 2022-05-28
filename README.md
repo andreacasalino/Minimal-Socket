@@ -35,7 +35,7 @@ This are the most notable properties of **MinimalSocket**:
     - acceptance of a new client from the tcp server side
 - **MinimalSocket** is tested to be **thread safe**. Morevoer, you can also send while receiving in different dedicated threads. This allows you to easily create your own asynchronous sockets, building upon the classes offered by this library.
 - **Udp** sockets can be used both as un-connected or connected, check [here](./samples/udp/README.md) for further details. Moreover, the same **udp** socket can be connected or sconnected during its lifetime.
--Under **Windows** systems, [**WSAStartup**](https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsastartup) is automatically called before using any functionalities. From the outside, you can specify the Windows Sockets specification version.
+- Under **Windows** systems, [**WSAStartup**](https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsastartup) is automatically called before using any functionalities. From the outside, you can specify the Windows Sockets specification version.
 
 ## USAGE
 
