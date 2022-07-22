@@ -13,9 +13,9 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
 # include cmake custom functions
 set(WITH_SOURCE_TREE ON)
-include(GroupSources)
-include(AutoCollect)
-include(MakeLibrary)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/GroupSources.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AutoCollect.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/MakeLibrary.cmake)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
