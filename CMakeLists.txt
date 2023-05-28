@@ -1,31 +1,22 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-option(LIB_OPT "Compile shared libraries (ON) or static (OFF)" OFF)
-option(BUILD_MinimalCppSocket_SAMPLES "Build the samples showing how to use Minimal Cpp Socket" ON)
-option(BUILD_MinimalCppSocket_TESTS "" OFF)
-
-# set macro-directory and find scripts
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
-
-# include cmake custom functions
-set(WITH_SOURCE_TREE ON)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/GroupSources.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AutoCollect.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/MakeLibrary.cmake)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 project(MinimalCppSocket)
+
+option(LIB_OPT "Compile shared libraries (ON) or static (OFF)" OFF)
 add_subdirectory(src)
 
+option(BUILD_MinimalCppSocket_SAMPLES "Build the samples showing how to use Minimal Cpp Socket" ON)
 if(BUILD_MinimalCppSocket_SAMPLES)
     add_subdirectory(samples)
 endif()
 
+option(BUILD_MinimalCppSocket_TESTS "" OFF)
 if(BUILD_MinimalCppSocket_TESTS)
     add_subdirectory(tests)
 endif()
