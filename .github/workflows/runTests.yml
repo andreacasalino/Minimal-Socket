@@ -12,7 +12,7 @@ jobs:
   unitTests:
     strategy:
       matrix:
-        name: [ubuntu-gcc, ubuntu-clang, windows-VS]
+        name: [ubuntu-gcc, ubuntu-clang, windows-VS, macOS]
         include:
             - name: ubuntu-gcc
               os: ubuntu-latest

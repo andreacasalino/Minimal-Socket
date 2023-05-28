@@ -1,11 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include <omp.h>
 #include <thread>
 
 #include "ConnectionsUtils.h"
-#include "Parallel.h"
+#include "ParallelSection.h"
 #include "PortFactory.h"
 #include "SlicedOps.h"
 
@@ -29,27 +28,27 @@ TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
 
   UDP_PEERS(PortFactory::makePort(), PortFactory::makePort(), family);
 
-  parallel(
-      [&]() {
+  ParallelSection::biSection(
+      [&](Barrier &br) {
         for (std::size_t c = 0; c < cycles; ++c) {
           CHECK(requester.sendTo(request, responder_address));
-#pragma omp barrier
-#pragma omp barrier
+          br.arrive_and_wait();
+          br.arrive_and_wait();
           auto received_response = requester.receive(response.size());
           REQUIRE(received_response);
           CHECK(received_response->received_message == response);
           CHECK(are_same(received_response->sender, responder_address, family));
         }
       },
-      [&]() {
+      [&](Barrier &br) {
         for (std::size_t c = 0; c < cycles; ++c) {
-#pragma omp barrier
+          br.arrive_and_wait();
           auto received_request = responder.receive(request.size());
           REQUIRE(received_request);
           CHECK(received_request->received_message == request);
           CHECK(are_same(received_request->sender, requester_address, family));
           responder.sendTo(response, requester_address);
-#pragma omp barrier
+          br.arrive_and_wait();
         }
       });
 
@@ -63,14 +62,12 @@ TEST_CASE("Exchange messages between UdpBinded and UdpBinded", "[udp]") {
 
     SECTION("expect success within timeout") {
       const auto wait = Timeout{250};
-      parallel(
-          [&]() {
-#pragma omp barrier
+      ParallelSection::biSection(
+          [&](auto &) {
             std::this_thread::sleep_for(wait);
             requester.sendTo(request, responder_address);
           },
-          [&]() {
-#pragma omp barrier
+          [&](auto &) {
             auto received_request = responder.receive(request.size(), timeout);
             REQUIRE(received_request);
             CHECK(received_request->received_message == request);
@@ -96,23 +93,23 @@ TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
   UdpConnected responder(requester_address, responder_port);
   REQUIRE(responder.open());
 
-  parallel(
-      [&]() {
+  ParallelSection::biSection(
+      [&](Barrier &br) {
         for (std::size_t c = 0; c < cycles; ++c) {
           CHECK(requester.send(request));
-#pragma omp barrier
-#pragma omp barrier
+          br.arrive_and_wait();
+          br.arrive_and_wait();
           auto received_response = requester.receive(response.size());
           CHECK(received_response == response);
         }
       },
-      [&]() {
+      [&](Barrier &br) {
         for (std::size_t c = 0; c < cycles; ++c) {
-#pragma omp barrier
+          br.arrive_and_wait();
           auto received_request = responder.receive(request.size());
           CHECK(received_request == request);
           responder.send(response);
-#pragma omp barrier
+          br.arrive_and_wait();
         }
       });
 
@@ -126,14 +123,12 @@ TEST_CASE("Exchange messages between UdpConnected and UdpConnected", "[udp]") {
 
     SECTION("expect success within timeout") {
       const auto wait = Timeout{250};
-      parallel(
-          [&]() {
-#pragma omp barrier
+      ParallelSection::biSection(
+          [&](auto &) {
             std::this_thread::sleep_for(wait);
             requester.send(request);
           },
-          [&]() {
-#pragma omp barrier
+          [&](auto &) {
             auto received_request = responder.receive(request.size(), timeout);
             CHECK(received_request == request);
           });
@@ -159,20 +154,20 @@ TEST_CASE(
 
   auto exchange_messages_before = GENERATE(true, false);
   if (exchange_messages_before) {
-    parallel(
-        [&]() {
+    ParallelSection::biSection(
+        [&](Barrier &br) {
           CHECK(requester.send(request));
-#pragma omp barrier
-#pragma omp barrier
+          br.arrive_and_wait();
+          br.arrive_and_wait();
           auto received_response = requester.receive(response.size());
           CHECK(received_response == response);
         },
-        [&]() {
-#pragma omp barrier
+        [&](Barrier &br) {
+          br.arrive_and_wait();
           auto received_request = responder.receive(request.size());
           CHECK(received_request == request);
           responder.send(response);
-#pragma omp barrier
+          br.arrive_and_wait();
         });
   }
 
@@ -180,14 +175,12 @@ TEST_CASE(
   REQUIRE(second_requester.open());
   const auto timeout = Timeout{500};
   const auto wait = Timeout{250};
-  parallel(
-      [&]() {
-#pragma omp barrier
+  ParallelSection::biSection(
+      [&](auto &) {
         std::this_thread::sleep_for(wait);
         second_requester.sendTo(request, Address(responder_port, family));
       },
-      [&]() {
-#pragma omp barrier
+      [&](auto &) {
         auto received_request = responder.receive(request.size(), timeout);
         CHECK(received_request.empty());
       });
@@ -213,13 +206,13 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
   auto deduce_sender = GENERATE(true, false);
   std::unique_ptr<UdpConnected> requester_connected;
   if (deduce_sender) {
-    parallel(
-        [&]() {
+    ParallelSection::biSection(
+        [&](Barrier &br) {
           responder.sendTo("1", requester_address);
-#pragma omp barrier
+          br.arrive_and_wait();
         },
-        [&]() {
-#pragma omp barrier
+        [&](Barrier &br) {
+          br.arrive_and_wait();
           auto socket_connected = requester_only_bind->connect();
           CHECK(are_same(socket_connected.getRemoteAddress(), responder_address,
                          family));
@@ -233,25 +226,25 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
   REQUIRE(requester_connected->wasOpened());
 
   // try message exchange
-  parallel(
-      [&]() {
+  ParallelSection::biSection(
+      [&](Barrier &br) {
         for (std::size_t c = 0; c < cycles; ++c) {
           CHECK(requester_connected->send(request));
-#pragma omp barrier
-#pragma omp barrier
+          br.arrive_and_wait();
+          br.arrive_and_wait();
           auto received_response =
               requester_connected->receive(response.size());
           CHECK(received_response == response);
         }
       },
-      [&]() {
+      [&](Barrier &br) {
         for (std::size_t c = 0; c < cycles; ++c) {
-#pragma omp barrier
+          br.arrive_and_wait();
           auto received_request = responder.receive(request.size());
           REQUIRE(received_request);
           CHECK(received_request->received_message == request);
           responder.sendTo(response, requester_address);
-#pragma omp barrier
+          br.arrive_and_wait();
         }
       });
 
@@ -261,26 +254,26 @@ TEST_CASE("Metamorphosis of udp connections", "[udp]") {
   REQUIRE(requester_only_bind->wasOpened());
 
   // try message exchange
-  parallel(
-      [&]() {
+  ParallelSection::biSection(
+      [&](Barrier &br) {
         for (std::size_t c = 0; c < cycles; ++c) {
           CHECK(requester_only_bind->sendTo(request, responder_address));
-#pragma omp barrier
-#pragma omp barrier
+          br.arrive_and_wait();
+          br.arrive_and_wait();
           auto received_response =
               requester_only_bind->receive(response.size());
           REQUIRE(received_response);
           CHECK(received_response->received_message == response);
         }
       },
-      [&]() {
+      [&](Barrier &br) {
         for (std::size_t c = 0; c < cycles; ++c) {
-#pragma omp barrier
+          br.arrive_and_wait();
           auto received_request = responder.receive(request.size());
           REQUIRE(received_request);
           CHECK(received_request->received_message == request);
           responder.sendTo(response, requester_address);
-#pragma omp barrier
+          br.arrive_and_wait();
         }
       });
 }
@@ -298,14 +291,12 @@ TEST_CASE("Open connection with timeout", "[udp]") {
 
   SECTION("expect success within timeout") {
     const auto wait = Timeout{250};
-    parallel(
-        [&]() {
-#pragma omp barrier
+    ParallelSection::biSection(
+        [&](auto &) {
           std::this_thread::sleep_for(wait);
           responder.sendTo("1", requester_address);
         },
-        [&]() {
-#pragma omp barrier
+        [&](auto &) {
           auto connected_result = requester.connect(timeout);
           REQUIRE(connected_result);
           CHECK(are_same(connected_result->getRemoteAddress(),
@@ -329,28 +320,29 @@ TEST_CASE("Reserve random port for udp connection", "[udp]") {
   responder_port = responder.getPortToBind();
   const Address responder_address = Address(responder_port, family);
 
-  parallel(
-      [&]() {
+  ParallelSection::biSection(
+      [&](Barrier &br) {
         CHECK(requester.sendTo(request, responder_address));
-#pragma omp barrier
-#pragma omp barrier
+        br.arrive_and_wait();
+        br.arrive_and_wait();
         auto received_response = requester.receive(response.size());
         REQUIRE(received_response);
         CHECK(received_response->received_message == response);
         CHECK(are_same(received_response->sender, responder_address, family));
       },
-      [&]() {
-#pragma omp barrier
+      [&](Barrier &br) {
+        br.arrive_and_wait();
         auto received_request = responder.receive(request.size());
         REQUIRE(received_request);
         CHECK(received_request->received_message == request);
         CHECK(are_same(received_request->sender, requester_address, family));
         responder.sendTo(response, requester_address);
-#pragma omp barrier
+        br.arrive_and_wait();
       });
 }
 
 /*
+
 TEST_CASE("Send Receive messages split into multiple pieces (udp)",
           "[udp][!mayfail]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
@@ -363,13 +355,13 @@ TEST_CASE("Send Receive messages split into multiple pieces (udp)",
 
   SECTION("un connected") {
     SECTION("split receive") {
-      parallel(
-          [&]() {
+      ParallelSection::biSection(
+          [&](Barrier &br) {
             requester.sendTo(request, responder_address);
-#pragma omp barrier
+            br.arrive_and_wait();
           },
-          [&]() {
-#pragma omp barrier
+          [&](Barrier &br) {
+            br.arrive_and_wait();
             auto received_request =
                 sliced_receive(responder, request.size(), 4);
             CHECK(received_request == request);
@@ -377,13 +369,13 @@ TEST_CASE("Send Receive messages split into multiple pieces (udp)",
     }
 
     SECTION("split send") {
-      parallel(
-          [&]() {
+      ParallelSection::biSection(
+          [&](Barrier &br) {
             sliced_send(requester, request, responder_address, 4);
-#pragma omp barrier
+            br.arrive_and_wait();
           },
-          [&]() {
-#pragma omp barrier
+          [&](Barrier &br) {
+            br.arrive_and_wait();
             auto received_request = responder.receive(request.size());
             CHECK(received_request);
             CHECK(received_request->received_message == request);
@@ -395,13 +387,13 @@ TEST_CASE("Send Receive messages split into multiple pieces (udp)",
     auto requester_conn = requester.connect(responder_address);
     auto responder_conn = responder.connect(requester_address);
     SECTION("split receive") {
-      parallel(
-          [&]() {
+      ParallelSection::biSection(
+          [&](Barrier &br) {
             requester_conn.send(request);
-#pragma omp barrier
+            br.arrive_and_wait();
           },
-          [&]() {
-#pragma omp barrier
+          [&](Barrier &br) {
+            br.arrive_and_wait();
             auto received_request =
                 sliced_receive(responder_conn, request.size(), 4);
             CHECK(received_request == request);
@@ -409,17 +401,18 @@ TEST_CASE("Send Receive messages split into multiple pieces (udp)",
     }
 
     SECTION("split send") {
-      parallel(
-          [&]() {
+      ParallelSection::biSection(
+          [&](Barrier &br) {
             sliced_send(requester_conn, request, 4);
-#pragma omp barrier
+            br.arrive_and_wait();
           },
-          [&]() {
-#pragma omp barrier
+          [&](Barrier &br) {
+            br.arrive_and_wait();
             auto received_request = responder_conn.receive(request.size());
             CHECK(received_request == request);
           });
     }
   }
 }
- */
+
+*/
