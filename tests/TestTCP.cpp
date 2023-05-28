@@ -2,13 +2,12 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include <list>
-#include <omp.h>
 #include <thread>
 
 #include <MinimalSocket/Error.h>
 
 #include "ConnectionsUtils.h"
-#include "Parallel.h"
+#include "ParallelSection.h"
 #include "PortFactory.h"
 #include "SlicedOps.h"
 
@@ -34,15 +33,15 @@ void send_response(const SenderReceiver &requester,
                    const SenderReceiver &responder) {
   std::size_t cycles = 5;
 
-  parallel(
-      [&]() {
+  ParallelSection::biSection(
+      [&](auto &) {
         for (std::size_t c = 0; c < cycles; ++c) {
           CHECK(requester.sender.send(request));
           auto received_response = requester.receiver.receive(response.size());
           CHECK(received_response == response);
         }
       },
-      [&]() {
+      [&](auto &) {
         for (std::size_t c = 0; c < cycles; ++c) {
           auto received_request = responder.receiver.receive(request.size());
           CHECK(received_request == request);
@@ -95,14 +94,12 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
 
       SECTION("expect success within timeout") {
         const auto wait = Timeout{250};
-        parallel(
-            [&]() {
-#pragma omp barrier
+        ParallelSection::biSection(
+            [&](auto &) {
               std::this_thread::sleep_for(wait);
               client_side.send(request);
             },
-            [&]() {
-#pragma omp barrier
+            [&](auto &) {
               auto received_request =
                   server_side.receive(request.size(), timeout);
               CHECK(received_request == request);
@@ -124,13 +121,13 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
   SECTION("sequencial connnections") {
     std::list<TcpConnection> accepted_clients;
     std::list<TcpClient> clients;
-    parallel(
-        [&]() {
+    ParallelSection::biSection(
+        [&](auto &) {
           for (std::size_t c = 0; c < clients_numb; ++c) {
             accepted_clients.emplace_back(server.acceptNewClient());
           }
         },
-        [&]() {
+        [&](auto &) {
           for (std::size_t c = 0; c < clients_numb; ++c) {
             auto &client = clients.emplace_back(Address(port, family));
             CHECK(client.open());
@@ -139,20 +136,20 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
   }
 
   SECTION("concurrent connnections") {
-    std::vector<Task> tasks;
-    tasks.emplace_back([&]() {
+    ParallelSection sections;
+    sections.add([&](auto &) {
       for (std::size_t c = 0; c < clients_numb; ++c) {
         auto accepted = server.acceptNewClient();
       }
     });
-    Task ask_connection = [&]() {
+    Task ask_connection = [&](auto &) {
       TcpClient client(Address(port, family));
       CHECK(client.open());
     };
     for (std::size_t c = 0; c < clients_numb; ++c) {
-      tasks.push_back(ask_connection);
+      sections.add(ask_connection);
     }
-    parallel(tasks);
+    sections.run();
   }
 }
 
@@ -168,12 +165,12 @@ TEST_CASE("Open multiple times tcp clients", "[tcp]") {
   TcpClient client(Address(port, family));
 
   for (std::size_t c = 0; c < cycles; ++c) {
-    parallel([&]() { server.acceptNewClient(); },
-             [&]() {
-               CHECK(client.open());
-               TcpClient{std::move(client)};
-               CHECK_FALSE(client.wasOpened());
-             });
+    ParallelSection::biSection([&](auto &) { server.acceptNewClient(); },
+                               [&](auto &) {
+                                 CHECK(client.open());
+                                 TcpClient{std::move(client)};
+                                 CHECK_FALSE(client.wasOpened());
+                               });
   }
 }
 
@@ -201,16 +198,14 @@ TEST_CASE("Open tcp client with timeout", "[tcp]") {
     const auto wait = Timeout{250};
     TcpServer server(port, family);
     REQUIRE(server.open());
-    parallel(
-        [&]() {
-#pragma omp barrier
+    ParallelSection::biSection(
+        [&](auto &) {
           std::this_thread::sleep_for(wait);
           TcpConnection conn = server.acceptNewClient();
           auto received_request = conn.receive(request.size());
           CHECK(received_request == request);
         },
-        [&]() {
-#pragma omp barrier
+        [&](auto &) {
           CHECK(client.open(timeout));
           client.send(request);
         });
@@ -225,17 +220,17 @@ TEST_CASE("Reserve random port for tcp server", "[tcp]") {
   const auto port = server.getPortToBind();
   REQUIRE(port != 0);
 
-  parallel(
-      [&]() {
-#pragma omp barrier
+  ParallelSection::biSection(
+      [&](Barrier &br) {
+        br.arrive_and_wait();
         auto accepted = server.acceptNewClient();
         auto received_request = accepted.receive(request.size());
         CHECK(received_request == request);
       },
-      [&]() {
+      [&](Barrier &br) {
         // client
         TcpClient client(Address(port, family));
-#pragma omp barrier
+        br.arrive_and_wait();
         REQUIRE(client.open());
         REQUIRE(client.wasOpened());
         client.send(request);
@@ -256,46 +251,40 @@ TEST_CASE("Accept client with timeout", "[tcp]") {
     // connect first client
     TcpClient client_first = TcpClient{server_address};
     std::unique_ptr<TcpConnection> server_side_first;
-    parallel(
-        [&]() {
-#pragma omp barrier
-          CHECK(client_first.open());
-        },
-        [&]() {
-#pragma omp barrier
-          auto accepted = server.acceptNewClient();
-          server_side_first =
-              std::make_unique<TcpConnection>(std::move(accepted));
-        });
+    ParallelSection::biSection([&](auto &) { CHECK(client_first.open()); },
+                               [&](auto &) {
+                                 auto accepted = server.acceptNewClient();
+                                 server_side_first =
+                                     std::make_unique<TcpConnection>(
+                                         std::move(accepted));
+                               });
 
     // expect second accept to fail
     CHECK_FALSE(server.acceptNewClient(timeout));
     CHECK(server.wasOpened());
 
     // check first accepted connection is still valid
-    parallel(
-        [&]() {
-#pragma omp barrier
+    ParallelSection::biSection(
+        [&](auto &) {
           auto received_request = server_side_first->receive(request.size());
           CHECK(received_request == request);
         },
-        [&]() {
-    // client
-#pragma omp barrier
+        [&](auto &) {
+          // client
           client_first.send(request);
         });
 
     // connect second client after accept unsuccess and check they can exchange
     // messages
-    parallel(
-        [&]() {
+    ParallelSection::biSection(
+        [&](Barrier &br) {
           TcpClient client_second = TcpClient{server_address};
-#pragma omp barrier
+          br.arrive_and_wait();
           CHECK(client_second.open());
           client_second.send(request);
         },
-        [&]() {
-#pragma omp barrier
+        [&](Barrier &br) {
+          br.arrive_and_wait();
           auto server_side_second = server.acceptNewClient();
           auto received_request = server_side_second.receive(request.size());
           CHECK(received_request == request);
@@ -304,15 +293,15 @@ TEST_CASE("Accept client with timeout", "[tcp]") {
 
   SECTION("expect success within timeout") {
     const auto wait = Timeout{250};
-    parallel(
-        [&]() {
+    ParallelSection::biSection(
+        [&](Barrier &br) {
           TcpClient client = TcpClient{server_address};
-#pragma omp barrier
+          br.arrive_and_wait();
           std::this_thread::sleep_for(wait);
           CHECK(client.open());
         },
-        [&]() {
-#pragma omp barrier
+        [&](Barrier &br) {
+          br.arrive_and_wait();
           CHECK(server.acceptNewClient(timeout));
         });
   }
@@ -332,22 +321,22 @@ TEST_CASE("Send Receive messages split into multiple pieces (tcp)", "[tcp]") {
   const std::size_t delta = 4;
 
   SECTION("split receive") {
-    parallel([&]() { client_side.send(request); },
-             [&]() {
-               auto received_request =
-                   sliced_receive(server_side, request.size(), 4);
-               CHECK(received_request == request);
-             });
+    ParallelSection::biSection([&](auto &) { client_side.send(request); },
+                               [&](auto &) {
+                                 auto received_request = sliced_receive(
+                                     server_side, request.size(), 4);
+                                 CHECK(received_request == request);
+                               });
   }
 
   SECTION("split send") {
-    parallel(
-        [&]() {
+    ParallelSection::biSection(
+        [&](Barrier &br) {
           sliced_send(client_side, request, 4);
-#pragma omp barrier
+          br.arrive_and_wait();
         },
-        [&]() {
-#pragma omp barrier
+        [&](Barrier &br) {
+          br.arrive_and_wait();
           auto received_request = server_side.receive(request.size());
           CHECK(received_request == request);
         });

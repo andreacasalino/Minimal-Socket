@@ -12,7 +12,7 @@ jobs:
   unitTests:
     strategy:
       matrix:
-        name: [ubuntu-gcc, ubuntu-clang, windows-VS]
+        name: [ubuntu-gcc, ubuntu-clang, windows-VS, macOS]
         include:
             - name: ubuntu-gcc
               os: ubuntu-latest
@@ -21,7 +21,7 @@ jobs:
               os: ubuntu-latest
               compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
             - name: windows-VS
-              os: windows-2019
+              os: windows-latest
               compiler_opt: ""
             - name: macOS
               os: macos-latest
@@ -40,13 +40,13 @@ jobs:
     - name: Install
       run:  cmake --install ./build --config Release
     - name: Test-open
-      run: ./artifacts/bin/Tests "[open]"
+      run: ./artifacts/bin/MinimalSocket-tests "[open]"
     - name: Test-address
-      run: ./artifacts/bin/Tests "[address]"
+      run: ./artifacts/bin/MinimalSocket-tests "[address]"
     - name: Test-tcp
-      run: ./artifacts/bin/Tests "[tcp]"
+      run: ./artifacts/bin/MinimalSocket-tests "[tcp]"
     - name: Test-udp
-      run: ./artifacts/bin/Tests "[udp]"
+      run: ./artifacts/bin/MinimalSocket-tests "[udp]"
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
