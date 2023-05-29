@@ -12,14 +12,11 @@ jobs:
   unitTests:
     strategy:
       matrix:
-        name: [ubuntu-gcc, ubuntu-clang, windows-VS]
+        name: [ubuntu-gcc, windows-VS, macOS]
         include:
             - name: ubuntu-gcc
               os: ubuntu-latest
               compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\""
-            - name: ubuntu-clang
-              os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
             - name: windows-VS
               os: windows-2019
               compiler_opt: ""
