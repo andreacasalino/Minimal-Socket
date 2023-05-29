@@ -132,59 +132,53 @@ TEST_CASE("Thread safe d'tor udp case", "[robustness]") {
       });
 }
 
-// // /*
+// TEST_CASE("Receive from multiple threads udp case", "[robustness]") {
+//   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-// // TEST_CASE("Receive from multiple threads udp case", "[robustness]") {
-// //   const auto family = GENERATE(AddressFamily::IP_V4,
-// AddressFamily::IP_V6);
+//   UDP_PEERS(PortFactory::makePort(), PortFactory::makePort(), family)
 
-// //   UDP_PEERS(PortFactory::makePort(), PortFactory::makePort(), family)
+//   const std::size_t threads = 3;
+//   ParallelSection sections;
+//   sections.add([&](Barrier &br) {
+//     for (std::size_t t = 0; t < threads; ++t) {
+//       requester.sendTo(MESSAGE, responder_address);
+//     }
+//     br.arrive_and_wait();
+//   });
+//   for (std::size_t t = 0; t < threads; ++t) {
+//     sections.add([&](Barrier &br) {
+//       br.arrive_and_wait();
+//       const auto received_request = responder.receive(MESSAGE.size());
+//       CHECK(received_request);
+//       CHECK(received_request->received_message == MESSAGE);
+//     });
+//   }
+//   sections.run();
+// }
 
-// //   const std::size_t threads = 3;
-// //   std::vector<Task> tasks;
-// //   tasks.emplace_back([&]() {
-// //     for (std::size_t t = 0; t < threads; ++t) {
-// //       requester.sendTo(MESSAGE, responder_address);
-// //     }
-// // #pragma omp barrier
-// //   });
-// // #pragma omp barrier
-// //   for (std::size_t t = 0; t < threads; ++t) {
-// //     tasks.emplace_back([&]() {
-// //       const auto received_request = responder.receive(MESSAGE.size());
-// //       CHECK(received_request);
-// //       CHECK(received_request->received_message == MESSAGE);
-// //     });
-// //   }
-// //   parallel(tasks);
-// // }
+// TEST_CASE("Send from multiple threads udp case", "[robustness]") {
+//   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-// // TEST_CASE("Send from multiple threads udp case", "[robustness]") {
-// //   const auto family = GENERATE(AddressFamily::IP_V4,
-// AddressFamily::IP_V6);
+//   UDP_PEERS(PortFactory::makePort(), PortFactory::makePort(), family)
 
-// //   UDP_PEERS(PortFactory::makePort(), PortFactory::makePort(), family)
-
-// //   const std::size_t threads = 3;
-// //   std::vector<Task> tasks;
-// //   for (std::size_t t = 0; t < threads; ++t) {
-// //     tasks.emplace_back([&]() {
-// //       requester.sendTo(MESSAGE, responder_address);
-// // #pragma omp barrier
-// //     });
-// //   }
-// //   tasks.emplace_back([&]() {
-// // #pragma omp barrier
-// //     for (std::size_t t = 0; t < threads; ++t) {
-// //       const auto received_request = responder.receive(MESSAGE.size());
-// //       CHECK(received_request);
-// //       CHECK(received_request->received_message == MESSAGE);
-// //     }
-// //   });
-// //   parallel(tasks);
-// // }
-
-// // */
+//   const std::size_t threads = 3;
+//   ParallelSection sections;
+//   for (std::size_t t = 0; t < threads; ++t) {
+//     sections.add([&](Barrier &br) {
+//       requester.sendTo(MESSAGE, responder_address);
+//       br.arrive_and_wait();
+//     });
+//   }
+//   sections.add([&](Barrier &br) {
+//     br.arrive_and_wait();
+//     for (std::size_t t = 0; t < threads; ++t) {
+//       const auto received_request = responder.receive(MESSAGE.size());
+//       CHECK(received_request);
+//       CHECK(received_request->received_message == MESSAGE);
+//     }
+//   });
+//   sections.run();
+// }
 
 TEST_CASE("Use tcp socket before opening it", "[robustness]") {
   const auto port = PortFactory::makePort();
