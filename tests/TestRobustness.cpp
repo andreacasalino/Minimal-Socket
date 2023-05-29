@@ -75,69 +75,62 @@ TEST_CASE("Thread safe d'tor tcp case", "[robustness]") {
   }
 }
 
-// // TEST_CASE("Receive from multiple threads tcp case", "[robustness]") {
-// //   const auto port = PortFactory::makePort();
-// //   const auto family = GENERATE(AddressFamily::IP_V4,
-// AddressFamily::IP_V6);
+TEST_CASE("Receive from multiple threads tcp case", "[robustness]") {
+  const auto port = PortFactory::makePort();
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-// //   test::TcpPeers peers(port, family);
-// //   auto &server_side = peers.getServerSide();
-// //   auto &client_side = peers.getClientSide();
+  test::TcpPeers peers(port, family);
+  auto &server_side = peers.getServerSide();
+  auto &client_side = peers.getClientSide();
 
-// //   const std::size_t threads = 3;
-// //   std::vector<Task> tasks;
-// //   tasks.emplace_back(
-// //       [&]() { client_side.send(make_repeated_message(MESSAGE, threads));
-// });
-// //   for (std::size_t t = 0; t < threads; ++t) {
-// //     tasks.emplace_back([&]() {
-// //       const auto received_request = server_side.receive(MESSAGE.size());
-// //       CHECK(received_request == MESSAGE);
-// //     });
-// //   }
-// //   parallel(tasks);
-// // }
+  const std::size_t threads = 3;
+  ParallelSection sections;
+  sections.add([&](auto &) {
+    client_side.send(make_repeated_message(MESSAGE, threads));
+  });
+  for (std::size_t t = 0; t < threads; ++t) {
+    sections.add([&](auto &) {
+      const auto received_request = server_side.receive(MESSAGE.size());
+      CHECK(received_request == MESSAGE);
+    });
+  }
+  sections.run();
+}
 
-// // TEST_CASE("Send from multiple threads tcp case", "[robustness]") {
-// //   const auto port = PortFactory::makePort();
-// //   const auto family = GENERATE(AddressFamily::IP_V4,
-// AddressFamily::IP_V6);
+TEST_CASE("Send from multiple threads tcp case", "[robustness]") {
+  const auto port = PortFactory::makePort();
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-// //   test::TcpPeers peers(port, family);
-// //   auto &server_side = peers.getServerSide();
-// //   auto &client_side = peers.getClientSide();
+  test::TcpPeers peers(port, family);
+  auto &server_side = peers.getServerSide();
+  auto &client_side = peers.getClientSide();
 
-// //   const std::size_t threads = 3;
-// //   std::vector<Task> tasks;
-// //   for (std::size_t t = 0; t < threads; ++t) {
-// //     tasks.emplace_back([&]() { client_side.send(MESSAGE); });
-// //   }
-// //   tasks.emplace_back([&]() {
-// //     for (std::size_t t = 0; t < threads; ++t) {
-// //       const auto received_request = server_side.receive(MESSAGE.size());
-// //       CHECK(received_request == MESSAGE);
-// //     }
-// //   });
-// //   parallel(tasks);
-// // }
+  const std::size_t threads = 3;
+  ParallelSection sections;
+  for (std::size_t t = 0; t < threads; ++t) {
+    sections.add([&](auto &) { client_side.send(MESSAGE); });
+  }
+  sections.add([&](auto &) {
+    for (std::size_t t = 0; t < threads; ++t) {
+      const auto received_request = server_side.receive(MESSAGE.size());
+      CHECK(received_request == MESSAGE);
+    }
+  });
+  sections.run();
+}
 
-// // TEST_CASE("Thread safe d'tor udp case", "[robustness]") {
-// //   const auto family = GENERATE(AddressFamily::IP_V4,
-// AddressFamily::IP_V6);
+TEST_CASE("Thread safe d'tor udp case", "[robustness]") {
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-// //   udp::UdpBinded connection(PortFactory::makePort());
+  udp::UdpBinded connection(PortFactory::makePort());
 
-// //   parallel(
-// //       [&]() {
-// // #pragma omp barrier
-// //         CHECK_THROWS_AS(connection.receive(500), Error);
-// //       },
-// //       [&]() {
-// // #pragma omp barrier
-// //         std::this_thread::sleep_for(std::chrono::milliseconds{50});
-// //         close(connection);
-// //       });
-// // }
+  ParallelSection::biSection(
+      [&](auto &) { CHECK_THROWS_AS(connection.receive(500), Error); },
+      [&](auto &) {
+        std::this_thread::sleep_for(std::chrono::milliseconds{50});
+        close(connection);
+      });
+}
 
 // // /*
 
@@ -193,31 +186,29 @@ TEST_CASE("Thread safe d'tor tcp case", "[robustness]") {
 
 // // */
 
-// // TEST_CASE("Use tcp socket before opening it", "[robustness]") {
-// //   const auto port = PortFactory::makePort();
-// //   const auto family = GENERATE(AddressFamily::IP_V4,
-// AddressFamily::IP_V6);
+TEST_CASE("Use tcp socket before opening it", "[robustness]") {
+  const auto port = PortFactory::makePort();
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-// //   SECTION("server") {
-// //     tcp::TcpServer socket(port, family);
-// //     CHECK_THROWS_AS(socket.acceptNewClient(), Error);
-// //   }
+  SECTION("server") {
+    tcp::TcpServer socket(port, family);
+    CHECK_THROWS_AS(socket.acceptNewClient(), Error);
+  }
 
-// //   SECTION("client") {
-// //     tcp::TcpClient socket(Address{port, family});
-// //     CHECK_THROWS_AS(socket.receive(500), SocketError);
-// //     CHECK_THROWS_AS(socket.send("dummy"), SocketError);
-// //   }
-// // }
+  SECTION("client") {
+    tcp::TcpClient socket(Address{port, family});
+    CHECK_THROWS_AS(socket.receive(500), SocketError);
+    CHECK_THROWS_AS(socket.send("dummy"), SocketError);
+  }
+}
 
-// // TEST_CASE("Use udp socket before opening it", "[robustness]") {
-// //   const auto family = GENERATE(AddressFamily::IP_V4,
-// AddressFamily::IP_V6);
+TEST_CASE("Use udp socket before opening it", "[robustness]") {
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-// //   udp::UdpBinded socket(PortFactory::makePort(), family);
-// //   CHECK_THROWS_AS(socket.receive(500), SocketError);
-// //   CHECK_THROWS_AS(
-// //       socket.sendTo("dummy", Address{PortFactory::makePort(), family}),
-// //       SocketError);
-// //   CHECK_THROWS_AS(socket.connect(), SocketError);
-// // }
+  udp::UdpBinded socket(PortFactory::makePort(), family);
+  CHECK_THROWS_AS(socket.receive(500), SocketError);
+  CHECK_THROWS_AS(
+      socket.sendTo("dummy", Address{PortFactory::makePort(), family}),
+      SocketError);
+  CHECK_THROWS_AS(socket.connect(), SocketError);
+}
