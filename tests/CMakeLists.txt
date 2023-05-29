@@ -25,11 +25,11 @@ set(TEST_NAME "MinimalSocket-tests")
 
 add_executable(${TEST_NAME} Foo.cpp)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindOMP.cmake)
-Find_OpenMP()
+# include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindOMP.cmake)
+# Find_OpenMP()
 
 target_link_libraries(${TEST_NAME} PUBLIC 
-	OpenMP::OpenMP_CXX
+	# OpenMP::OpenMP_CXX
 	Catch2::Catch2
 	Catch2::Catch2WithMain
 )
