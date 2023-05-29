@@ -9,6 +9,8 @@
 
 ![Sockets](./sockets.png)
 
+bla bla
+
 ## INTRO
 
 **MinimalSocket** gives you a modern **C++** interface to create, connect and handle **tcp** and **udp** sockets, in a
