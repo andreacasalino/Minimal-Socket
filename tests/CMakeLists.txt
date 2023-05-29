@@ -11,7 +11,7 @@ set(TEST_NAME "MinimalSocket-tests")
 file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 add_executable(${TEST_NAME} ${SRC_FILES})
 
-find_package(OpenMP)
+find_package(OpenMP REQUIRED)
 target_link_libraries(${TEST_NAME} PUBLIC 
 	MinimalSocket
 	OpenMP::OpenMP_CXX
