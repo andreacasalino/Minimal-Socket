@@ -12,7 +12,7 @@ jobs:
   unitTests:
     strategy:
       matrix:
-        name: [ubuntu-gcc, ubuntu-clang, windows-VS, macOS]
+        name: [ubuntu-gcc, ubuntu-clang, windows-VS]
         include:
             - name: ubuntu-gcc
               os: ubuntu-latest
@@ -23,9 +23,6 @@ jobs:
             - name: windows-VS
               os: windows-2019
               compiler_opt: ""
-            # - name: macOS
-            #   os: macos-latest
-            #   compiler_opt: "-DCMAKE_C_COMPILER=clang-10 -DCMAKE_CXX_COMPILER=clang++-10"
               
     runs-on: ${{ matrix.os }}
     steps:
