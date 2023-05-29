@@ -24,6 +24,7 @@ public:
 
   template <typename Pred> ParallelSection &add(Pred &&pred) {
     tasks.emplace_back(std::forward<Pred>(pred));
+    return *this;
   }
 
   void run();

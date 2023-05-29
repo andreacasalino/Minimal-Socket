@@ -9,12 +9,6 @@
 #include <stdexcept>
 
 namespace MinimalSocket::test {
-void ParallelSection::run() {
-  if (tasks.size() < 2) {
-    throw std::runtime_error{"invalid number of tasks for parallel region"};
-  }
-}
-
 namespace {
 std::function<void()> make_thread(Barrier &br, const Task &task) {
   return [&task = task, &br = br]() mutable {
@@ -25,6 +19,9 @@ std::function<void()> make_thread(Barrier &br, const Task &task) {
 } // namespace
 
 void ParallelSection::run() {
+  if (tasks.size() < 2) {
+    throw std::runtime_error{"invalid number of tasks for parallel region"};
+  }
   barrier.emplace(tasks.size());
   std::vector<std::thread> spinners;
   for (auto it = tasks.begin(); it != tasks.end() - 1; ++it) {
