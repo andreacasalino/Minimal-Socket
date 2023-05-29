@@ -3,12 +3,11 @@
 
 #include <MinimalSocket/Error.h>
 
-#include <omp.h>
 #include <sstream>
 #include <thread>
 
 #include "ConnectionsUtils.h"
-#include "Parallel.h"
+#include "ParallelSection.h"
 #include "PortFactory.h"
 
 using namespace MinimalSocket;
@@ -40,26 +39,22 @@ TEST_CASE("Thread safe d'tor tcp case", "[robustness]") {
     test::TcpPeers peers(port, family);
 
     SECTION("close client while receiving") {
-      parallel(
-          [&]() {
-#pragma omp barrier
+      ParallelSection::biSection(
+          [&peers](auto &) {
             CHECK(peers.getClientSide().receive(500).empty());
           },
-          [&]() {
-#pragma omp barrier
+          [&peers](auto &) {
             std::this_thread::sleep_for(std::chrono::milliseconds{50});
             close(peers.getClientSide());
           });
     }
 
     SECTION("close server side while receiving") {
-      parallel(
-          [&]() {
-#pragma omp barrier
+      ParallelSection::biSection(
+          [&peers](auto &) {
             CHECK(peers.getClientSide().receive(500).empty());
           },
-          [&]() {
-#pragma omp barrier
+          [&peers](auto &) {
             std::this_thread::sleep_for(std::chrono::milliseconds{50});
             close(peers.getServerSide());
           });
@@ -69,13 +64,11 @@ TEST_CASE("Thread safe d'tor tcp case", "[robustness]") {
   SECTION("close while accepting client") {
     tcp::TcpServer server(port, family);
     REQUIRE(server.open());
-    parallel(
-        [&]() {
-#pragma omp barrier
+    ParallelSection::biSection(
+        [&server](auto &) {
           CHECK_THROWS_AS(server.acceptNewClient(), SocketError);
         },
-        [&]() {
-#pragma omp barrier
+        [&server](auto &) {
           std::this_thread::sleep_for(std::chrono::milliseconds{50});
           close(server);
         });
@@ -91,16 +84,17 @@ TEST_CASE("Receive from multiple threads tcp case", "[robustness]") {
   auto &client_side = peers.getClientSide();
 
   const std::size_t threads = 3;
-  std::vector<Task> tasks;
-  tasks.emplace_back(
-      [&]() { client_side.send(make_repeated_message(MESSAGE, threads)); });
+  ParallelSection sections;
+  sections.add([&](auto &) {
+    client_side.send(make_repeated_message(MESSAGE, threads));
+  });
   for (std::size_t t = 0; t < threads; ++t) {
-    tasks.emplace_back([&]() {
+    sections.add([&](auto &) {
       const auto received_request = server_side.receive(MESSAGE.size());
       CHECK(received_request == MESSAGE);
     });
   }
-  parallel(tasks);
+  sections.run();
 }
 
 TEST_CASE("Send from multiple threads tcp case", "[robustness]") {
@@ -112,17 +106,17 @@ TEST_CASE("Send from multiple threads tcp case", "[robustness]") {
   auto &client_side = peers.getClientSide();
 
   const std::size_t threads = 3;
-  std::vector<Task> tasks;
+  ParallelSection sections;
   for (std::size_t t = 0; t < threads; ++t) {
-    tasks.emplace_back([&]() { client_side.send(MESSAGE); });
+    sections.add([&](auto &) { client_side.send(MESSAGE); });
   }
-  tasks.emplace_back([&]() {
+  sections.add([&](auto &) {
     for (std::size_t t = 0; t < threads; ++t) {
       const auto received_request = server_side.receive(MESSAGE.size());
       CHECK(received_request == MESSAGE);
     }
   });
-  parallel(tasks);
+  sections.run();
 }
 
 TEST_CASE("Thread safe d'tor udp case", "[robustness]") {
@@ -130,13 +124,9 @@ TEST_CASE("Thread safe d'tor udp case", "[robustness]") {
 
   udp::UdpBinded connection(PortFactory::makePort());
 
-  parallel(
-      [&]() {
-#pragma omp barrier
-        CHECK_THROWS_AS(connection.receive(500), Error);
-      },
-      [&]() {
-#pragma omp barrier
+  ParallelSection::biSection(
+      [&](auto &) { CHECK_THROWS_AS(connection.receive(500), Error); },
+      [&](auto &) {
         std::this_thread::sleep_for(std::chrono::milliseconds{50});
         close(connection);
       });
@@ -150,22 +140,22 @@ TEST_CASE("Receive from multiple threads udp case", "[robustness]") {
   UDP_PEERS(PortFactory::makePort(), PortFactory::makePort(), family)
 
   const std::size_t threads = 3;
-  std::vector<Task> tasks;
-  tasks.emplace_back([&]() {
+  ParallelSection sections;
+  sections.add([&](Barrier &br) {
     for (std::size_t t = 0; t < threads; ++t) {
       requester.sendTo(MESSAGE, responder_address);
     }
-#pragma omp barrier
+    br.arrive_and_wait();
   });
-#pragma omp barrier
   for (std::size_t t = 0; t < threads; ++t) {
-    tasks.emplace_back([&]() {
+    sections.add([&](Barrier &br) {
+      br.arrive_and_wait();
       const auto received_request = responder.receive(MESSAGE.size());
       CHECK(received_request);
       CHECK(received_request->received_message == MESSAGE);
     });
   }
-  parallel(tasks);
+  sections.run();
 }
 
 TEST_CASE("Send from multiple threads udp case", "[robustness]") {
@@ -174,24 +164,23 @@ TEST_CASE("Send from multiple threads udp case", "[robustness]") {
   UDP_PEERS(PortFactory::makePort(), PortFactory::makePort(), family)
 
   const std::size_t threads = 3;
-  std::vector<Task> tasks;
+  ParallelSection sections;
   for (std::size_t t = 0; t < threads; ++t) {
-    tasks.emplace_back([&]() {
+    sections.add([&](Barrier &br) {
       requester.sendTo(MESSAGE, responder_address);
-#pragma omp barrier
+      br.arrive_and_wait();
     });
   }
-  tasks.emplace_back([&]() {
-#pragma omp barrier
+  sections.add([&](Barrier &br) {
+    br.arrive_and_wait();
     for (std::size_t t = 0; t < threads; ++t) {
       const auto received_request = responder.receive(MESSAGE.size());
       CHECK(received_request);
       CHECK(received_request->received_message == MESSAGE);
     }
   });
-  parallel(tasks);
+  sections.run();
 }
-
 */
 
 TEST_CASE("Use tcp socket before opening it", "[robustness]") {

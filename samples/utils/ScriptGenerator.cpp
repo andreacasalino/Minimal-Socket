@@ -7,7 +7,9 @@
 
 #include <ScriptGenerator.h>
 
+#include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 namespace MinimalSocket::samples {
@@ -54,7 +56,8 @@ void add_process(std::ofstream &stream, const ProcessAndArgs &proc_and_args,
 } // namespace
 
 void ScriptGenerator::generate(const std::string &file_name) {
-  std::ofstream stream(file_name + SCRIPT_EXTENSION);
+  const std::string recipient = file_name + SCRIPT_EXTENSION;
+  std::ofstream stream(recipient);
 
 #if defined(__linux__) || defined(__APPLE__)
   stream << "#!/bin/sh" << std::endl;
@@ -64,5 +67,8 @@ void ScriptGenerator::generate(const std::string &file_name) {
     add_process(stream, processes[k], true);
   }
   add_process(stream, processes.back(), false);
+
+  std::cout << "launcher script generated at: "
+            << std::filesystem::absolute(recipient) << std::endl;
 }
 } // namespace MinimalSocket::samples

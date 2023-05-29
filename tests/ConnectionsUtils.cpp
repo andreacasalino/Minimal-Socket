@@ -8,23 +8,23 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "ConnectionsUtils.h"
-#include "Parallel.h"
+#include "ParallelSection.h"
 
 namespace MinimalSocket::test {
 TcpPeers::TcpPeers(const Port &port, const AddressFamily &family)
     : client_side(Address{port, family}) {
-  parallel(
-      [&]() {
+  ParallelSection::biSection(
+      [&](Barrier &br) {
         // server
         tcp::TcpServer server(port, family);
         REQUIRE(server.open());
-#pragma omp barrier
+        br.arrive_and_wait();
         auto accepted = server.acceptNewClient();
         server_side = std::make_unique<tcp::TcpConnection>(std::move(accepted));
       },
-      [&]() {
-  // client
-#pragma omp barrier
+      [&](Barrier &br) {
+        // client
+        br.arrive_and_wait();
         REQUIRE(client_side.open());
       });
 }
