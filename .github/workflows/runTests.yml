@@ -37,7 +37,7 @@ jobs:
     - name: Install
       run:  cmake --install ./build --config Release
     - name: Test-open
-      run: ./artifacts/bin/MinimalSocket-tests"
+      run: ./artifacts/bin/MinimalSocket-tests "[foo]"
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
