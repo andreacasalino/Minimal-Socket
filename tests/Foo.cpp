@@ -5,7 +5,7 @@
 #include <mutex>
 #include <omp.h>
 
-TEST_CASE("foo", "[address]") {
+TEST_CASE("foo", "[foo]") {
   std::mutex cout_mtx;
 
 #pragma omp parallel num_threads(2)
