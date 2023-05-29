@@ -341,7 +341,6 @@ TEST_CASE("Reserve random port for udp connection", "[udp]") {
       });
 }
 
-/*
 TEST_CASE("Send Receive messages split into multiple pieces (udp)",
           "[udp][!mayfail]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
@@ -354,13 +353,13 @@ TEST_CASE("Send Receive messages split into multiple pieces (udp)",
 
   SECTION("un connected") {
     SECTION("split receive") {
-      parallel(
-          [&]() {
+      ParallelSection::biSection(
+          [&](Barrier &br) {
             requester.sendTo(request, responder_address);
-#pragma omp barrier
+            br.arrive_and_wait();
           },
-          [&]() {
-#pragma omp barrier
+          [&](Barrier &br) {
+            br.arrive_and_wait();
             auto received_request =
                 sliced_receive(responder, request.size(), 4);
             CHECK(received_request == request);
@@ -368,13 +367,13 @@ TEST_CASE("Send Receive messages split into multiple pieces (udp)",
     }
 
     SECTION("split send") {
-      parallel(
-          [&]() {
+      ParallelSection::biSection(
+          [&](Barrier &br) {
             sliced_send(requester, request, responder_address, 4);
-#pragma omp barrier
+            br.arrive_and_wait();
           },
-          [&]() {
-#pragma omp barrier
+          [&](Barrier &br) {
+            br.arrive_and_wait();
             auto received_request = responder.receive(request.size());
             CHECK(received_request);
             CHECK(received_request->received_message == request);
@@ -386,13 +385,13 @@ TEST_CASE("Send Receive messages split into multiple pieces (udp)",
     auto requester_conn = requester.connect(responder_address);
     auto responder_conn = responder.connect(requester_address);
     SECTION("split receive") {
-      parallel(
-          [&]() {
+      ParallelSection::biSection(
+          [&](Barrier &br) {
             requester_conn.send(request);
-#pragma omp barrier
+            br.arrive_and_wait();
           },
-          [&]() {
-#pragma omp barrier
+          [&](Barrier &br) {
+            br.arrive_and_wait();
             auto received_request =
                 sliced_receive(responder_conn, request.size(), 4);
             CHECK(received_request == request);
@@ -400,17 +399,16 @@ TEST_CASE("Send Receive messages split into multiple pieces (udp)",
     }
 
     SECTION("split send") {
-      parallel(
-          [&]() {
+      ParallelSection::biSection(
+          [&](Barrier &br) {
             sliced_send(requester_conn, request, 4);
-#pragma omp barrier
+            br.arrive_and_wait();
           },
-          [&]() {
-#pragma omp barrier
+          [&](Barrier &br) {
+            br.arrive_and_wait();
             auto received_request = responder_conn.receive(request.size());
             CHECK(received_request == request);
           });
     }
   }
 }
- */
