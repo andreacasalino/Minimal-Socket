@@ -14,7 +14,12 @@
 #include <vector>
 
 namespace MinimalSocket::test {
-using Barrier = std::barrier<std::__empty_completion>;
+namespace detail {
+    struct NullCompletion {
+        void operator()() noexcept {}
+    };
+}
+using Barrier = std::barrier<detail::NullCompletion>;
 
 using Task = std::function<void(Barrier &)>;
 
