@@ -2,7 +2,6 @@
 // #include <catch2/generators/catch_generators.hpp>
 
 // #include <list>
-// #include <omp.h>
 // #include <thread>
 
 // #include <MinimalSocket/Error.h>

@@ -3,7 +3,6 @@
 
 #include <MinimalSocket/Error.h>
 
-#include <omp.h>
 #include <sstream>
 #include <thread>
 
