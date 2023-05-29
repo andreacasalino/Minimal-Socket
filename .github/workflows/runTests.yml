@@ -19,7 +19,7 @@ jobs:
               compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\""
             - name: ubuntu-clang
               os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
+              compiler_opt: "-DCMAKE_C_COMPILER=clang-12 -DCMAKE_CXX_COMPILER=clang++-12 -G \"Unix Makefiles\""
             - name: windows-VS
               os: windows-2019
               compiler_opt: ""
