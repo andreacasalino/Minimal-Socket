@@ -8,15 +8,25 @@ FetchContent_MakeAvailable(catch2)
 
 set(TEST_NAME "MinimalSocket-tests")
 
-file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
-add_executable(${TEST_NAME} ${SRC_FILES})
+# file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+# add_executable(${TEST_NAME} ${SRC_FILES})
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindOMP.cmake)
-Find_OpenMP()
+# include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindOMP.cmake)
+# Find_OpenMP()
+
+# target_link_libraries(${TEST_NAME} PUBLIC 
+# 	MinimalSocket
+# 	OpenMP::OpenMP_CXX
+# 	Catch2::Catch2
+# 	Catch2::Catch2WithMain
+# )
+
+# install(TARGETS ${TEST_NAME})
+
+add_executable(${TEST_NAME} Foo.cpp)
 
 target_link_libraries(${TEST_NAME} PUBLIC 
 	MinimalSocket
-	OpenMP::OpenMP_CXX
 	Catch2::Catch2
 	Catch2::Catch2WithMain
 )
