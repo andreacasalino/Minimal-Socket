@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <mutex>
-#include <omp.h>
+// #include <omp.h>
 
 TEST_CASE("foo", "[foo]") {
   std::mutex cout_mtx;
