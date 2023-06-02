@@ -23,22 +23,22 @@ int main(const int argc, const char **argv) {
   PARSE_ARGS
 
   const auto server_host = options->getValue("host", "127.0.0.1");
-  const auto server_port = static_cast<MinimalSocket::Port>(
-      std::atoi(options->getValue("port").c_str()));
-  const auto rate = std::chrono::milliseconds{
-      std::atoi(options->getValue("rate", "250").c_str())};
+  const auto server_port =
+      static_cast<MinimalSocket::Port>(options->getIntValue("port"));
+  const auto rate =
+      std::chrono::milliseconds{options->getIntValue<250>("rate")};
 
   const MinimalSocket::Address server_address(server_host, server_port);
   MinimalSocket::tcp::TcpClient client(server_address);
 
   cout << "Connecting to " << MinimalSocket::to_string(server_address) << endl;
   if (!client.open()) {
-    cout << "Failed to open connection" << endl;
+    cerr << "Failed to open connection" << endl;
     return EXIT_FAILURE;
   }
   cout << "Connected" << endl;
 
-  MinimalSocket::samples::ask_forever(client, rate);
+  MinimalSocket::samples::ask(client, rate, options->getIntValue<5>("cycles"));
 
   // the connection will be close when destroying the client object
   return EXIT_SUCCESS;

@@ -26,6 +26,10 @@ public:
 
   void next();
 
+  static std::size_t size() {
+    return NamesCircularIterator::NAMES_SURNAMES.size();
+  }
+
 private:
   NamesIterator current_;
 };

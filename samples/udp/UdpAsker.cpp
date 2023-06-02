@@ -23,25 +23,27 @@ int main(const int argc, const char **argv) {
   PARSE_ARGS
 
   const auto remote_host = options->getValue("host", "127.0.0.1");
-  const auto remote_port = static_cast<MinimalSocket::Port>(
-      std::atoi(options->getValue("port").c_str()));
-  const auto port_this = static_cast<MinimalSocket::Port>(
-      std::atoi(options->getValue("port_this").c_str()));
-  const auto rate = std::chrono::milliseconds{
-      std::atoi(options->getValue("rate", "250").c_str())};
+  const auto remote_port =
+      static_cast<MinimalSocket::Port>(options->getIntValue("port"));
+  const auto port_this =
+      static_cast<MinimalSocket::Port>(options->getIntValue("port_this"));
+  const auto rate =
+      std::chrono::milliseconds{options->getIntValue<250>("rate")};
 
   const MinimalSocket::Address remote_address(remote_host, remote_port);
   MinimalSocket::udp::UdpBinded asker(port_this, remote_address.getFamily());
 
-  std::this_thread::sleep_for(std::chrono::seconds{
-      1}); // just to be sure the responder has already prepared the receive
+  std::this_thread::sleep_for(
+      std::chrono::seconds{1}); // just to be sure the responder has already
+                                // prepared to receive the requests
   if (!asker.open()) {
-    cout << "Failed to reserve specified port" << endl;
+    cerr << "Failed to reserve specified port" << endl;
     return EXIT_FAILURE;
   }
   cout << "Port successfully reserved" << endl;
 
-  MinimalSocket::samples::ask_forever(asker, remote_address, rate);
+  MinimalSocket::samples::ask(asker, remote_address, rate,
+                              options->getIntValue<5>("cycles"));
 
   return EXIT_SUCCESS;
 }

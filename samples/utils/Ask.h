@@ -10,6 +10,7 @@
 #include <MinimalSocket/udp/UdpSocket.h>
 
 #include <Names.h>
+#include <TimeOfDay.h>
 
 #include <chrono>
 #include <iostream>
@@ -17,31 +18,35 @@
 
 namespace MinimalSocket::samples {
 template <typename SocketT>
-void ask_forever(SocketT &channel, const std::chrono::milliseconds &rate) {
+void ask(SocketT &channel, const std::chrono::milliseconds &rate,
+         std::size_t cycles) {
   NamesCircularIterator iterator;
-  while (true) {
+  for (std::size_t k = 0; k < cycles * NamesCircularIterator::size(); ++k) {
     // send name of this person
-    std::cout << "Sending: " << iterator.current()->first;
+    std::cout << TimeOfDay{} << "Sending: " << iterator.current()->first
+              << std::endl;
     channel.send(iterator.current()->first);
     // expect to get back the corresponding surname
     auto response = channel.receive(500);
-    std::cout << " , got as response: " << response << std::endl;
+    std::cout << TimeOfDay{} << "Got response: " << response << std::endl;
     iterator.next();
     std::this_thread::sleep_for(rate);
   }
 }
 
-void ask_forever(MinimalSocket::udp::UdpBinded &channel,
-                 const MinimalSocket::Address &target,
-                 const std::chrono::milliseconds &rate) {
+void ask(MinimalSocket::udp::UdpBinded &channel,
+         const MinimalSocket::Address &target,
+         const std::chrono::milliseconds &rate, std::size_t cycles) {
   NamesCircularIterator iterator;
-  while (true) {
+  for (std::size_t k = 0; k < cycles * NamesCircularIterator::size(); ++k) {
     // send name of this person
-    std::cout << "Sending: " << iterator.current()->first;
+    std::cout << TimeOfDay{} << "Sending: " << iterator.current()->first
+              << std::endl;
     channel.sendTo(iterator.current()->first, target);
     // expect to get back the corresponding surname
     auto response = channel.receive(500);
-    std::cout << "From " << MinimalSocket::to_string(response->sender)
+    std::cout << TimeOfDay{} << "From "
+              << MinimalSocket::to_string(response->sender)
               << " , got as response: " << response->received_message
               << std::endl;
     iterator.next();
