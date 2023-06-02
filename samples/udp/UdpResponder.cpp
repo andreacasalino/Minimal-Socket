@@ -15,7 +15,6 @@
 // just a bunch of utilities
 #include <Args.h>
 #include <Respond.h>
-
 using namespace std;
 
 int main(const int argc, const char **argv) {
@@ -23,8 +22,8 @@ int main(const int argc, const char **argv) {
        << endl;
   PARSE_ARGS
 
-  const auto port_this = static_cast<MinimalSocket::Port>(
-      std::atoi(options->getValue("port_this").c_str()));
+  const auto port_this =
+      static_cast<MinimalSocket::Port>(options->getIntValue("port_this"));
   const auto family =
       MinimalSocket::samples::to_family(options->getValue("family", "v4"));
   const bool connect = options->getValue("connect", "no") == "yes";
@@ -32,7 +31,7 @@ int main(const int argc, const char **argv) {
   MinimalSocket::udp::UdpBinded responder(port_this, family);
 
   if (!responder.open()) {
-    cout << "Failed to reserve specified port" << endl;
+    cerr << "Failed to reserve specified port" << endl;
     return EXIT_FAILURE;
   }
   cout << "Port successfully reserved" << endl;
@@ -52,10 +51,10 @@ int main(const int argc, const char **argv) {
             ->second;
     connected_responder.send(first_response);
 
-    MinimalSocket::samples::respond_forever(connected_responder);
+    MinimalSocket::samples::respond(connected_responder);
   } else {
     // use as un-connected udp
-    MinimalSocket::samples::respond_forever(responder);
+    MinimalSocket::samples::respond(responder);
   }
 
   return EXIT_SUCCESS;
