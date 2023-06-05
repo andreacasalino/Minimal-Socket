@@ -1,0 +1,2 @@
+UdpResponder --port_this 37005 --connect yes
+UdpAsker --port 37005 --port_this 36995

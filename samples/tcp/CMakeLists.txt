@@ -1,6 +1,12 @@
-MakeSample(TcpClient)
-MakeSample(TcpServer)
-MakeSample(TcpRepeater)
+MakeApp(TcpClient)
+MakeApp(TcpServer)
+MakeApp(TcpRepeater)
 
-MakeLauncher(TcpScriptsGenerator)
-add_dependencies(TcpScriptsGenerator TcpClient TcpServer TcpRepeater)
+MakeSample(Sample01_server_client Tcp)
+add_dependencies(TcpSample01_server_client TcpClient TcpServer)
+
+MakeSample(Sample02_server_2_clients Tcp)
+add_dependencies(TcpSample02_server_2_clients TcpClient TcpServer)
+
+MakeSample(Sample03_chain_with_2_repeaters Tcp)
+add_dependencies(TcpSample03_chain_with_2_repeaters TcpClient TcpServer TcpRepeater)

@@ -1,5 +1,11 @@
-MakeSample(UdpAsker)
-MakeSample(UdpResponder)
+MakeApp(UdpAsker)
+MakeApp(UdpResponder)
 
-MakeLauncher(UdpScriptsGenerator)
-add_dependencies(UdpScriptsGenerator UdpAsker UdpResponder)
+MakeSample(Sample01_asker_responder Udp)
+add_dependencies(UdpSample01_asker_responder UdpAsker UdpResponder)
+
+MakeSample(Sample02_asker_connected_responer Udp)
+add_dependencies(UdpSample02_asker_connected_responer UdpAsker UdpResponder)
+
+MakeSample(Sample03_2_askers_responder Udp)
+add_dependencies(UdpSample03_2_askers_responder UdpAsker UdpResponder)

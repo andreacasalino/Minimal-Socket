@@ -32,6 +32,20 @@ public:
   // throw if this option does not exists
   std::string getValue(const std::string &argument_name) const;
 
+  template <int DefaultValue>
+  int getIntValue(const std::string &argument_name) const {
+    auto temp = getValue(argument_name, "");
+    if (temp.empty()) {
+      return DefaultValue;
+    }
+    return std::atoi(temp.c_str());
+  }
+
+  int getIntValue(const std::string &argument_name) const {
+    auto temp = getValue(argument_name);
+    return std::atoi(temp.c_str());
+  }
+
 private:
   Args(const int argc, const char **argv);
 
@@ -43,7 +57,7 @@ MinimalSocket::AddressFamily to_family(const std::string &family_as_string);
 #define PARSE_ARGS                                                             \
   auto options = MinimalSocket::samples::Args::parse(argc, argv);              \
   if (std::nullopt == options) {                                               \
-    std::cout << "Invalid arguments" << std::endl;                             \
+    std::cerr << "Invalid arguments" << std::endl;                             \
     return EXIT_FAILURE;                                                       \
   }
 } // namespace MinimalSocket::samples
