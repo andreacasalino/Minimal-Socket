@@ -1,0 +1,4 @@
+TcpServer --port 35998 --clients 1
+TcpRepeater --port 36008 --next_port 35998
+TcpRepeater --port 36018 --next_port 36008
+TcpClient --port 36018
