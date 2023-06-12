@@ -180,6 +180,7 @@ To consume this library you can rely on [CMake](https://cmake.org).
 More precisely, You can fetch this package and link to the **MinimalSocket** library:
 ```cmake
 include(FetchContent)
+set(BUILD_MinimalCppSocket_SAMPLES OFF CACHE BOOL "" FORCE) # you don't want the samples in this case
 FetchContent_Declare(
 min_sock
 GIT_REPOSITORY https://github.com/andreacasalino/Minimal-Socket
