@@ -9,7 +9,9 @@
 #include <MinimalSocket/core/Receiver.h>
 
 #include "../SocketAddress.h"
-
+#ifndef _WIN32
+#include <sys/time.h>
+#endif
 namespace MinimalSocket {
 std::unique_ptr<std::scoped_lock<std::mutex>>
 ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
