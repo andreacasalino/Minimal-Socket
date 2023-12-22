@@ -47,5 +47,5 @@ using Timeout = std::chrono::milliseconds;
 /**
  * @brief actually, a null timeout is associated to a possibly infinite wait
  */
-static constexpr Timeout NULL_TIMEOUT = Timeout{0};
+static const Timeout NULL_TIMEOUT = Timeout{0};
 } // namespace MinimalSocket
