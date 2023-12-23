@@ -16,7 +16,7 @@
 #include <winsock2.h>
 #include <ws2ipdef.h>
 #include <ws2tcpip.h>
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__unix__) || defined(__APPLE__)
 #include <arpa/inet.h>
 #include <errno.h>
 #include <string.h> //memset
