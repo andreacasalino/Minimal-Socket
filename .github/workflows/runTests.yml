@@ -18,18 +18,22 @@ jobs:
               os: ubuntu-latest
               compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++"
               build_system: '-G Ninja'
+              filter: ""
             - name: ubuntu-clang
               os: ubuntu-latest
               compiler_opt: "-DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17"
               build_system: '-G Ninja'
+              filter: ""
             - name: windows-VS
               os: windows-latest
               compiler_opt: ""
               build_system: ""
+              filter: "robustness"
             - name: macOS
               os: macos-latest
               compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++"
               build_system: ""
+              filter: "robustness"
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -56,14 +60,8 @@ jobs:
       run:  cmake --build ./build --config Release
     - name: Install
       run:  cmake --install ./build --config Release
-    - name: Test-open
-      run: ./artifacts/bin/MinimalSocket-tests "[open]"
-    - name: Test-address
-      run: ./artifacts/bin/MinimalSocket-tests "[address]"
-    - name: Test-tcp
-      run: ./artifacts/bin/MinimalSocket-tests "[tcp]"
-    - name: Test-udp
-      run: ./artifacts/bin/MinimalSocket-tests "[udp]"
+    - name: Tests
+      run: python .github/workflows/runTests.py --bin "./artifacts/bin/MinimalSocket-tests" --priority "open address" --filter "${{ matrix.filter }}"
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
