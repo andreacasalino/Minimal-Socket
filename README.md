@@ -1,4 +1,3 @@
-![binaries_compilation](https://github.com/andreacasalino/Cross-Platform-Socket/actions/workflows/installArtifacts.yml/badge.svg)
 ![binaries_compilation](https://github.com/andreacasalino/Cross-Platform-Socket/actions/workflows/runTests.yml/badge.svg)
 
 - [What is this library about](#intro)

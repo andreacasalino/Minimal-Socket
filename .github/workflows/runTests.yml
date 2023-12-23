@@ -16,25 +16,42 @@ jobs:
         include:
             - name: ubuntu-gcc
               os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\""
+              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++"
+              build_system: '-G Ninja'
             - name: ubuntu-clang
               os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
+              compiler_opt: "-DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17"
+              build_system: '-G Ninja'
             - name: windows-VS
               os: windows-latest
               compiler_opt: ""
+              build_system: ""
             - name: macOS
               os: macos-latest
               compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++"
-              
+              build_system: ""
+
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
     - name: Checkout submodules
       run:  git submodule update --init --recursive
+    - name: Install Ninja
+      if: matrix.build_system == '-G Ninja'
+      uses: seanmiddleditch/gha-setup-ninja@master
+    # needed as this project requires c++ 20. Due to this github action bug:
+    # https://github.com/actions/runner-images/issues/8659
+    # This actually implements the workaround described here:
+    # https://github.com/wheremyfoodat/Panda3DS/blob/master/.github/workflows/Linux_Build.yml
+    - name: Install newer Clang
+      if: ${{ matrix.name == 'ubuntu-clang' }}
+      run: |
+       wget https://apt.llvm.org/llvm.sh
+       chmod +x ./llvm.sh
+       sudo ./llvm.sh 17
     - name: CMake configure
-      run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_MinimalCppSocket_SAMPLES=OFF -DBUILD_MinimalCppSocket_TESTS=ON -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }}     
+      run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_MinimalCppSocket_SAMPLES=OFF -DBUILD_MinimalCppSocket_TESTS=ON -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }} ${{ matrix.build_system }}
     - name: Build
       run:  cmake --build ./build --config Release
     - name: Install
