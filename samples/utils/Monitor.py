@@ -7,17 +7,18 @@ from io import StringIO
 from optparse import OptionParser
 import time
 
-def stripEndl(line):
-    if len(line) > 0 and line[-1] == '\n':
-        return line[:-1]
-    return line
+def onlyOnceTrue(iterable):
+    firstTime = True
+    for element in iterable:
+        yield firstTime, element
+        firstTime = False
 
 class ProcessHandler:
     def __init__(self, cmd_line, location, sleep_initial=None):
         if not sleep_initial == None:
             # print('sleeping {} [s]'.format(sleep_initial))
             time.sleep(float(sleep_initial))
-        self.cmd = cmd_line.strip().split()
+        self.cmd = cmd_line.split()
         if not location == None:
             self.cmd[0] = os.path.join(location, self.cmd[0])
         self.thread = threading.Thread(target=self.run_)
@@ -25,12 +26,8 @@ class ProcessHandler:
         self.stdout = ''
         self.stderr = ''
 
-    def to_string(self, prune):
-        if prune:
-            temp = list(self.cmd)
-            temp[0] = os.path.basename(temp[0])
-            return ' '.join(temp)
-        return ' '.join(self.cmd)
+    def __str__(self):
+        return ' '.join([os.path.basename(piece) if isFirst else piece for isFirst, piece in onlyOnceTrue(self.cmd)])
 
     def run_(self):
         hndlr = subprocess.Popen(self.cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -46,13 +43,8 @@ class ProcessHandler:
         return self.stdout, self.stderr
     
     def fromFile(source, location=None, sleep_in_between=None):
-        processes = []
         with open(source, 'r') as stream:
-            first = True
-            for line in stream:
-                processes.append(ProcessHandler(line.strip(), location, None if first else sleep_in_between))
-                first = False
-        return processes
+            return [ProcessHandler(line.strip(), location, None if firstTime else sleep_in_between) for firstTime, line in onlyOnceTrue(stream.readlines())]
 
 class Monitor:
     LAYOUT_TEMPLATE="""
@@ -82,36 +74,29 @@ class Monitor:
 """
 
     SHELL_TEMPLATE = """
-            <div class="shell" style="width: $WIDTH%;height: 100%; flex: 1">
-                <div class="cmd"> $CMD </div>
+            <div class="shell" style="width: {WIDTH}%;height: 100%; flex: 1">
+                <div class="cmd"> {CMD} </div>
                 <hr>
-$LINES
+{LINES}
             </div>    
 """
 
     def makeShell(process, w):
-        content = Monitor.SHELL_TEMPLATE
-        content = content.replace('$WIDTH', str(w))
-        content = content.replace('$CMD', process.to_string(True))
-        shell_content = ''
-        out, err = process.get()
-        for line in StringIO(out).readlines():
-            shell_content += '<div class="stdout">{}</div>\n'.format( stripEndl(line) )
-        for line in StringIO(err).readlines():
-            shell_content += '<div class="stderr">{}</div>\n'.format( stripEndl(line) )
-        content = content.replace('$LINES', shell_content)
-        return content
+        out, err = process.get()        
+        shell_content  = '\n'.join(['<div class="stdout">{}</div>'.format( line.strip() ) for line in StringIO(out).readlines()])
+        shell_content += '\n'.join(['<div class="stderr">{}</div>'.format( line.strip() ) for line in StringIO(err).readlines()])
+        return Monitor.SHELL_TEMPLATE.format(**{
+            'WIDTH': w,
+            'CMD': str(process),
+            'LINES': shell_content
+        })
 
     def make(cmd_source, destination, location=None, sleep_in_between=None):
         procs = ProcessHandler.fromFile(cmd_source, location, sleep_in_between)    
-        monitor_page = Monitor.LAYOUT_TEMPLATE
         w = int(round(100 / len(procs), 0))
-        shells = ''
-        for proc in procs:
-            shells += '{}\n'.format( Monitor.makeShell(proc, w) )
-        monitor_page = monitor_page.replace('$SHELLS', shells)
+        shells = '\n'.join([Monitor.makeShell(proc, w) for proc in procs])
         with open(destination, 'w') as stream:
-            stream.write(monitor_page)
+            stream.write(Monitor.LAYOUT_TEMPLATE.replace('$SHELLS', shells))
 
 def test():
     tmpdirname = tempfile.TemporaryDirectory()
@@ -125,12 +110,8 @@ def test():
     print('open in a browser {}'.format(output))
 
 def monitor(options):
-    try:
-        Monitor.make(options.cmd, options.dest, options.location, options.sleep)
-        print()
-        print('open in a browser {} to see the results sent by the run processes'.format(options.dest))
-    except:
-        sys.exit(1)
+    Monitor.make(options.cmd, options.dest, options.location, options.sleep)
+    print('\nopen in a browser {} to see the results sent by the run processes'.format(options.dest))
 
 def main():
     parser = OptionParser()
@@ -154,7 +135,6 @@ def main():
         with open(options.cmd, 'r') as stream:
             print(''.join(['Running {}'.format(line) for line in stream.readlines()]))
         print('\n\nwaiting for all the spawned processes to complete ...\n\n')
-
 
 if __name__ == '__main__':
     main()
