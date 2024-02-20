@@ -15,12 +15,11 @@ def stripEndl(line):
 class ProcessHandler:
     def __init__(self, cmd_line, location, sleep_initial=None):
         if not sleep_initial == None:
-            print('sleeping {} [s]'.format(sleep_initial))
+            # print('sleeping {} [s]'.format(sleep_initial))
             time.sleep(float(sleep_initial))
         self.cmd = cmd_line.strip().split()
         if not location == None:
             self.cmd[0] = os.path.join(location, self.cmd[0])
-        print('running `{}`'.format( self.to_string(False) ))
         self.thread = threading.Thread(target=self.run_)
         self.thread.start()
         self.stdout = ''
@@ -128,6 +127,7 @@ def test():
 def monitor(options):
     try:
         Monitor.make(options.cmd, options.dest, options.location, options.sleep)
+        print()
         print('open in a browser {} to see the results sent by the run processes'.format(options.dest))
     except:
         sys.exit(1)
@@ -145,9 +145,16 @@ def main():
     (options, args) = parser.parse_args()
 
     if options.test:
-        test()
+        test() 
     elif options.cmd and options.dest:
         monitor(options)
+    elif options.cmd:
+        # just show the commands
+        print()
+        with open(options.cmd, 'r') as stream:
+            print(''.join(['Running {}'.format(line) for line in stream.readlines()]))
+        print('\n\nwaiting for all the spawned processes to complete ...\n\n')
+
 
 if __name__ == '__main__':
     main()
