@@ -7,14 +7,14 @@
 
 #pragma once
 
-#include "SocketId.h"
+#include "SocketHandler.h"
 
 namespace MinimalSocket {
 // return port actually binded (as you could pass to the function also AnyPort)
-Port bind(const SocketID &socket_id, const AddressFamily &family,
-          const Port &port, const bool must_be_free_port);
+Port bind(SocketID socket_id, AddressFamily family, Port port,
+          bool must_be_free_port);
 
-void listen(const SocketID &socket_id, const std::size_t backlog_size);
+void listen(SocketID socket_id, std::size_t backlog_size);
 
-void connect(const SocketID &socket_id, const Address &remote_address);
+void connect(SocketID socket_id, const Address &remote_address);
 } // namespace MinimalSocket

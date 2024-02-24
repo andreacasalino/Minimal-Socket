@@ -7,31 +7,54 @@
 
 #pragma once
 
+#include <MinimalSocket/Error.h>
+#include <MinimalSocket/core/Address.h>
 #include <MinimalSocket/core/Socket.h>
 
-#include "SocketId.h"
-
-#include <functional>
+#include <future>
 
 namespace MinimalSocket {
-void visitAddress(const AddressFamily &family,
-                  const std::function<void()> &ipv4_case,
-                  const std::function<void()> &ipv6_case);
-
-template <typename T, typename U> void copy_as(U &receiver, const U &giver) {
-  T &receiver_ref = receiver;
-  const T &giver_ref = giver;
-  receiver_ref = giver_ref;
+template <typename Ipv4Pred, typename Ipv6Pred>
+void visitAddress(AddressFamily family, Ipv4Pred ipv4_case,
+                  Ipv6Pred ipv6_case) {
+  switch (family) {
+  case AddressFamily::IP_V4:
+    ipv4_case();
+    break;
+  case AddressFamily::IP_V6:
+    ipv6_case();
+    break;
+  default:
+    throw Error{"Unrecognized AddressFamily"};
+    break;
+  }
 }
-
-class TimeOutError : public Error {
-public:
-  TimeOutError() : Error("Timeout"){};
-};
 
 // rethrow exception if happens
 // throw timeout excpetion if timeout reached
-void try_within_timeout(const std::function<void()> &action_to_try,
-                        const std::function<void()> &action_to_abort,
-                        const Timeout &timeout);
+template <typename TryAction, typename RecoverAction>
+void try_within_timeout(TryAction action_to_try,
+                        RecoverAction action_to_recover,
+                        const Timeout &timeout) {
+  if (NULL_TIMEOUT == timeout) {
+    throw Error{"Invalid timeout"};
+  }
+  auto task = std::async(action_to_try);
+  auto task_status = task.wait_for(timeout);
+  if (task_status == std::future_status::ready) {
+    task.get(); // will throw if ready because an exception throwned
+                // before timeout
+  } else {
+    try {
+      action_to_recover();
+      task.get();
+    } catch (...) {
+    }
+    throw TimeOutError{};
+  }
+}
+
+template <typename T> void copy_as(T &recipient, const T &giver) {
+  recipient = giver;
+}
 } // namespace MinimalSocket

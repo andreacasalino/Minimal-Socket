@@ -34,21 +34,24 @@ public:
    * In case of invalid host, the object is built but left empty (i.e. *this ==
    * nullptr would be true)
    */
-  Address(const std::string &hostIp, const Port &port);
+  Address(const std::string &hostIp, Port port);
 
   /**
-   * @brief A representation of a local host address is created.
+   * @brief Local host address is asumed.
    */
-  Address(const Port &port, const AddressFamily &family = AddressFamily::IP_V4);
+  Address(Port port, AddressFamily family = AddressFamily::IP_V4);
 
   const std::string &getHost() const { return this->host; };
-  const Port &getPort() const { return this->port; };
-  const AddressFamily &getFamily() const { return this->family; };
+  Port getPort() const { return this->port; };
+  AddressFamily getFamily() const { return this->family; };
 
   bool operator==(const Address &o) const;
 
   Address(const Address &) = default;
   Address &operator=(const Address &) = default;
+
+  Address(Address &&) = default;
+  Address &operator=(Address &&) = default;
 
 private:
   Address() = default;
@@ -59,7 +62,7 @@ private:
 };
 
 /**
- * @return host:port into a string.
+ * @return "host:port" into a string.
  */
 std::string to_string(const Address &subject);
 

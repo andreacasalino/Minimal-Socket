@@ -15,7 +15,6 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
-#include <optional>
 
 namespace MinimalSocket {
 #ifdef _WIN32
@@ -48,7 +47,7 @@ private:
 };
 #endif
 
-class SocketIdWrapper;
+class SocketHandler;
 
 /**
  * @brief The base onject of any kind of socket.
@@ -61,7 +60,7 @@ public:
   Socket &operator=(const Socket &) = delete;
 
   /**
-   * @return the socket id associated to this object.
+   * @return the socket descriptor associated to this object.
    *
    * This might be:
    *
@@ -80,23 +79,25 @@ public:
    * number. Beware that you should really know what you are doing when using
    * this number.
    */
-  int accessSocketID() const;
+  int getSocketDescriptor() const;
 
 protected:
   Socket();
 
-  static void transfer(Socket &receiver, Socket &giver);
+  void steal(Socket &giver);
+  void transfer(Socket &recipient) { recipient.steal(*this); }
 
-  const SocketIdWrapper &getIDWrapper() const;
-  SocketIdWrapper &getIDWrapper();
-  void resetIDWrapper();
+  const SocketHandler &getHandler() const;
+  SocketHandler &getHandler();
+  void resetHandler();
 
 private:
-  std::unique_ptr<SocketIdWrapper> socket_id_wrapper;
+  std::unique_ptr<SocketHandler> socket_id_wrapper;
 };
 
 class Openable : public virtual Socket {
 public:
+  virtual ~Openable() = default;
   bool wasOpened() const { return opened; }
 
   /**
@@ -114,8 +115,8 @@ public:
 protected:
   Openable() = default;
 
-  static void transfer(Openable &receiver,
-                       Openable &giver); // Socket::transfer(...) is also called
+  void steal(Openable &giver); // Socket::steal(...) is also called
+  void transfer(Openable &recipient) { recipient.steal(*this); }
 
   virtual void open_() = 0;
 

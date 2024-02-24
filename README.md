@@ -10,10 +10,10 @@
 
 ## INTRO
 
-**MinimalSocket** gives you a modern **C++** interface to create, connect and handle **tcp** and **udp** sockets, in a
-completely platform independent way. The supported systems are: **Windows**, any **Linux** distro and **MacOS**.
+**MinimalSocket** gives you a modern **C++** library to set up and create **tcp** and **udp** socket connections, in a
+completely platform agnostic way. The supported platforms are: **Windows**, any **Linux** distro and **MacOS**.
 
-Check [Features](#features) to see details about the various features of **MinimalSocket**. You can refer to [Usage](#usage) and [Samples](#samples) to see how to use **MinimalSocket**.
+Check [Features](#features) to see details about the various features of **MinimalSocket**. Read [Usage](#usage) and [Samples](#samples) to see how easy is to use **MinimalSocket**.
 
 This is a **CMake** project, check [CMake support](#cmake-support) to see how this library can be integrated.
 
@@ -23,18 +23,18 @@ Remember to leave a **star** in case you have found this library useful.
 
 Haven't left a **star** already? Do it now ;)!
 
-**MinimalSocket** allows you to build and set up **tcp** and **udp** connections. Messages can be sent and received in terms of both low level buffer of chars or high level string. Indeed, this is actually the only capability you need for a socket, as more complex messages can be encoded and decoded using among the others approaches like [Google Protocol Buffers](https://developers.google.com/protocol-buffers/docs/cpptutorial) or [NanoPb](https://jpa.kapsi.fi/nanopb/).
+**MinimalSocket** allows you to build and set up **tcp** and **udp** connections. Messages can be sent and received in terms of both low level buffer of chars or high level string. Indeed, this is actually the only capability you need for a socket, as more complex messages can be serialized to a string or internalized from a string using, among the others, approaches like [Google Protocol Buffers](https://developers.google.com/protocol-buffers/docs/cpptutorial) or [NanoPb](https://jpa.kapsi.fi/nanopb/).
 
-This are the most notable properties of **MinimalSocket**:
-- A modern **C++** interface allows you to set up and build connections in terms of objects. Sockets are not opened as soon as the wrapping object is created, but you after calling a proper method, allowing you to decouple socket creation from socket opening. Sockets are automatically closed (and all relevant information cleaned after destroying the wrapping object).
-- You don't need to access low level functions from system modules: let **MinimalSocket** do it for you. Actually, all the system specific modules, functions, linkages are kept completely private.
-- **AF_INET** (**ip v4**) and **AF_INET6** (**ip v6**), refer to [this](https://www.ibm.com/docs/en/i/7.1?topic=characteristics-socket-address-family) link, are both supported
-- Many sockets operations are by default blocking. However, **MinimalSocket** allows you also to opt for non-blocking versions off such operations, specifying a **timeout** to use, after which the operation terminates in any case. In particular, the operations allowing for such possibility are:
-    - non blocking receive (send are always intrinsically non blocking)
+This are the most notable characteristics of **MinimalSocket**:
+- A modern **C++** object oriented API allowing you to set up and build socket connections. Typically, socket handlers are represented by the classes part of this library. Any time an object is created, the related socket is closed in order to defer the opening at the convenient moment. This allows you to decouple the moments when sockets are created from those where they are actually connected. Any connection is automatically closed when the handler object is destroyed (and all relevant information cleaned up after destroying the wrapping object).
+- Prevent you from handling low level socket programming, abstracting from the particular platform hosting your application(s): let **MinimalSocket** do all the work for you. Morevoer, all the platform specific modules, functions, linkages are not exposed.
+- **AF_INET** (**ip v4**) and **AF_INET6** (**ip v6**) addresses, refer to [this](https://www.ibm.com/docs/en/i/7.1?topic=characteristics-socket-address-family) link, are both supported
+- Many sockets operations are by default blocking. However, **MinimalSocket** allows you also to use specify **timeout**(s) to use, after which the operation terminates in any case giving the control back to the caller. In particular, the operations allowing for such possibility are:
+    - receive (send are always intrinsically non blocking)
     - acceptance of a new client from the tcp server side
-- **MinimalSocket** is tested to be **thread safe**. Morevoer, you can also send while receiving in different dedicated threads. This allows you to easily create your own asynchronous sockets, building upon the classes offered by this library.
-- **Udp** sockets can be used both as un-connected or connected, check [here](./samples/udp/README.md) for further details. Moreover, the same **udp** socket can be connected or sconnected during its lifetime.
-- Under **Windows** systems, [**WSAStartup**](https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsastartup) is automatically called before using any functionalities. From the outside, you can specify the Windows Sockets specification version.
+- **MinimalSocket** is tested to be **thread safe**. However, notice that you can send while receiving for a certain socket, but from different threads. This allows you to easily create your own asynchronous sockets, building on top of the classes offered by this library.
+- **Udp** sockets can be used both as un-connected or connected, check [here](./samples/udp/README.md) for further details. Moreover, the same **udp** socket can be connected or disconnected during its lifetime.
+- Under **Windows** systems, [**WSAStartup**](https://docs.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-wsastartup) is automatically called before using any functionalities. From the outside, you can specify the Windows Sockets version if you need.
 
 ## USAGE
 
@@ -48,7 +48,7 @@ To create a **tcp** server you just need to build a **tcp::TcpServer** object:
 ```cpp
 #include <MinimalSocket/tcp/TcpServer.h>
 
-MinimalSocket::Port port = 15768; // port the server needs to bind
+MinimalSocket::Port port = 15768; // the port to bind
 MinimalSocket::tcp::TcpServer tcp_server(port,
                                         MinimalSocket::AddressFamily::IP_V4);
 ```
@@ -61,9 +61,9 @@ bool success = tcp_server.open();
 
 and now you are ready to accept new clients:
 ```cpp
-// accepts next client asking connection
+// accepts the next client that will ask the connection
 MinimalSocket::tcp::TcpConnection accepted_connection =
-    tcp_server.acceptNewClient(); // blocing till a client actually asks the
+    tcp_server.acceptNewClient(); // blocking till a client actually asks the
                                 // connection
 ```
 
@@ -92,8 +92,10 @@ MinimalSocket::tcp::TcpClient tcp_client(
 
 open it:
 ```cpp
-// open the client: asks connection to server
-bool success = tcp_client.open();
+  // Open the server. Here, the client will ask the connection to specified
+  // server. After that, the client will be actually connected.
+  bool success =
+      tcp_client.open(); // blocking till the connection is actually established
 ```
 
 you can now receive and send information with the remote server by simply doing this:
@@ -120,7 +122,7 @@ MinimalSocket::udp::UdpBinded udp_socket(this_socket_port,
 
 open it:
 ```cpp
-// open the client: reserve port for this cocket
+// Open the server. This will bind the specified port.
 bool success = udp_socket.open();
 ```
 
@@ -167,7 +169,7 @@ udp_connected_socket.send("a message to send");
 
 Haven't left a **star** already? Do it now ;)!
 
-Instructions about the **tcp** samples are contained [here](./samples/tcp/README.md), while [here](./samples/udp/README.md) the **udp** samples are explained.
+Instructions about **tcp** samples can be found [here](./samples/tcp/README.md), while **udp** samples are [here](./samples/udp/README.md) discussed.
 
 ATTENTION!!! The Samples execution might be blocked the first time by your firewall: set up properly your firewall or run the samples with the [administrator privileges](https://www.techopedia.com/definition/4961/administrative-privileges#:~:text=Administrative%20privileges%20are%20the%20ability,as%20a%20database%20management%20system.)
 
@@ -175,7 +177,7 @@ ATTENTION!!! The Samples execution might be blocked the first time by your firew
 
 Haven't left a **star** already? Do it now ;)!
    
-To consume this library you can rely on [CMake](https://cmake.org).
+In order to consume this library you can rely on [CMake](https://cmake.org).
 More precisely, You can fetch this package and link to the **MinimalSocket** library:
 ```cmake
 include(FetchContent)
@@ -195,5 +197,5 @@ target_link_libraries(${TARGET_NAME}
 )
 ```
 
-All the system specific modules are internally inlcluded and don't exposed to the outside.
-Moreover, under **Windows**, **wsock32** and **ws2_32** are privately linked and you don't need to link them again when integrating **MinimalSocket**.
+All the system specific modules are internally inlcluded and are not exposed.
+Moreover, under **Windows**, **wsock32** and **ws2_32** are privately linked and you don't need to link them again when consuming **MinimalSocket**.
