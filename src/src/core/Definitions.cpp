@@ -7,18 +7,18 @@
 
 #include <MinimalSocket/core/Definitions.h>
 
-#include "../SocketId.h"
+#include "../SocketHandler.h"
 
 namespace MinimalSocket {
-void clear(const Buffer &subject) {
+void clear(BufferView &subject) {
   ::memset(subject.buffer, 0, subject.buffer_size);
 }
 
-Buffer makeStringBuffer(std::string &subject) {
-  return Buffer{subject.data(), subject.size()};
+BufferView makeBufferView(std::string &subject) {
+  return BufferView{subject.data(), subject.size()};
 }
 
-ConstBuffer makeStringConstBuffer(const std::string &subject) {
-  return ConstBuffer{subject.data(), subject.size()};
+BufferViewConst makeBufferViewConst(const std::string &subject) {
+  return BufferViewConst{subject.data(), subject.size()};
 }
 } // namespace MinimalSocket

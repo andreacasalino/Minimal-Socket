@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "SocketId.h"
+#include "SocketHandler.h"
 
 namespace MinimalSocket {
 /**
@@ -51,14 +51,14 @@ static constexpr std::size_t MAX_POSSIBLE_ADDRESS_SIZE =
  * of the address
  */
 std::optional<SocketAddressIpv4> toSocketAddressIpv4(const std::string &host,
-                                                     const Port &port);
+                                                     Port port);
 /**
  * @brief checks the address syntax and in case
  * it's valid as an ipv6, creates the socket API representation
  * of the address
  */
 std::optional<SocketAddressIpv6> toSocketAddressIpv6(const std::string &host,
-                                                     const Port &port);
+                                                     Port port);
 
 std::optional<Port> toPort(const SocketAddress &address);
 

@@ -12,76 +12,56 @@
 #include "../Utils.h"
 
 namespace MinimalSocket {
-bool Sender::send(const ConstBuffer &message) {
+bool Sender::send(const BufferViewConst &message) {
   std::scoped_lock lock(send_mtx);
-  int sentBytes = ::send(getIDWrapper().accessId(), message.buffer,
+  int sentBytes = ::send(getHandler().accessId(), message.buffer,
                          static_cast<int>(message.buffer_size), 0);
   if (sentBytes == SCK_SOCKET_ERROR) {
     sentBytes = 0;
-    auto err = SocketError{"send failed"};
-    throw err;
+    throw SocketError{"send failed"};
   }
   return (sentBytes == static_cast<int>(message.buffer_size));
 }
 
 bool Sender::send(const std::string &message) {
-  return send(makeStringConstBuffer(message));
+  return send(makeBufferViewConst(message));
 }
 
-std::future<void> SenderTo::reserveAddress(const Address &to_reserve) {
-  std::scoped_lock lock(recipients_register_mtx);
-  auto it = recipients_register.find(to_reserve);
-  if (it == recipients_register.end()) {
-    auto &promises = recipients_register[to_reserve];
-    promises.emplace_back();
-    auto &promise = promises.back();
-    auto result = promise.get_future();
-    promise.set_value();
-    return result;
+std::mutex &SenderTo::getRecipientMtx(const Address &recipient) {
+  std::scoped_lock lock{recipients_register_mtx};
+  auto &res = recipients_register[recipient];
+  if (res == nullptr) {
+    res = std::make_unique<std::mutex>();
   }
-  auto &promises = it->second;
-  promises.emplace_back();
-  auto &promise = promises.back();
-  return promise.get_future();
+  return *res;
 }
 
-void SenderTo::freeAddress(const Address &to_reserve) {
-  std::scoped_lock lock(recipients_register_mtx);
-  auto it = recipients_register.find(to_reserve);
-  auto &promises = it->second;
-  if (1 == promises.size()) {
-    recipients_register.erase(it);
-  } else {
-    promises.pop_front();
-    promises.front().set_value();
-  }
-}
-
-bool SenderTo::sendTo(const ConstBuffer &message, const Address &recipient) {
-  auto send_allowed = reserveAddress(recipient);
-  send_allowed.wait();
+bool SenderTo::sendTo(const BufferViewConst &message,
+                      const Address &recipient) {
   int sentBytes;
-  visitAddress(
-      recipient.getFamily(),
-      [&]() {
-        auto socketIp4 =
-            toSocketAddressIpv4(recipient.getHost(), recipient.getPort());
-        sentBytes = ::sendto(
-            getIDWrapper().accessId(), message.buffer,
-            static_cast<int>(message.buffer_size), 0,
-            reinterpret_cast<const SocketAddress *>(&socketIp4.value()),
-            sizeof(SocketAddressIpv4));
-      },
-      [&]() {
-        auto socketIp6 =
-            toSocketAddressIpv6(recipient.getHost(), recipient.getPort());
-        sentBytes = ::sendto(
-            getIDWrapper().accessId(), message.buffer,
-            static_cast<int>(message.buffer_size), 0,
-            reinterpret_cast<const SocketAddress *>(&socketIp6.value()),
-            sizeof(SocketAddressIpv6));
-      });
-  freeAddress(recipient);
+  {
+    std::scoped_lock lock{getRecipientMtx(recipient)};
+    visitAddress(
+        recipient.getFamily(),
+        [&]() {
+          auto socketIp4 =
+              toSocketAddressIpv4(recipient.getHost(), recipient.getPort());
+          sentBytes = ::sendto(
+              getHandler().accessId(), message.buffer,
+              static_cast<int>(message.buffer_size), 0,
+              reinterpret_cast<const SocketAddress *>(&socketIp4.value()),
+              sizeof(SocketAddressIpv4));
+        },
+        [&]() {
+          auto socketIp6 =
+              toSocketAddressIpv6(recipient.getHost(), recipient.getPort());
+          sentBytes = ::sendto(
+              getHandler().accessId(), message.buffer,
+              static_cast<int>(message.buffer_size), 0,
+              reinterpret_cast<const SocketAddress *>(&socketIp6.value()),
+              sizeof(SocketAddressIpv6));
+        });
+  }
   if (sentBytes == SCK_SOCKET_ERROR) {
     sentBytes = 0;
     auto err = SocketError{"sendto failed"};
@@ -91,6 +71,6 @@ bool SenderTo::sendTo(const ConstBuffer &message, const Address &recipient) {
 }
 
 bool SenderTo::sendTo(const std::string &message, const Address &recipient) {
-  return sendTo(makeStringConstBuffer(message), recipient);
+  return sendTo(makeBufferViewConst(message), recipient);
 }
 } // namespace MinimalSocket

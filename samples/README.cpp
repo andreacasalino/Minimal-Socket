@@ -1,16 +1,17 @@
 // tcp server
 #include <MinimalSocket/tcp/TcpServer.h>
 int main() {
-  MinimalSocket::Port port = 15768; // port the server needs to bind
+  MinimalSocket::Port port = 15768; // the port to bind
   MinimalSocket::tcp::TcpServer tcp_server(port,
                                            MinimalSocket::AddressFamily::IP_V4);
 
-  // open the server: binds the port and start to listen on the port
+  // Open the server. This will bind the port and the server will start to
+  // listen for connection requests.
   bool success = tcp_server.open();
 
-  // accepts next client asking connection
+  // accepts the next client that will ask the connection
   MinimalSocket::tcp::TcpConnection accepted_connection =
-      tcp_server.acceptNewClient(); // blocing till a client actually asks the
+      tcp_server.acceptNewClient(); // blocking till a client actually asks the
                                     // connection
 
   // receive a message
@@ -30,8 +31,10 @@ int main() {
   MinimalSocket::tcp::TcpClient tcp_client(
       MinimalSocket::Address{server_address, server_port});
 
-  // open the client: asks connection to server
-  bool success = tcp_client.open();
+  // Open the server. Here, the client will ask the connection to specified
+  // server. After that, the client will be actually connected.
+  bool success =
+      tcp_client.open(); // blocking till the connection is actually established
 
   // send a message
   tcp_client.send("a message to send");
@@ -49,7 +52,7 @@ int main() {
   MinimalSocket::udp::UdpBinded udp_socket(this_socket_port,
                                            MinimalSocket::AddressFamily::IP_V6);
 
-  // open the client: reserve port for this cocket
+  // Open the server. This will bind the specified port.
   bool success = udp_socket.open();
 
   // send a message to another udp

@@ -16,46 +16,46 @@ class Error : public std::runtime_error {
 public:
   Error(const std::string &what) : std::runtime_error(what){};
 
-  template <typename... Args> Error(Args... args) : Error(merge(args...)) {}
+  template <typename... Args>
+  Error(const Args &...args) : Error(merge(args...)) {}
 
 protected:
-  template <typename... Args> static std::string merge(Args... args) {
+  template <typename... Args> static std::string merge(const Args &...args) {
     std::stringstream stream;
-    merge(stream, args...);
+    (merge_(stream, args), ...);
     return stream.str();
   };
 
-  template <typename T, typename... Args>
-  static void merge(std::stringstream &stream, const T &current,
-                    Args... remaining) {
-    stream << current;
-    merge(stream, remaining...);
-  };
-
-  template <typename T, typename... Args>
-  static void merge(std::stringstream &stream, const T &back) {
-    stream << back;
+  template <typename T>
+  static void merge_(std::stringstream &stream, const T &arg) {
+    stream << arg;
   };
 };
 
-class ErrorCodeAware {
+class ErrorCodeHolder {
 public:
-  int getErrorCode() const { return error_code; }
+  ErrorCodeHolder();
 
-protected:
-  ErrorCodeAware();
+  int getErrorCode() const { return errorCode; }
 
 private:
-  int error_code;
+  int errorCode;
 };
-class SocketError : public ErrorCodeAware, public Error {
+
+class SocketError : public ErrorCodeHolder, public Error {
 public:
   /**
    * @brief last error code raised by the socket API is automatically retrieved
+   * and appended to error message
    */
   SocketError(const std::string &what);
 
   template <typename... Args>
   SocketError(const Args &...args) : SocketError{merge(args...)} {};
+};
+
+class TimeOutError : public Error {
+public:
+  TimeOutError() : Error("Timeout"){};
 };
 } // namespace MinimalSocket

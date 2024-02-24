@@ -10,8 +10,6 @@
 #include <MinimalSocket/core/Address.h>
 #include <MinimalSocket/core/Socket.h>
 
-#include <future>
-#include <list>
 #include <mutex>
 #include <unordered_map>
 
@@ -29,7 +27,7 @@ public:
    * @param message the buffer storing the bytes to send
    * @return true in case all the bytes were successfully sent
    */
-  bool send(const ConstBuffer &message);
+  bool send(const BufferViewConst &message);
 
   /**
    * @param message the buffer storing the bytes to send as a string
@@ -43,7 +41,7 @@ private:
 
 /**
  * @brief Typically associated to a non connected socket, whose remote peer that
- * sends bytes is known and may change over the time.
+ * sends bytes is not fixed.
  * Attention!! It is thread safe to simultaneously send messages from different
  * threads to many different recipients.
  * However, be aware that in case 2 or more threads are sending a message to the
@@ -57,7 +55,7 @@ public:
    * @return true in case all the bytes were successfully sent to the specified
    * recipient
    */
-  bool sendTo(const ConstBuffer &message, const Address &recipient);
+  bool sendTo(const BufferViewConst &message, const Address &recipient);
 
   /**
    * @param message the buffer storing the bytes to send as a string
@@ -68,20 +66,20 @@ public:
   bool sendTo(const std::string &message, const Address &recipient);
 
 private:
-  std::future<void> reserveAddress(const Address &to_reserve);
-  void freeAddress(const Address &to_reserve);
+  std::mutex &getRecipientMtx(const Address &recipient);
 
   std::mutex recipients_register_mtx;
-
   struct AddressHasher {
-    std::hash<std::string> string_hasher;
-
     std::size_t operator()(const Address &subject) const {
-      return string_hasher(to_string(subject));
+      return getHasher()(to_string(subject));
+    }
+
+    static std::hash<std::string> &getHasher() {
+      static std::hash<std::string> res = std::hash<std::string>{};
+      return res;
     }
   };
-  using WaitingToSendQueue = std::list<std::promise<void>>;
-  std::unordered_map<Address, WaitingToSendQueue, AddressHasher>
+  std::unordered_map<Address, std::unique_ptr<std::mutex>, AddressHasher>
       recipients_register;
 };
 } // namespace MinimalSocket
