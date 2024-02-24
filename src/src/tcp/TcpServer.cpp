@@ -15,22 +15,21 @@
 namespace MinimalSocket::tcp {
 TcpServer::TcpServer(TcpServer &&o)
     : PortToBindAware(o), RemoteAddressFamilyAware(o) {
-  Openable::transfer(*this, o);
+  this->steal(o);
 }
 TcpServer &TcpServer::operator=(TcpServer &&o) {
-  Openable::transfer(*this, o);
+  this->steal(o);
   copy_as<PortToBindAware>(*this, o);
   copy_as<RemoteAddressFamilyAware>(*this, o);
   return *this;
 }
 
-TcpServer::TcpServer(const Port port_to_bind,
-                     const AddressFamily &accepted_client_family)
+TcpServer::TcpServer(Port port_to_bind, AddressFamily accepted_client_family)
     : PortToBindAware(port_to_bind),
       RemoteAddressFamilyAware(accepted_client_family) {}
 
 void TcpServer::open_() {
-  auto &socket = getIDWrapper();
+  auto &socket = getHandler();
   const auto port = getPortToBind();
   const auto family = getRemoteAddressFamily();
   socket.reset(SocketType::TCP, family);
@@ -67,7 +66,7 @@ TcpServer::acceptNewClient(const Timeout &timeout) {
     // accept: wait for a client to call connect and hit this server and get a
     // pointer to this client.
     accepted_client_socket_id =
-        ::accept(getIDWrapper().accessId(),
+        ::accept(getHandler().accessId(),
                  reinterpret_cast<SocketAddress *>(&acceptedClientAddress[0]),
                  &acceptedClientAddress_length);
     if (accepted_client_socket_id == SCK_INVALID_SOCKET) {
@@ -81,7 +80,7 @@ TcpServer::acceptNewClient(const Timeout &timeout) {
       accept_client();
     } else {
       try_within_timeout([&]() { accept_client(); },
-                         [this]() { this->resetIDWrapper(); }, timeout);
+                         [this]() { this->resetHandler(); }, timeout);
     }
   } catch (const TimeOutError &) {
     TcpServer reopened = TcpServer{getPortToBind(), getRemoteAddressFamily()};
@@ -97,7 +96,7 @@ TcpServer::acceptNewClient(const Timeout &timeout) {
   std::optional<TcpConnection> result;
   auto &accepted =
       result.emplace(TcpConnection{accepted_client_parsed_address});
-  accepted.getIDWrapper().reset(accepted_client_socket_id);
+  accepted.getHandler().reset(accepted_client_socket_id);
   return result;
 }
 
@@ -105,11 +104,11 @@ TcpConnection::TcpConnection(const Address &remote_address)
     : RemoteAddressAware(remote_address) {}
 
 TcpConnection::TcpConnection(TcpConnection &&o) : RemoteAddressAware(o) {
-  Socket::transfer(*this, o);
+  this->steal(o);
 }
 TcpConnection &TcpConnection::operator=(TcpConnection &&o) {
   copy_as<RemoteAddressAware>(*this, o);
-  Socket::transfer(*this, o);
+  this->steal(o);
   return *this;
 }
 } // namespace MinimalSocket::tcp

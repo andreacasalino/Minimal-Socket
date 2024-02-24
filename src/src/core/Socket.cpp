@@ -8,7 +8,7 @@
 #include <MinimalSocket/Error.h>
 #include <MinimalSocket/core/Socket.h>
 
-#include "../SocketId.h"
+#include "../SocketHandler.h"
 #include "../Utils.h"
 
 namespace MinimalSocket {
@@ -29,24 +29,22 @@ WSAVersion WSAManager::getWsaVersion() {
 
 Socket::~Socket() = default;
 
-Socket::Socket() { resetIDWrapper(); }
+Socket::Socket() { resetHandler(); }
 
-int Socket::accessSocketID() const {
-  return static_cast<int>(getIDWrapper().accessId());
+int Socket::getSocketDescriptor() const {
+  return static_cast<int>(getHandler().accessId());
 }
 
-void Socket::transfer(Socket &receiver, Socket &giver) {
-  receiver.socket_id_wrapper = std::move(giver.socket_id_wrapper);
-  giver.resetIDWrapper();
+void Socket::steal(Socket &giver) {
+  this->socket_id_wrapper = std::move(giver.socket_id_wrapper);
+  giver.resetHandler();
 }
 
-const SocketIdWrapper &Socket::getIDWrapper() const {
-  return *socket_id_wrapper;
-}
-SocketIdWrapper &Socket::getIDWrapper() { return *socket_id_wrapper; }
+const SocketHandler &Socket::getHandler() const { return *socket_id_wrapper; }
+SocketHandler &Socket::getHandler() { return *socket_id_wrapper; }
 
-void Socket::resetIDWrapper() {
-  socket_id_wrapper = std::make_unique<SocketIdWrapper>();
+void Socket::resetHandler() {
+  socket_id_wrapper = std::make_unique<SocketHandler>();
 }
 
 bool Openable::open(const Timeout &timeout) {
@@ -60,7 +58,7 @@ bool Openable::open(const Timeout &timeout) {
       this->open_();
     } else {
       try_within_timeout([this]() { this->open_(); },
-                         [this]() { this->resetIDWrapper(); }, timeout);
+                         [this]() { this->resetHandler(); }, timeout);
     }
     opened = true;
   } catch (const SocketError &e) {
@@ -70,21 +68,21 @@ bool Openable::open(const Timeout &timeout) {
   } catch (const Error &e) {
     exception = std::make_unique<Error>(e);
   } catch (...) {
-    exception = std::make_unique<Error>("Not opened for an unkown reason");
+    exception = std::make_unique<Error>("Not opened for an unknown reason");
   }
   if (nullptr != exception) {
-    this->resetIDWrapper();
+    this->resetHandler();
     throw *exception;
   }
   return opened;
 }
 
-void Openable::transfer(Openable &receiver, Openable &giver) {
-  std::scoped_lock lock(receiver.open_procedure_mtx, giver.open_procedure_mtx);
+void Openable::steal(Openable &giver) {
+  std::scoped_lock lock(this->open_procedure_mtx, giver.open_procedure_mtx);
   const bool o_value = giver.opened;
-  receiver.opened = o_value;
+  this->opened = o_value;
   giver.opened = false;
-  Socket::transfer(receiver, giver);
+  this->Socket::steal(giver);
 }
 
 } // namespace MinimalSocket
