@@ -7,18 +7,23 @@
 
 #include <MinimalSocket/Error.h>
 
-#include "SocketId.h"
+#include "../src/SocketHandler.h"
 
 namespace MinimalSocket {
-ErrorCodeAware::ErrorCodeAware() {
-  error_code =
+namespace {
+int getLastErrorCode() {
+  int res =
 #ifdef _WIN32
       WSAGetLastError();
 #else
       static_cast<int>(errno);
 #endif
+  return res;
 }
+} // namespace
+
+ErrorCodeHolder::ErrorCodeHolder() : errorCode{getLastErrorCode()} {}
 
 SocketError::SocketError(const std::string &what)
-    : ErrorCodeAware(), Error(what, " , error code: ", getErrorCode()) {}
+    : ErrorCodeHolder{}, Error(what, " , error code: ", getErrorCode()) {}
 } // namespace MinimalSocket

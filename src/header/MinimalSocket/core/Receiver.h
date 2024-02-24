@@ -15,10 +15,16 @@
 namespace MinimalSocket {
 class ReceiverBase : public virtual Socket {
 protected:
-  std::unique_ptr<std::scoped_lock<std::mutex>>
-  lazyUpdateReceiveTimeout(const Timeout &timeout);
+  template <typename Pred>
+  void lazyUpdateAndUseTimeout(const Timeout &to, Pred what) {
+    std::scoped_lock lock{receive_mtx};
+    updateTimeout_(to);
+    what(receive_timeout);
+  }
 
 private:
+  void updateTimeout_(const Timeout &timeout);
+
   std::mutex receive_mtx;
   Timeout receive_timeout = NULL_TIMEOUT;
 };
@@ -40,7 +46,7 @@ public:
    * message. It can be also lower then buffer size, as less bytes might be
    * received.
    */
-  std::size_t receive(const Buffer &message,
+  std::size_t receive(BufferView message,
                       const Timeout &timeout = NULL_TIMEOUT);
 
   /**
@@ -61,7 +67,7 @@ public:
 
 /**
  * @brief Typically associated to a non connected socket, whose remote peer that
- * sends bytes is known and may change over the time.
+ * sends bytes is not fixed.
  * Attention!! Even when calling from different threads some simultaneously
  * receive, they will be satisfited one at a time, as an internal mutex must be
  * locked before starting to receive.
@@ -81,7 +87,7 @@ public:
    * also lower then buffer size, as less bytes might be received.
    * In case no bytes were received within the timeout, a nullopt is returned.
    */
-  std::optional<ReceiveResult> receive(const Buffer &message,
+  std::optional<ReceiveResult> receive(BufferView message,
                                        const Timeout &timeout = NULL_TIMEOUT);
 
   struct ReceiveStringResult {

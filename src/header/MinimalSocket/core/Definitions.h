@@ -11,26 +11,26 @@
 #include <string>
 
 namespace MinimalSocket {
-struct Buffer {
+struct BufferView {
   char *buffer;
-  const std::size_t buffer_size;
+  std::size_t buffer_size;
 };
 
 /**
  * @brief sets all values inside the passed buffer to 0
  */
-void clear(const Buffer &subject);
+void clear(BufferView &subject);
 
 /**
  * @param subject the string buffer to convert
  * @return a buffer pointing to the first element of the subject, and a lenght
  * equal to the current size of subject
  */
-Buffer makeStringBuffer(std::string &subject);
+BufferView makeBufferView(std::string &subject);
 
-struct ConstBuffer {
+struct BufferViewConst {
   const char *buffer;
-  const std::size_t buffer_size;
+  std::size_t buffer_size;
 };
 
 /**
@@ -38,7 +38,7 @@ struct ConstBuffer {
  * @return an immutable buffer pointing to the first element of the subject, and
  * a lenght equal to the current size of subject
  */
-ConstBuffer makeStringConstBuffer(const std::string &subject);
+BufferViewConst makeBufferViewConst(const std::string &subject);
 
 enum class SocketType { UDP, TCP };
 

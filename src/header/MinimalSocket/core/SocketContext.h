@@ -15,14 +15,18 @@
 namespace MinimalSocket {
 class RemoteAddressAware {
 public:
+  RemoteAddressAware(const RemoteAddressAware &o)
+      : remote_address{o.remote_address} {}
+  RemoteAddressAware &operator=(const RemoteAddressAware &o) {
+    remote_address = o.remote_address;
+    return *this;
+  }
+
   /**
    * @return the address of the peer that can exchange messages with this
    * socket.
    */
   Address getRemoteAddress() const;
-
-  RemoteAddressAware(const RemoteAddressAware &);
-  RemoteAddressAware &operator=(const RemoteAddressAware &);
 
 protected:
   /**
@@ -38,14 +42,20 @@ private:
 
 class PortToBindAware {
 public:
+  PortToBindAware(const PortToBindAware &o)
+      : port_to_bind{o.port_to_bind.load()}, must_be_free_port{
+                                                 o.must_be_free_port.load()} {}
+  PortToBindAware &operator=(const PortToBindAware &o) {
+    port_to_bind = o.port_to_bind.load();
+    must_be_free_port = o.must_be_free_port.load();
+    return *this;
+  }
+
   /**
    * @return the port that will be reserved, in case the socket was not already
    * opened, or the port actually reserved when the socket was opened.
    */
   Port getPortToBind() const { return port_to_bind; }
-
-  PortToBindAware(const PortToBindAware &);
-  PortToBindAware &operator=(const PortToBindAware &);
 
   /**
    * @brief Used to enforce the fact that this port should be not previously
@@ -57,9 +67,9 @@ public:
   bool shallBeFreePort() const { return must_be_free_port; }
 
 protected:
-  PortToBindAware(const Port &port) : port_to_bind(port){};
+  PortToBindAware(Port port) : port_to_bind(port){};
 
-  void setPort(const Port &port) { port_to_bind = port; };
+  void setPort(Port port) { port_to_bind = port; };
 
 private:
   std::atomic<Port> port_to_bind;
@@ -68,17 +78,21 @@ private:
 
 class RemoteAddressFamilyAware {
 public:
+  RemoteAddressFamilyAware(const RemoteAddressFamilyAware &o)
+      : remote_address_family{o.remote_address_family.load()} {}
+  RemoteAddressFamilyAware &operator=(const RemoteAddressFamilyAware &o) {
+    remote_address_family = o.remote_address_family.load();
+    return *this;
+  }
+
   /**
    * @return the address family of the peer that can exchange messages with this
    * socket.
    */
   AddressFamily getRemoteAddressFamily() const { return remote_address_family; }
 
-  RemoteAddressFamilyAware(const RemoteAddressFamilyAware &);
-  RemoteAddressFamilyAware &operator=(const RemoteAddressFamilyAware &);
-
 protected:
-  RemoteAddressFamilyAware(const AddressFamily &family)
+  RemoteAddressFamilyAware(AddressFamily family)
       : remote_address_family(family){};
 
 private:

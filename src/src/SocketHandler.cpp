@@ -7,11 +7,12 @@
 
 #include <MinimalSocket/Error.h>
 
+#include "SocketHandler.h"
 #include "Utils.h"
 
 namespace MinimalSocket {
 #ifdef _WIN32
-WSALazyInitializer::WSALazyInitializer(const WSAVersion& version)
+WSALazyInitializer::WSALazyInitializer(const WSAVersion &version)
     : configured_version(version) {
   WSADATA wsa;
   const BYTE version_major = static_cast<BYTE>(version[0]);
@@ -55,8 +56,9 @@ std::unique_ptr<WSALazyInitializer> WSALazyInitializer::lazy_proxy = nullptr;
 void WSALazyInitializer::lazyInit() {
   auto version = WSAManager::getWsaVersion();
   std::scoped_lock lock(WSALazyInitializer::lazy_proxy_mtx);
-  if ((nullptr != WSALazyInitializer::lazy_proxy) && (WSALazyInitializer::lazy_proxy->configured_version == version)) {
-      return;
+  if ((nullptr != WSALazyInitializer::lazy_proxy) &&
+      (WSALazyInitializer::lazy_proxy->configured_version == version)) {
+    return;
   }
   try {
     WSALazyInitializer::lazy_proxy.reset(new WSALazyInitializer{version});
@@ -83,9 +85,9 @@ void close(SocketID &socket_id) {
 }
 } // namespace
 
-SocketIdWrapper::~SocketIdWrapper() { MinimalSocket::close(socket_id); }
+SocketHandler::~SocketHandler() { MinimalSocket::close(socket_id); }
 
-void SocketIdWrapper::reset(const SocketID &hndl) {
+void SocketHandler::reset(SocketID hndl) {
   if (socket_id != SCK_INVALID_SOCKET) {
     MinimalSocket::close(socket_id);
   }
@@ -102,8 +104,7 @@ int domain_number(const AddressFamily &family) {
 }
 } // namespace
 
-void SocketIdWrapper::reset(const SocketType &type,
-                            const AddressFamily &family) {
+void SocketHandler::reset(SocketType type, AddressFamily family) {
   if (socket_id != SCK_INVALID_SOCKET) {
     MinimalSocket::close(socket_id);
   }

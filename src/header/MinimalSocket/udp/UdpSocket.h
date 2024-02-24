@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <MinimalSocket/NonCopiable.h>
 #include <MinimalSocket/core/Receiver.h>
 #include <MinimalSocket/core/Sender.h>
 #include <MinimalSocket/core/SocketContext.h>
@@ -28,7 +29,8 @@ class UdpConnected;
  * At the same time, this udp can send messages to any other non connected udp
  * sockets.
  */
-class UdpBinded : public SenderTo,
+class UdpBinded : public NonCopiable,
+                  public SenderTo,
                   public ReceiverUnkownSender,
                   public PortToBindAware,
                   public RemoteAddressFamilyAware,
@@ -44,9 +46,8 @@ public:
    * @param port_to_bind the port to reserve by this udp
    * @param accepted_connection_family the kind of udp that can reach this one
    */
-  UdpBinded(
-      const Port port_to_bind = ANY_PORT,
-      const AddressFamily &accepted_connection_family = AddressFamily::IP_V4);
+  UdpBinded(Port port_to_bind = ANY_PORT,
+            AddressFamily accepted_connection_family = AddressFamily::IP_V4);
 
   /**
    * @brief Connects the udo socket to the specified remote address.
@@ -93,7 +94,8 @@ protected:
  * incoming from udp sockets different from the remote address are filtered out.
  * At the same time, the remote address might also not exists at all.
  */
-class UdpConnected : public Sender,
+class UdpConnected : public NonCopiable,
+                     public Sender,
                      public Receiver,
                      public PortToBindAware,
                      public RemoteAddressAware,
@@ -109,7 +111,7 @@ public:
    * @param remote_address remote address of the peer
    * @param port the port to reserve by this udp
    */
-  UdpConnected(const Address &remote_address, const Port &port = ANY_PORT);
+  UdpConnected(const Address &remote_address, Port port = ANY_PORT);
 
   /**
    * @brief disconnect the underlying socket, generating an unbinded udp that
@@ -132,17 +134,17 @@ protected:
  * @param initial_message the message sent from the remote peer to detect its
  * address
  */
-UdpConnected
-makeUdpConnectedToUnknown(const Port &port,
-                          const AddressFamily &accepted_connection_family,
-                          std::string *initial_message = nullptr);
+UdpConnected makeUdpConnectedToUnknown(Port port,
+                                       AddressFamily accepted_connection_family,
+                                       std::string *initial_message = nullptr);
 
 /**
  * @brief non blocking version of makeUdpConnectedToUnknown(const Port &, const
  * AddressFamily &, std::string *). In case no remote peer sends at least 1 byte
  * within the timeout, a nullopt is returned.
  */
-std::optional<UdpConnected> makeUdpConnectedToUnknown(
-    const Port &port, const AddressFamily &accepted_connection_family,
-    const Timeout &timeout, std::string *initial_message = nullptr);
+std::optional<UdpConnected>
+makeUdpConnectedToUnknown(Port port, AddressFamily accepted_connection_family,
+                          const Timeout &timeout,
+                          std::string *initial_message = nullptr);
 } // namespace MinimalSocket::udp

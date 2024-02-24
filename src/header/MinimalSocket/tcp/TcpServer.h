@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <MinimalSocket/NonCopiable.h>
 #include <MinimalSocket/core/Receiver.h>
 #include <MinimalSocket/core/Sender.h>
 #include <MinimalSocket/core/SocketContext.h>
@@ -17,11 +18,12 @@
 namespace MinimalSocket::tcp {
 class TcpServer;
 /**
- * @brief An already accepted connection to a client.
- * An istance of this object can be built by before creating a TcpServer, open
- * it and call acceptNewClient().
+ * @brief Handler of an already established connection with a client, on the
+ * server side.
+ * An istance of this object is created calling TcpServer::acceptNewClient().
  */
-class TcpConnection : public Sender,
+class TcpConnection : public NonCopiable,
+                      public Sender,
                       public Receiver,
                       public RemoteAddressAware {
   friend class TcpServer;
@@ -34,9 +36,9 @@ private:
   TcpConnection(const Address &remote_address);
 };
 
-class TcpServer : public PortToBindAware,
+class TcpServer : public NonCopiable,
+                  public PortToBindAware,
                   public RemoteAddressFamilyAware,
-                  public virtual Socket,
                   public Openable {
 public:
   TcpServer(TcpServer &&o);
@@ -52,8 +54,8 @@ public:
    * @param accepted_client_family family of the client that will ask the
    * connection to this server
    */
-  TcpServer(const Port port_to_bind = ANY_PORT,
-            const AddressFamily &accepted_client_family = AddressFamily::IP_V4);
+  TcpServer(Port port_to_bind = ANY_PORT,
+            AddressFamily accepted_client_family = AddressFamily::IP_V4);
 
   /**
    * @brief Wait till accepting the connection from a new client. This is a
@@ -83,9 +85,9 @@ protected:
   void open_() override;
 
 private:
-  std::atomic<std::size_t> client_queue_size =
-      50; // maximum number of clients put in the queue wiating for connection
-  // to be accepted
+  // maximum number of clients waiting for the connection to be
+  // accepted
+  std::atomic<std::size_t> client_queue_size = 50;
 
   std::mutex accept_mtx;
 };

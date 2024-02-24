@@ -14,9 +14,8 @@
 #include <sstream>
 
 namespace MinimalSocket {
-Address::Address(const std::string &hostIp, const Port &port) {
-  this->host = hostIp;
-  this->port = port;
+Address::Address(const std::string &hostIp, Port port)
+    : host{hostIp}, port{port} {
 
   if (std::nullopt != toSocketAddressIpv4(hostIp, port)) {
     this->family = AddressFamily::IP_V4;
@@ -36,7 +35,7 @@ static const std::string LOCALHOST_IPv4 = "127.0.0.1";
 static const std::string LOCALHOST_IPv6 = "::1";
 } // namespace
 
-Address::Address(const std::uint16_t &port, const AddressFamily &family) {
+Address::Address(std::uint16_t port, AddressFamily family) {
   this->port = port;
   this->family = family;
   visitAddress(
