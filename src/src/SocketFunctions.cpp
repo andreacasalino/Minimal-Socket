@@ -20,8 +20,8 @@ namespace {
 #endif
 } // namespace
 
-Port bind(const SocketID &socket_id, const AddressFamily &family,
-          const Port &port, const bool must_be_free_port) {
+Port bind(SocketID socket_id, AddressFamily family, Port port,
+          bool must_be_free_port) {
   if (!must_be_free_port) {
     int reusePortOptVal = 1;
     ::setsockopt(socket_id, SOL_SOCKET, REBIND_OPTION,
@@ -94,14 +94,14 @@ Port bind(const SocketID &socket_id, const AddressFamily &family,
   return binded_port;
 }
 
-void listen(const SocketID &socket_id, const std::size_t backlog_size) {
+void listen(SocketID socket_id, std::size_t backlog_size) {
   if (::listen(socket_id, static_cast<int>(backlog_size)) == SCK_SOCKET_ERROR) {
     auto err = SocketError{"Error: listening on reserved port"};
     throw err;
   }
 }
 
-void connect(const SocketID &socket_id, const Address &remote_address) {
+void connect(SocketID socket_id, const Address &remote_address) {
   visitAddress(
       remote_address.getFamily(),
       [&]() {
