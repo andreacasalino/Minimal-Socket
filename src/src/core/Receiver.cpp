@@ -12,19 +12,17 @@
 #ifndef _WIN32
 #include <sys/time.h>
 #endif
+
 namespace MinimalSocket {
-std::unique_ptr<std::scoped_lock<std::mutex>>
-ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
-  std::unique_ptr<std::scoped_lock<std::mutex>> lock =
-      std::make_unique<std::scoped_lock<std::mutex>>(receive_mtx);
+void ReceiverBase::updateTimeout_(const Timeout &timeout) {
   if (timeout == receive_timeout) {
-    return lock;
+    return;
   }
   receive_timeout = timeout;
   // set new timeout
 #ifdef _WIN32
   auto tv = DWORD(this->receive_timeout.count());
-  if (setsockopt(getIDWrapper().accessId(), SOL_SOCKET, SO_RCVTIMEO,
+  if (setsockopt(getHandler().accessId(), SOL_SOCKET, SO_RCVTIMEO,
                  reinterpret_cast<const char *>(&tv),
                  sizeof(DWORD)) == SOCKET_ERROR) {
 #else
@@ -38,14 +36,12 @@ ReceiverBase::lazyUpdateReceiveTimeout(const Timeout &timeout) {
         std::chrono::duration_cast<std::chrono::microseconds>(receive_timeout)
             .count();
   }
-  if (::setsockopt(getIDWrapper().accessId(), SOL_SOCKET, SO_RCVTIMEO,
+  if (::setsockopt(getHandler().accessId(), SOL_SOCKET, SO_RCVTIMEO,
                    static_cast<const void *>(&tv),
                    sizeof(struct timeval)) != 0) {
 #endif
-    auto err = SocketError{"can't set timeout"};
-    throw err;
+    throw SocketError{"can't set timeout"};
   }
-  return lock;
 }
 
 namespace {
@@ -63,61 +59,75 @@ void check_received_bytes(int &recvBytes, const Timeout &timeout) {
   recvBytes = 0;
   if ((error_with_code.getErrorCode() == TIMEOUT_CODE) &&
       (timeout != NULL_TIMEOUT)) {
-    // just out of time: tolerate
+    // just out of time: tolerable
     return;
   }
   throw error_with_code;
 }
 } // namespace
 
-std::size_t Receiver::receive(const Buffer &message, const Timeout &timeout) {
-  auto lock = lazyUpdateReceiveTimeout(timeout);
-  clear(message);
-  int recvBytes = ::recv(getIDWrapper().accessId(), message.buffer,
-                         static_cast<int>(message.buffer_size), 0);
-  check_received_bytes(recvBytes, timeout);
-  if (recvBytes > message.buffer_size) {
-    // if here, the message received is probably corrupted
-    recvBytes = 0;
-  }
-  return static_cast<std::size_t>(recvBytes);
+std::size_t Receiver::receive(BufferView message, const Timeout &timeout) {
+  std::size_t res = 0;
+
+  lazyUpdateAndUseTimeout(
+      timeout, [&message, &res, this](const Timeout &timeout) {
+        clear(message);
+
+        int recvBytes = ::recv(getHandler().accessId(), message.buffer,
+                               static_cast<int>(message.buffer_size), 0);
+        check_received_bytes(recvBytes, timeout);
+        if (recvBytes > message.buffer_size) {
+          // if here, the message received is probably corrupted
+          recvBytes = 0;
+        }
+        res = static_cast<std::size_t>(recvBytes);
+      });
+
+  return res;
 }
 
 std::string Receiver::receive(std::size_t expected_max_bytes,
                               const Timeout &timeout) {
   std::string buffer;
   buffer.resize(expected_max_bytes);
-  auto buffer_temp = makeStringBuffer(buffer);
+  auto buffer_temp = makeBufferView(buffer);
   auto recvBytes = receive(buffer_temp, timeout);
   buffer.resize(recvBytes);
   return buffer;
 }
 
 std::optional<ReceiverUnkownSender::ReceiveResult>
-ReceiverUnkownSender::receive(const Buffer &message, const Timeout &timeout) {
-  auto lock = lazyUpdateReceiveTimeout(timeout);
-  clear(message);
+ReceiverUnkownSender::receive(BufferView message, const Timeout &timeout) {
+  std::optional<ReceiverUnkownSender::ReceiveResult> res;
 
-  char sender_address[MAX_POSSIBLE_ADDRESS_SIZE];
-  SocketAddressLength sender_address_length = MAX_POSSIBLE_ADDRESS_SIZE;
+  lazyUpdateAndUseTimeout(
+      timeout, [&message, &res, this](const Timeout &timeout) {
+        clear(message);
 
-  int recvBytes =
-      ::recvfrom(getIDWrapper().accessId(), message.buffer,
-                 static_cast<int>(message.buffer_size), 0,
-                 reinterpret_cast<SocketAddress *>(&sender_address[0]),
-                 &sender_address_length);
-  check_received_bytes(recvBytes, timeout);
-  if (recvBytes > message.buffer_size) {
-    // if here, the message received is probably corrupted
-    return std::nullopt;
-  }
-  if (0 == recvBytes) {
-    // if here, timeout was reached
-    return std::nullopt;
-  }
-  return ReceiveResult{
-      toAddress(reinterpret_cast<const SocketAddress &>(sender_address)),
-      static_cast<std::size_t>(recvBytes)};
+        char sender_address[MAX_POSSIBLE_ADDRESS_SIZE];
+        SocketAddressLength sender_address_length = MAX_POSSIBLE_ADDRESS_SIZE;
+
+        int recvBytes =
+            ::recvfrom(getHandler().accessId(), message.buffer,
+                       static_cast<int>(message.buffer_size), 0,
+                       reinterpret_cast<SocketAddress *>(&sender_address[0]),
+                       &sender_address_length);
+        check_received_bytes(recvBytes, timeout);
+        if (recvBytes > message.buffer_size) {
+          // if here, the message received is probably corrupted
+          return;
+        }
+        if (0 == recvBytes) {
+          // if here, timeout was reached
+          return;
+        }
+
+        res = ReceiveResult{
+            toAddress(reinterpret_cast<const SocketAddress &>(sender_address)),
+            static_cast<std::size_t>(recvBytes)};
+      });
+
+  return res;
 }
 
 std::optional<ReceiverUnkownSender::ReceiveStringResult>
@@ -125,12 +135,12 @@ ReceiverUnkownSender::receive(std::size_t expected_max_bytes,
                               const Timeout &timeout) {
   std::string buffer;
   buffer.resize(expected_max_bytes);
-  auto buffer_temp = makeStringBuffer(buffer);
+  auto buffer_temp = makeBufferView(buffer);
   auto result = receive(buffer_temp, timeout);
   if (!result) {
     return std::nullopt;
   }
   buffer.resize(result->received_bytes);
-  return ReceiveStringResult{result->sender, std::move(buffer)};
+  return ReceiveStringResult{std::move(result->sender), std::move(buffer)};
 }
 } // namespace MinimalSocket

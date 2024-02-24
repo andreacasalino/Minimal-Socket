@@ -48,33 +48,35 @@ using SocketID = int;
  * An object storing a socket API handler and containing the minimal
  * functionalities for interacting with it.
  */
-class SocketIdWrapper {
+class SocketHandler {
 public:
-  SocketIdWrapper(const SocketIdWrapper &) = delete;
-  SocketIdWrapper &operator=(const SocketIdWrapper &) = delete;
+  SocketHandler(const SocketHandler &) = delete;
+  SocketHandler &operator=(const SocketHandler &) = delete;
+  SocketHandler(SocketHandler &&) = delete;
+  SocketHandler &operator=(SocketHandler &&) = delete;
 
-  const SocketID &accessId() const { return socket_id; };
+  auto accessId() const { return socket_id; };
 
   /**
    * @brief an invalid socket id is created
    */
-  SocketIdWrapper() = default;
+  SocketHandler() = default;
 
   /**
    * @brief close and shutdown the current socket
    */
-  ~SocketIdWrapper();
+  ~SocketHandler();
 
   /**
-   * @brief internally creates a new socket
+   * @brief regenerates the socket descriptor, i.e. creates a new socket
    */
-  void reset(const SocketType &type, const AddressFamily &family);
+  void reset(SocketType type, AddressFamily family);
 
   /**
-   * @brief the passed handler should be already created externally
-   * by the socket api
+   * @brief the passed handler should be already externally created and setup
+   * (for blocking or non blocking node).
    */
-  void reset(const SocketID &hndl);
+  void reset(SocketID hndl);
 
 private:
   SocketID socket_id = SCK_INVALID_SOCKET;

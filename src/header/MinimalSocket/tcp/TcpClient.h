@@ -7,12 +7,14 @@
 
 #pragma once
 
+#include <MinimalSocket/NonCopiable.h>
 #include <MinimalSocket/core/Receiver.h>
 #include <MinimalSocket/core/Sender.h>
 #include <MinimalSocket/core/SocketContext.h>
 
 namespace MinimalSocket::tcp {
-class TcpClient : public Openable,
+class TcpClient : public NonCopiable,
+                  public Openable,
                   public Sender,
                   public Receiver,
                   public RemoteAddressAware {

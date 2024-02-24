@@ -17,7 +17,7 @@
 
 namespace MinimalSocket {
 std::optional<SocketAddressIpv4> toSocketAddressIpv4(const std::string &host,
-                                                     const Port &port) {
+                                                     Port port) {
 #ifdef _WIN32
   WSALazyInitializer::lazyInit();
 #endif
@@ -33,14 +33,14 @@ std::optional<SocketAddressIpv4> toSocketAddressIpv4(const std::string &host,
 #ifdef _WIN32
   in_addr ia;
   if (1 == ::inet_pton(AF_INET, host.c_str(), &ia)) {
-      ::memcpy(&result->sin_addr, &ia, sizeof(in_addr));
-      return result;
+    ::memcpy(&result->sin_addr, &ia, sizeof(in_addr));
+    return result;
   }
 #else
   in_addr ia;
   if (1 == ::inet_pton(AF_INET, host.c_str(), &ia)) {
-      result->sin_addr.s_addr = ia.s_addr;
-      return result;
+    result->sin_addr.s_addr = ia.s_addr;
+    return result;
   }
 #endif
 
@@ -60,14 +60,14 @@ std::optional<SocketAddressIpv4> toSocketAddressIpv4(const std::string &host,
     return std::nullopt;
   }
 
-  const auto* ipv4 = reinterpret_cast<const SocketAddressIpv4*>(res->ai_addr);
+  const auto *ipv4 = reinterpret_cast<const SocketAddressIpv4 *>(res->ai_addr);
   result->sin_addr.s_addr = ipv4->sin_addr.s_addr;
   ::freeaddrinfo(res);
   return result;
 }
 
 std::optional<SocketAddressIpv6> toSocketAddressIpv6(const std::string &host,
-                                                     const Port &port) {
+                                                     Port port) {
 #ifdef _WIN32
   WSALazyInitializer::lazyInit();
 #endif
@@ -84,8 +84,8 @@ std::optional<SocketAddressIpv6> toSocketAddressIpv6(const std::string &host,
 #ifdef _WIN32
   in6_addr ia;
   if (1 == ::inet_pton(AF_INET6, host.c_str(), &ia)) {
-      ::memcpy(&result->sin6_addr, &ia, sizeof(in6_addr));
-      return result;
+    ::memcpy(&result->sin6_addr, &ia, sizeof(in6_addr));
+    return result;
   }
 #else
   in6_addr ia;
@@ -111,7 +111,7 @@ std::optional<SocketAddressIpv6> toSocketAddressIpv6(const std::string &host,
     return std::nullopt;
   }
 
- const auto* ipv6 = reinterpret_cast<const SocketAddressIpv6*>(res->ai_addr);
+  const auto *ipv6 = reinterpret_cast<const SocketAddressIpv6 *>(res->ai_addr);
   result->sin6_addr = ipv6->sin6_addr;
   ::freeaddrinfo(res);
   return result;
