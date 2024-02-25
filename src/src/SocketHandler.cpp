@@ -10,6 +10,10 @@
 #include "SocketHandler.h"
 #include "Utils.h"
 
+#if defined(__unix__) || defined(__APPLE__)
+#include <fcntl.h>
+#endif
+
 namespace MinimalSocket {
 #ifdef _WIN32
 WSALazyInitializer::WSALazyInitializer(const WSAVersion &version)
@@ -129,4 +133,5 @@ void SocketHandler::reset(SocketType type, AddressFamily family) {
     throw err;
   }
 }
+
 } // namespace MinimalSocket

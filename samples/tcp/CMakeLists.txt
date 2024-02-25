@@ -1,5 +1,6 @@
 MakeApp(TcpClient)
 MakeApp(TcpServer)
+MakeApp(TcpServerNonBlocking)
 MakeApp(TcpRepeater)
 
 MakeSample(Sample01_server_client Tcp)
@@ -10,3 +11,6 @@ add_dependencies(TcpSample02_server_2_clients TcpClient TcpServer)
 
 MakeSample(Sample03_chain_with_2_repeaters Tcp)
 add_dependencies(TcpSample03_chain_with_2_repeaters TcpClient TcpServer TcpRepeater)
+
+MakeSample(Sample04_server_nn_block_2_clients Tcp)
+add_dependencies(TcpSample04_server_nn_block_2_clients TcpClient TcpServerNonBlocking)

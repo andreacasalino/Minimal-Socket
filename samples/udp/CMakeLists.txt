@@ -1,5 +1,6 @@
 MakeApp(UdpAsker)
 MakeApp(UdpResponder)
+MakeApp(UdpResponderNonBlocking)
 
 MakeSample(Sample01_asker_responder Udp)
 add_dependencies(UdpSample01_asker_responder UdpAsker UdpResponder)
@@ -9,3 +10,6 @@ add_dependencies(UdpSample02_asker_connected_responer UdpAsker UdpResponder)
 
 MakeSample(Sample03_2_askers_responder Udp)
 add_dependencies(UdpSample03_2_askers_responder UdpAsker UdpResponder)
+
+MakeSample(Sample04_2_askers_2_nn_block_responders Udp)
+add_dependencies(UdpSample04_2_askers_2_nn_block_responders UdpAsker UdpResponderNonBlocking)
