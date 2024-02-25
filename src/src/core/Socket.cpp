@@ -8,6 +8,7 @@
 #include <MinimalSocket/Error.h>
 #include <MinimalSocket/core/Socket.h>
 
+#include "../SocketFunctions.h"
 #include "../SocketHandler.h"
 #include "../Utils.h"
 
@@ -38,6 +39,7 @@ int Socket::getSocketDescriptor() const {
 void Socket::steal(Socket &giver) {
   this->socket_id_wrapper = std::move(giver.socket_id_wrapper);
   giver.resetHandler();
+  isBlocking_ = giver.isBlocking_;
 }
 
 const SocketHandler &Socket::getHandler() const { return *socket_id_wrapper; }
@@ -45,6 +47,12 @@ SocketHandler &Socket::getHandler() { return *socket_id_wrapper; }
 
 void Socket::resetHandler() {
   socket_id_wrapper = std::make_unique<SocketHandler>();
+}
+
+void Socket::setUp() {
+  if (!isBlocking_) {
+    turnToNonBlocking(getHandler().accessId());
+  }
 }
 
 bool Openable::open(const Timeout &timeout) {

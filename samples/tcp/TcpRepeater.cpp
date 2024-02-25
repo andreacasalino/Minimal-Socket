@@ -21,8 +21,8 @@
 #include <iostream>
 using namespace std;
 
-void repeat(MinimalSocket::tcp::TcpConnection &preceding,
-            MinimalSocket::tcp::TcpClient &following) {
+void repeat(MinimalSocket::tcp::TcpConnectionBlocking &preceding,
+            MinimalSocket::tcp::TcpClient<true> &following) {
   while (true) {
     auto request = preceding.receive(500, std::chrono::seconds{5});
     if (request.empty()) {
@@ -45,17 +45,17 @@ int main(const int argc, const char **argv) {
   cout << "-----------------------  Repeater  -----------------------" << endl;
   PARSE_ARGS
 
-  const auto following_host = options->getValue("host", "127.0.0.1");
+  const auto following_host =
+      options->getValue<std::string>("host", "127.0.0.1");
   const auto following_port =
-      static_cast<MinimalSocket::Port>(options->getIntValue("next_port"));
+      options->getValue<MinimalSocket::Port>("next_port");
   MinimalSocket::Address following_address(following_host, following_port);
 
-  const auto port_to_reserve =
-      static_cast<MinimalSocket::Port>(options->getIntValue("port"));
+  const auto port_to_reserve = options->getValue<MinimalSocket::Port>("port");
 
   // reserve port
-  MinimalSocket::tcp::TcpServer acceptor(port_to_reserve,
-                                         following_address.getFamily());
+  MinimalSocket::tcp::TcpServer<true> acceptor(port_to_reserve,
+                                               following_address.getFamily());
   if (!acceptor.open()) {
     cerr << "Failed to bind and listen to specified port" << endl;
     return EXIT_FAILURE;
@@ -63,7 +63,8 @@ int main(const int argc, const char **argv) {
   cout << "Listening on port " << port_to_reserve << endl;
 
   // ask connection to follower
-  MinimalSocket::tcp::TcpClient connection_to_following(following_address);
+  MinimalSocket::tcp::TcpClient<true> connection_to_following(
+      following_address);
   cout << "Connecting to next on chain at "
        << MinimalSocket::to_string(following_address) << endl;
   if (!connection_to_following.open()) {

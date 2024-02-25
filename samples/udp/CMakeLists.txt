@@ -1,5 +1,6 @@
 MakeApp(UdpAsker)
 MakeApp(UdpResponder)
+MakeApp(UdpResponderNonBlocking)
 
 MakeSample(Sample01_asker_responder Udp)
 add_dependencies(UdpSample01_asker_responder UdpAsker UdpResponder)

@@ -49,22 +49,6 @@ Args::Args(const int argc, const char **argv) {
   std::cout << std::endl;
 }
 
-std::string Args::getValue(const std::string &argument_name,
-                           const std::string &default_value) const {
-  auto args_it = arguments_map.find(argument_name);
-  return (args_it == arguments_map.end()) ? default_value : args_it->second;
-}
-
-std::string Args::getValue(const std::string &argument_name) const {
-  auto args_it = arguments_map.find(argument_name);
-  if (args_it == arguments_map.end()) {
-    std::stringstream stream;
-    stream << "--" << argument_name << " was not specififed";
-    throw std::runtime_error{stream.str()};
-  }
-  return args_it->second;
-}
-
 MinimalSocket::AddressFamily to_family(const std::string &family_as_string) {
   if (family_as_string == "v4") {
     return MinimalSocket::AddressFamily::IP_V4;

@@ -14,6 +14,7 @@
 
 // just a bunch of utilities
 #include <Args.h>
+#include <Pollables.h>
 #include <Respond.h>
 using namespace std;
 
@@ -25,7 +26,6 @@ int main(const int argc, const char **argv) {
   const auto port_this = options->getValue<MinimalSocket::Port>("port_this");
   const auto family = options->getValue<MinimalSocket::AddressFamily>(
       "family", MinimalSocket::AddressFamily::IP_V4);
-  const bool connect = options->getValue<std::string>("connect", "no") == "yes";
 
   MinimalSocket::udp::Udp<true> responder(port_this, family);
 
@@ -35,26 +35,22 @@ int main(const int argc, const char **argv) {
   }
   cout << "Port successfully reserved" << endl;
 
-  if (connect) {
-    // connect to first sending a request
-    std::string first_request;
-    auto connected_responder = responder.connect(&first_request);
+  MinimalSocket::samples::Pollables pollables;
 
-    cout << "Connected to "
-         << MinimalSocket::to_string(connected_responder.getRemoteAddress())
-         << endl;
-
-    const auto &first_response =
+  pollables.emplace([&responder]() {
+    auto request = responder.receive(500);
+    if (!request.has_value()) {
+      return MinimalSocket::samples::PollableStatus::NOT_ADVANCED;
+    }
+    const auto &response =
         MinimalSocket::samples::NamesCircularIterator::NAMES_SURNAMES
-            .find(first_request)
+            .find(request->received_message)
             ->second;
-    connected_responder.send(first_response);
+    responder.sendTo(response, request->sender);
+    return MinimalSocket::samples::PollableStatus::ADVANCED;
+  });
 
-    MinimalSocket::samples::respond(connected_responder);
-  } else {
-    // use as un-connected udp
-    MinimalSocket::samples::respond(responder);
-  }
+  pollables.loop(std::chrono::seconds{5});
 
   return EXIT_SUCCESS;
 }
