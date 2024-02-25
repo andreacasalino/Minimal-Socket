@@ -27,7 +27,7 @@ Address::Address(const std::string &hostIp, Port port)
     return;
   }
 
-  this->host.clear();
+  throw Error{'\'', hostIp, "' is an invalid host ip "};
 }
 
 namespace {
@@ -48,14 +48,6 @@ bool Address::operator==(const Address &o) const {
          (this->family == o.family);
 }
 
-bool operator==(std::nullptr_t, const Address &subject) {
-  return subject.getHost().empty();
-}
-
-bool operator==(const Address &subject, std::nullptr_t) {
-  return subject.getHost().empty();
-}
-
 std::string to_string(const Address &subject) {
   std::stringstream stream;
   stream << subject.getHost() << ':' << subject.getPort();
@@ -64,11 +56,13 @@ std::string to_string(const Address &subject) {
 
 std::optional<AddressFamily>
 deduceAddressFamily(const std::string &host_address) {
-  Address temp(host_address, 0);
-  if (nullptr == temp) {
-    return std::nullopt;
+  std::optional<AddressFamily> res;
+  try {
+    Address temp(host_address, 0);
+    res = temp.getFamily();
+  } catch (const Error &) {
   }
-  return temp.getFamily();
+  return res;
 }
 
 bool isValidAddress(const std::string &host_address) {

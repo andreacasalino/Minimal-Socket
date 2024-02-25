@@ -8,6 +8,7 @@
 #include <MinimalSocket/Error.h>
 #include <MinimalSocket/core/Socket.h>
 
+#include "../SocketFunctions.h"
 #include "../SocketHandler.h"
 #include "../Utils.h"
 
@@ -38,6 +39,7 @@ int Socket::getSocketDescriptor() const {
 void Socket::steal(Socket &giver) {
   this->socket_id_wrapper = std::move(giver.socket_id_wrapper);
   giver.resetHandler();
+  isBlocking_ = giver.isBlocking_;
 }
 
 const SocketHandler &Socket::getHandler() const { return *socket_id_wrapper; }
@@ -47,19 +49,31 @@ void Socket::resetHandler() {
   socket_id_wrapper = std::make_unique<SocketHandler>();
 }
 
-bool Openable::open(const Timeout &timeout) {
+void Socket::setUp() {
+  if (!isBlocking_) {
+    turnToNonBlocking(getHandler().accessId());
+  }
+}
+
+void OpenableBase::steal(OpenableBase &giver) {
+  std::scoped_lock lock(this->open_procedure_mtx, giver.open_procedure_mtx);
+  const bool o_value = giver.opened;
+  this->opened = o_value;
+  giver.opened = false;
+  this->Socket::steal(giver);
+}
+
+namespace {
+template <typename Pred>
+std::unique_ptr<Error> doOpen(std::mutex &mtx, std::atomic_bool &opened,
+                              Pred pred) {
   if (opened) {
     throw Error{"Already opened"};
   }
-  std::scoped_lock lock(open_procedure_mtx);
+  std::scoped_lock lock(mtx);
   std::unique_ptr<Error> exception;
   try {
-    if (NULL_TIMEOUT == timeout) {
-      this->open_();
-    } else {
-      try_within_timeout([this]() { this->open_(); },
-                         [this]() { this->resetHandler(); }, timeout);
-    }
+    pred();
     opened = true;
   } catch (const SocketError &e) {
     exception = std::make_unique<SocketError>(e);
@@ -70,19 +84,33 @@ bool Openable::open(const Timeout &timeout) {
   } catch (...) {
     exception = std::make_unique<Error>("Not opened for an unknown reason");
   }
-  if (nullptr != exception) {
-    this->resetHandler();
-    throw *exception;
-  }
+  return exception;
+}
+} // namespace
+
+bool Openable::open() {
+  auto excpt = doOpen(open_procedure_mtx, opened, [this]() { this->open_(); });
+  if (excpt != nullptr) {
+    resetHandler();
+    throw *excpt;
+  };
   return opened;
 }
 
-void Openable::steal(Openable &giver) {
-  std::scoped_lock lock(this->open_procedure_mtx, giver.open_procedure_mtx);
-  const bool o_value = giver.opened;
-  this->opened = o_value;
-  giver.opened = false;
-  this->Socket::steal(giver);
+bool OpenableWithTimeout::open(const Timeout &timeout) {
+  auto excpt = doOpen(open_procedure_mtx, opened, [&]() {
+    if (NULL_TIMEOUT == timeout) {
+      this->open_();
+    } else {
+      try_within_timeout([this]() { this->open_(); },
+                         [this]() { this->resetHandler(); }, timeout);
+    }
+  });
+  if (excpt != nullptr) {
+    resetHandler();
+    throw *excpt;
+  };
+  return opened;
 }
 
 } // namespace MinimalSocket
