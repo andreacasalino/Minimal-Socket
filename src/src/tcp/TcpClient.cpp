@@ -12,22 +12,27 @@
 #include "../Utils.h"
 
 namespace MinimalSocket::tcp {
-TcpClient::TcpClient(TcpClient &&o) : RemoteAddressAware(o) { this->steal(o); }
-TcpClient &TcpClient::operator=(TcpClient &&o) {
+TcpClientBase::TcpClientBase(TcpClientBase &&o) : RemoteAddressAware(o) {
   this->steal(o);
-  copy_as<RemoteAddressAware>(*this, o);
-  return *this;
 }
 
-TcpClient::TcpClient(const Address &server_address)
-    : RemoteAddressAware(server_address) {}
+void TcpClientBase::stealBase(TcpClientBase &o) {
+  this->steal(o);
+  copy_as<RemoteAddressAware>(*this, o);
+}
 
-void TcpClient::open_() {
+TcpClientBase::TcpClientBase(const Address &server_address, bool block_mode)
+    : RemoteAddressAware(server_address) {
+  if (!block_mode) {
+    setNonBlocking();
+  }
+}
+
+void TcpClientBase::open_() {
   auto &socket = getHandler();
   const auto remote_address = getRemoteAddress();
   socket.reset(SocketType::TCP, remote_address.getFamily());
   MinimalSocket::connect(socket.accessId(), remote_address);
+  this->Socket::setUp();
 }
-
-TcpClient clone(const TcpClient &o) { return TcpClient{o.getRemoteAddress()}; }
 } // namespace MinimalSocket::tcp

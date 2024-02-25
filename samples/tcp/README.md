@@ -78,4 +78,36 @@ The above classes of samples can be described as follows:
         TcpRepeater2->>TcpClient: forawrd response 1
     ```
 
+- **TcpSample04_server_nn_block_2_clients** is an example of non blocking tcp server. The application uses one single thread to spin multiple connections. More in detail: 
+    - related config file is [Sample04_server_nn_block_2_clients](./Sample04_server_nn_block_2_clients)
+    - runs **TcpServerNonBlocking**, creating a tcp server that binds and listen to a specified port
+    - runs **TcpClient**, creating a first tcp client that connections to the previous server, exchanging messages with it. 
+    - runs **TcpClient**, creating a second tcp client that connections to the previous server, exchanging messages with it with a different frequency. 
+    - the following sequence diagram summarizes this sample
+    ```mermaid
+    sequenceDiagram
+        TcpServer->>TcpServer: bind a port
+        TcpClient1->>TcpServer: ask for connection
+        TcpServer->>TcpClient1: connection done
+        TcpClient2->>TcpServer: ask for connection
+        TcpServer->>TcpClient2: connection done
+        TcpServer->>TcpServer: has something arrived from client 1? if so send response
+        TcpServer->>TcpServer: has something arrived from client 2? if so send response
+        TcpClient1->>TcpServer: request 1
+        TcpServer->>TcpServer: has something arrived from client 1? if so send response
+        TcpServer->>TcpServer: has something arrived from client 2? if so send response
+        TcpServer->>TcpClient1: response 1
+        TcpServer->>TcpServer: has something arrived from client 1? if so send response
+        TcpServer->>TcpServer: has something arrived from client 2? if so send response
+        TcpClient2->>TcpServer: request 1
+        TcpServer->>TcpServer: has something arrived from client 1? if so send response
+        TcpServer->>TcpServer: has something arrived from client 2? if so send response
+        TcpServer->>TcpClient2: response 1
+        TcpServer->>TcpServer: has something arrived from client 1? if so send response
+        TcpServer->>TcpServer: has something arrived from client 2? if so send response
+        TcpClient1->>TcpServer: request 2
+        TcpServer->>TcpServer: has something arrived from client 1? if so send response
+        TcpServer->>TcpServer: has something arrived from client 2? if so send response
+        TcpServer->>TcpClient1: response 2
+
 **TcpServer** and **TcpClient** can be also used as stand alone processes, in order to check connections locally or on a different host.
