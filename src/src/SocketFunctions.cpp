@@ -11,11 +11,15 @@
 #include "SocketFunctions.h"
 #include "Utils.h"
 
+#if defined(__unix__) || defined(__APPLE__)
+#include <fcntl.h>
+#endif
+
 namespace MinimalSocket {
 namespace {
 #ifdef _WIN32
 #define REBIND_OPTION SO_REUSEADDR
-#else
+#elif defined(__unix__) || defined(__APPLE__)
 #define REBIND_OPTION SO_REUSEPORT
 #endif
 } // namespace
@@ -132,5 +136,45 @@ void connect(SocketID socket_id, const Address &remote_address) {
           throw err;
         }
       });
+}
+
+void turnToNonBlocking(SocketID socket_id) {
+#ifdef _WIN32
+  // https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-ioctlsocket
+  u_long iMode = 1;
+  if (ioctlsocket(socket_id, FIONBIO, &iMode) != NO_ERROR) {
+    throw Error{"Unable to set up the non blocking mode"};
+  }
+#elif defined(__unix__) || defined(__APPLE__)
+  // https://jameshfisher.com/2017/04/05/set_socket_nonblocking/
+  int flags = ::fcntl(socket_id, F_GETFL);
+  if (::fcntl(socket_id, F_SETFL, flags | O_NONBLOCK) == -1) {
+    throw Error{"Unable to set up the non blocking mode"};
+  }
+#endif
+}
+
+int isTimeoutErrorCode(int code) {
+  return
+#ifdef _WIN32
+      code == WSAETIMEDOUT || code == WSAEWOULDBLOCK;
+#elif defined(__unix__)
+      code == EAGAIN || code == EWOULDBLOCK;
+#elif defined(__APPLE__)
+      code == EAGAIN;
+#endif
+}
+
+bool checkResult(int value, int errorValue, const std::string &error_msg,
+                 bool canBeTimedOut) {
+  if (value != errorValue) {
+    return false;
+  }
+  SocketError maybe_error(error_msg);
+  if (canBeTimedOut && isTimeoutErrorCode(maybe_error.getErrorCode())) {
+    // just out of time: tolerable
+    return true;
+  }
+  throw maybe_error;
 }
 } // namespace MinimalSocket

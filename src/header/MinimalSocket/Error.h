@@ -45,8 +45,8 @@ private:
 class SocketError : public ErrorCodeHolder, public Error {
 public:
   /**
-   * @brief last error code raised by the socket API is automatically retrieved
-   * and appended to error message
+   * @brief The last raised error code is automatically retrieved
+   * and included in the error message
    */
   SocketError(const std::string &what);
 
@@ -56,6 +56,6 @@ public:
 
 class TimeOutError : public Error {
 public:
-  TimeOutError() : Error("Timeout"){};
+  TimeOutError() : Error("Timeout reached"){};
 };
 } // namespace MinimalSocket

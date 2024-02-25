@@ -22,16 +22,14 @@ int main(const int argc, const char **argv) {
   cout << "-----------------------  Udp asker  -----------------------" << endl;
   PARSE_ARGS
 
-  const auto remote_host = options->getValue("host", "127.0.0.1");
-  const auto remote_port =
-      static_cast<MinimalSocket::Port>(options->getIntValue("port"));
-  const auto port_this =
-      static_cast<MinimalSocket::Port>(options->getIntValue("port_this"));
-  const auto rate =
-      std::chrono::milliseconds{options->getIntValue<250>("rate")};
+  const auto remote_host = options->getValue<std::string>("host", "127.0.0.1");
+  const auto remote_port = options->getValue<MinimalSocket::Port>("port");
+  const auto port_this = options->getValue<MinimalSocket::Port>("port_this");
+  const auto rate = options->getValue<std::chrono::milliseconds>(
+      "rate", std::chrono::milliseconds{250});
 
   const MinimalSocket::Address remote_address(remote_host, remote_port);
-  MinimalSocket::udp::UdpBinded asker(port_this, remote_address.getFamily());
+  MinimalSocket::udp::Udp<true> asker(port_this, remote_address.getFamily());
 
   std::this_thread::sleep_for(
       std::chrono::seconds{1}); // just to be sure the responder has already
@@ -43,7 +41,7 @@ int main(const int argc, const char **argv) {
   cout << "Port successfully reserved" << endl;
 
   MinimalSocket::samples::ask(asker, remote_address, rate,
-                              options->getIntValue<5>("cycles"));
+                              options->getValue<int>("cycles", 5));
 
   return EXIT_SUCCESS;
 }

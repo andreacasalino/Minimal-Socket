@@ -8,7 +8,7 @@
 using namespace MinimalSocket;
 
 namespace {
-class OpenableTest : public Openable {
+class OpenableTest : public OpenableWithTimeout {
 public:
   OpenableTest(const Timeout &duration) : open_duration(duration) {}
 
