@@ -7,7 +7,8 @@
 
 #pragma once
 
-#include <MinimalSocket/udp/UdpSocket.h>
+#include <MinimalSocket/core/Receiver.h>
+#include <MinimalSocket/core/Sender.h>
 
 #include <Names.h>
 #include <TimeOfDay.h>
@@ -17,34 +18,36 @@
 #include <thread>
 
 namespace MinimalSocket::samples {
-template <typename SocketT>
-void ask(SocketT &channel, const std::chrono::milliseconds &rate,
-         std::size_t cycles) {
+void ask_connected(ReceiverBlocking &receiver, Sender &sender,
+                   const std::chrono::milliseconds &rate, std::size_t cycles) {
   NamesCircularIterator iterator;
-  for (std::size_t k = 0; k < cycles * NamesCircularIterator::size(); ++k) {
+  for (std::size_t k = 0;
+       k < cycles * NamesCircularIterator::NAMES_SURNAMES.size(); ++k) {
     // send name of this person
     std::cout << TimeOfDay{} << "Sending: " << iterator.current()->first
               << std::endl;
-    channel.send(iterator.current()->first);
+    sender.send(iterator.current()->first);
     // expect to get back the corresponding surname
-    auto response = channel.receive(500);
+    auto response = receiver.receive(500);
     std::cout << TimeOfDay{} << "Got response: " << response << std::endl;
     iterator.next();
     std::this_thread::sleep_for(rate);
   }
 }
 
-void ask(MinimalSocket::udp::UdpBinded &channel,
-         const MinimalSocket::Address &target,
-         const std::chrono::milliseconds &rate, std::size_t cycles) {
+void ask_disconnected(ReceiverUnkownSenderBlocking &receiver, SenderTo &sender,
+                      const MinimalSocket::Address &target,
+                      const std::chrono::milliseconds &rate,
+                      std::size_t cycles) {
   NamesCircularIterator iterator;
-  for (std::size_t k = 0; k < cycles * NamesCircularIterator::size(); ++k) {
+  for (std::size_t k = 0;
+       k < cycles * NamesCircularIterator::NAMES_SURNAMES.size(); ++k) {
     // send name of this person
     std::cout << TimeOfDay{} << "Sending: " << iterator.current()->first
               << std::endl;
-    channel.sendTo(iterator.current()->first, target);
+    sender.sendTo(iterator.current()->first, target);
     // expect to get back the corresponding surname
-    auto response = channel.receive(500);
+    auto response = receiver.receive(500);
     std::cout << TimeOfDay{} << "From "
               << MinimalSocket::to_string(response->sender)
               << " , got as response: " << response->received_message
@@ -53,4 +56,17 @@ void ask(MinimalSocket::udp::UdpBinded &channel,
     std::this_thread::sleep_for(rate);
   }
 }
+
+template <typename SocketT>
+void ask(SocketT &socket, const std::chrono::milliseconds &rate,
+         std::size_t cycles) {
+  ask_connected(socket, socket, rate, cycles);
+}
+
+template <typename SocketT>
+void ask(SocketT &socket, const MinimalSocket::Address &target,
+         const std::chrono::milliseconds &rate, std::size_t cycles) {
+  ask_disconnected(socket, socket, target, rate, cycles);
+}
+
 } // namespace MinimalSocket::samples

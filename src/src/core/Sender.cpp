@@ -9,6 +9,7 @@
 #include <MinimalSocket/core/Sender.h>
 
 #include "../SocketAddress.h"
+#include "../SocketFunctions.h"
 #include "../Utils.h"
 
 namespace MinimalSocket {
@@ -16,11 +17,10 @@ bool Sender::send(const BufferViewConst &message) {
   std::scoped_lock lock(send_mtx);
   int sentBytes = ::send(getHandler().accessId(), message.buffer,
                          static_cast<int>(message.buffer_size), 0);
-  if (sentBytes == SCK_SOCKET_ERROR) {
-    sentBytes = 0;
-    throw SocketError{"send failed"};
+  if (checkResult(sentBytes, SCK_SOCKET_ERROR, "send failed", !isBlocking())) {
+    return false;
   }
-  return (sentBytes == static_cast<int>(message.buffer_size));
+  return true;
 }
 
 bool Sender::send(const std::string &message) {
@@ -62,12 +62,10 @@ bool SenderTo::sendTo(const BufferViewConst &message,
               sizeof(SocketAddressIpv6));
         });
   }
-  if (sentBytes == SCK_SOCKET_ERROR) {
-    sentBytes = 0;
-    auto err = SocketError{"sendto failed"};
-    throw err;
+  if (checkResult(sentBytes, SCK_SOCKET_ERROR, "send failed", !isBlocking())) {
+    return false;
   }
-  return (sentBytes == static_cast<int>(message.buffer_size));
+  return true;
 }
 
 bool SenderTo::sendTo(const std::string &message, const Address &recipient) {

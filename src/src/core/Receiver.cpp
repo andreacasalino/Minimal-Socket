@@ -9,12 +9,13 @@
 #include <MinimalSocket/core/Receiver.h>
 
 #include "../SocketAddress.h"
+#include "../SocketFunctions.h"
 #ifndef _WIN32
 #include <sys/time.h>
 #endif
 
 namespace MinimalSocket {
-void ReceiverBase::updateTimeout_(const Timeout &timeout) {
+void ReceiverWithTimeout::updateTimeout_(const Timeout &timeout) {
   if (timeout == receive_timeout) {
     return;
   }
@@ -44,103 +45,154 @@ void ReceiverBase::updateTimeout_(const Timeout &timeout) {
   }
 }
 
+std::size_t ReceiverBlocking::receive(BufferView message,
+                                      const Timeout &timeout) {
+  std::scoped_lock lock{recv_mtx};
+  updateTimeout_(timeout);
+  clear(message);
+
+  int recvBytes = ::recv(getHandler().accessId(), message.buffer,
+                         static_cast<int>(message.buffer_size), 0);
+  if (checkResult(recvBytes, SCK_SOCKET_ERROR, "receive failed",
+                  timeout != NULL_TIMEOUT) ||
+      recvBytes > message.buffer_size) {
+    return 0;
+  }
+  return static_cast<std::size_t>(recvBytes);
+}
+
+std::size_t ReceiverNonBlocking::receive(BufferView message) {
+  std::scoped_lock lock{recv_mtx};
+  clear(message);
+
+  int recvBytes = ::recv(getHandler().accessId(), message.buffer,
+                         static_cast<int>(message.buffer_size), 0);
+  if (checkResult(recvBytes, SCK_SOCKET_ERROR, "receive failed", true) ||
+      recvBytes > message.buffer_size) {
+    return 0;
+  }
+  return static_cast<std::size_t>(recvBytes);
+}
+
 namespace {
-#ifdef _WIN32
-static constexpr int TIMEOUT_CODE = 10060;
-#else
-static constexpr int TIMEOUT_CODE = EAGAIN;
-#endif
-
-void check_received_bytes(int &recvBytes, const Timeout &timeout) {
-  if (recvBytes != SCK_SOCKET_ERROR) {
-    return;
-  }
-  SocketError error_with_code("receive failed");
-  recvBytes = 0;
-  if ((error_with_code.getErrorCode() == TIMEOUT_CODE) &&
-      (timeout != NULL_TIMEOUT)) {
-    // just out of time: tolerable
-    return;
-  }
-  throw error_with_code;
-}
-} // namespace
-
-std::size_t Receiver::receive(BufferView message, const Timeout &timeout) {
-  std::size_t res = 0;
-
-  lazyUpdateAndUseTimeout(
-      timeout, [&message, &res, this](const Timeout &timeout) {
-        clear(message);
-
-        int recvBytes = ::recv(getHandler().accessId(), message.buffer,
-                               static_cast<int>(message.buffer_size), 0);
-        check_received_bytes(recvBytes, timeout);
-        if (recvBytes > message.buffer_size) {
-          // if here, the message received is probably corrupted
-          recvBytes = 0;
-        }
-        res = static_cast<std::size_t>(recvBytes);
-      });
-
-  return res;
-}
-
-std::string Receiver::receive(std::size_t expected_max_bytes,
-                              const Timeout &timeout) {
+template <typename Pred, typename... Args>
+std::string receive_into_string(std::size_t expected_max_bytes, Pred pred,
+                                const Args &...args) {
   std::string buffer;
   buffer.resize(expected_max_bytes);
   auto buffer_temp = makeBufferView(buffer);
-  auto recvBytes = receive(buffer_temp, timeout);
+  auto recvBytes = pred(buffer_temp, args...);
   buffer.resize(recvBytes);
   return buffer;
 }
+} // namespace
 
-std::optional<ReceiverUnkownSender::ReceiveResult>
-ReceiverUnkownSender::receive(BufferView message, const Timeout &timeout) {
-  std::optional<ReceiverUnkownSender::ReceiveResult> res;
+std::string ReceiverBlocking::receive(std::size_t expected_max_bytes,
+                                      const Timeout &timeout) {
+  return receive_into_string(
+      expected_max_bytes,
+      [this](BufferView message, const Timeout &timeout) {
+        return this->receive(message, timeout);
+      },
+      timeout);
+}
 
-  lazyUpdateAndUseTimeout(
-      timeout, [&message, &res, this](const Timeout &timeout) {
-        clear(message);
+std::string ReceiverNonBlocking::receive(std::size_t expected_max_bytes) {
+  return receive_into_string(expected_max_bytes, [this](BufferView message) {
+    return this->receive(message);
+  });
+}
 
-        char sender_address[MAX_POSSIBLE_ADDRESS_SIZE];
-        SocketAddressLength sender_address_length = MAX_POSSIBLE_ADDRESS_SIZE;
+std::optional<ReceiveResult>
+ReceiverUnkownSenderBlocking::receive(BufferView message,
+                                      const Timeout &timeout) {
+  std::scoped_lock lock{recv_mtx};
+  updateTimeout_(timeout);
+  clear(message);
 
-        int recvBytes =
-            ::recvfrom(getHandler().accessId(), message.buffer,
-                       static_cast<int>(message.buffer_size), 0,
-                       reinterpret_cast<SocketAddress *>(&sender_address[0]),
-                       &sender_address_length);
-        check_received_bytes(recvBytes, timeout);
-        if (recvBytes > message.buffer_size) {
-          // if here, the message received is probably corrupted
-          return;
-        }
-        if (0 == recvBytes) {
-          // if here, timeout was reached
-          return;
-        }
+  std::optional<ReceiveResult> res;
 
-        res = ReceiveResult{
-            toAddress(reinterpret_cast<const SocketAddress &>(sender_address)),
-            static_cast<std::size_t>(recvBytes)};
-      });
+  char sender_address[MAX_POSSIBLE_ADDRESS_SIZE];
+  SocketAddressLength sender_address_length = MAX_POSSIBLE_ADDRESS_SIZE;
+
+  int recvBytes =
+      ::recvfrom(getHandler().accessId(), message.buffer,
+                 static_cast<int>(message.buffer_size), 0,
+                 reinterpret_cast<SocketAddress *>(&sender_address[0]),
+                 &sender_address_length);
+  if (checkResult(recvBytes, SCK_SOCKET_ERROR, "receive failed",
+                  timeout != NULL_TIMEOUT) ||
+      recvBytes > message.buffer_size) {
+    return std::nullopt;
+  }
+
+  res = ReceiveResult{
+      toAddress(reinterpret_cast<const SocketAddress &>(sender_address)),
+      static_cast<std::size_t>(recvBytes)};
 
   return res;
 }
 
-std::optional<ReceiverUnkownSender::ReceiveStringResult>
-ReceiverUnkownSender::receive(std::size_t expected_max_bytes,
-                              const Timeout &timeout) {
+std::optional<ReceiveResult>
+ReceiverUnkownSenderNonBlocking::receive(BufferView message) {
+  std::scoped_lock lock{recv_mtx};
+  clear(message);
+
+  std::optional<ReceiveResult> res;
+
+  char sender_address[MAX_POSSIBLE_ADDRESS_SIZE];
+  SocketAddressLength sender_address_length = MAX_POSSIBLE_ADDRESS_SIZE;
+
+  int recvBytes =
+      ::recvfrom(getHandler().accessId(), message.buffer,
+                 static_cast<int>(message.buffer_size), 0,
+                 reinterpret_cast<SocketAddress *>(&sender_address[0]),
+                 &sender_address_length);
+  if (checkResult(recvBytes, SCK_SOCKET_ERROR, "receive failed", true) ||
+      recvBytes > message.buffer_size) {
+    return std::nullopt;
+  }
+
+  res = ReceiveResult{
+      toAddress(reinterpret_cast<const SocketAddress &>(sender_address)),
+      static_cast<std::size_t>(recvBytes)};
+
+  return res;
+}
+
+namespace {
+template <typename Pred, typename... Args>
+std::optional<ReceiveStringResult>
+receive_unknown_into_string(std::size_t expected_max_bytes, Pred pred,
+                            const Args &...args) {
   std::string buffer;
   buffer.resize(expected_max_bytes);
   auto buffer_temp = makeBufferView(buffer);
-  auto result = receive(buffer_temp, timeout);
+  auto result = pred(buffer_temp, args...);
   if (!result) {
     return std::nullopt;
   }
   buffer.resize(result->received_bytes);
   return ReceiveStringResult{std::move(result->sender), std::move(buffer)};
 }
+} // namespace
+
+std::optional<ReceiveStringResult>
+ReceiverUnkownSenderBlocking::receive(std::size_t expected_max_bytes,
+                                      const Timeout &timeout) {
+  return receive_unknown_into_string(
+      expected_max_bytes,
+      [this](BufferView message, const Timeout &timeout) {
+        return this->receive(message, timeout);
+      },
+      timeout);
+}
+
+std::optional<ReceiveStringResult>
+ReceiverUnkownSenderNonBlocking::receive(std::size_t expected_max_bytes) {
+  return receive_unknown_into_string(
+      expected_max_bytes,
+      [this](BufferView message) { return this->receive(message); });
+}
+
 } // namespace MinimalSocket

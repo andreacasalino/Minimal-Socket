@@ -22,7 +22,7 @@ struct BufferView {
 void clear(BufferView &subject);
 
 /**
- * @param subject the string buffer to convert
+ * @param subject the string to convert
  * @return a buffer pointing to the first element of the subject, and a lenght
  * equal to the current size of subject
  */

@@ -14,24 +14,31 @@
 #include <unordered_map>
 
 namespace MinimalSocket {
-/**
- * @brief Typically associated to a connected socket, whose remote peer
- * exchanging messages is known.
- * Attention!! Even when calling from different threads some simultaneously
- * send, they will be satisfited one at a time, as an internal mutex must be
- * locked before starting to receive.
- */
 class Sender : public virtual Socket {
 public:
   /**
-   * @param message the buffer storing the bytes to send
-   * @return true in case all the bytes were successfully sent
+   * @param the buffer storing the bytes to send
+   * @return true in case all the bytes were successfully sent. In case the
+   * socket is non blocking, false is returned when the buffer is full and no
+   * further bytes can be inserted. In such case, the send fails but does not
+   * throw.
+   * On the opposite, a blocking socket will wait (absorbing the calling thread)
+   * until the buffer has enough space to proceed with the send.
+   * @throw When the receive is not possible. This can be due to the fact that
+   * the connection was terminated or the socket was actually transferred.
    */
   bool send(const BufferViewConst &message);
 
   /**
-   * @param message the buffer storing the bytes to send as a string
-   * @return true in case all the bytes were successfully sent
+   * @param the buffer storing the bytes to send as a string
+   * @return true in case all the bytes were successfully sent. In case the
+   * socket is non blocking, false is returned when the buffer is full and no
+   * further bytes can be inserted. In such case, the send fails but does not
+   * throw.
+   * On the opposite, a blocking socket will wait (absorbing the calling thread)
+   * until the buffer has enough space to proceed with the send.
+   * @throw When the receive is not possible. This can be due to the fact that
+   * the connection was terminated or the socket was actually transferred.
    */
   bool send(const std::string &message);
 
@@ -39,29 +46,35 @@ private:
   std::mutex send_mtx;
 };
 
-/**
- * @brief Typically associated to a non connected socket, whose remote peer that
- * sends bytes is not fixed.
- * Attention!! It is thread safe to simultaneously send messages from different
- * threads to many different recipients.
- * However, be aware that in case 2 or more threads are sending a message to the
- * same recipient, sendTo request will be queued and executed one at a time.
- */
 class SenderTo : public virtual Socket {
 public:
   /**
-   * @param message the buffer storing the bytes to send
-   * @param recipient the recpient of the message
+   * @param the buffer storing the bytes to send
+   * @param the recpient of the message
    * @return true in case all the bytes were successfully sent to the specified
-   * recipient
+   * recipient. In case the
+   * socket is non blocking, false is returned when the buffer is full and no
+   * further bytes can be inserted. In such case, the send fails but does not
+   * throw.
+   * On the opposite, a blocking socket will wait (absorbing the calling thread)
+   * until the buffer has enough space to proceed with the send.
+   * @throw When the receive is not possible. This can be due to the fact that
+   * the connection was terminated or the socket was actually transferred.
    */
   bool sendTo(const BufferViewConst &message, const Address &recipient);
 
   /**
-   * @param message the buffer storing the bytes to send as a string
-   * @param recipient the recpient of the message
+   * @param the buffer storing the bytes to send as a string
+   * @param the recpient of the message
    * @return true in case all the bytes were successfully sent to the specified
-   * recipient
+   * recipient. In case the
+   * socket is non blocking, false is returned when the buffer is full and no
+   * further bytes can be inserted. In such case, the send fails but does not
+   * throw.
+   * On the opposite, a blocking socket will wait (absorbing the calling thread)
+   * until the buffer has enough space to proceed with the send.
+   * @throw When the receive is not possible. This can be due to the fact that
+   * the connection was terminated or the socket was actually transferred.
    */
   bool sendTo(const std::string &message, const Address &recipient);
 

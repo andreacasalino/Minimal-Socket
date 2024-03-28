@@ -9,7 +9,7 @@
 #include "ConnectionsUtils.h"
 #include "ParallelSection.h"
 #include "PortFactory.h"
-#include "SlicedOps.h"
+#include "RollingView.h"
 
 using namespace MinimalSocket;
 using namespace MinimalSocket::tcp;
@@ -21,11 +21,11 @@ static const std::string response = "Welcome";
 
 struct SenderReceiver {
   Sender &sender;
-  Receiver &receiver;
+  Receiver<true> &receiver;
 };
 template <typename T> SenderReceiver makeSenderReceiver(T &subject) {
   Sender &as_sender = subject;
-  Receiver &as_receiver = subject;
+  Receiver<true> &as_receiver = subject;
   return SenderReceiver{as_sender, as_receiver};
 }
 
@@ -52,12 +52,12 @@ void send_response(const SenderReceiver &requester,
 } // namespace
 
 TEST_CASE("Establish tcp connection", "[tcp]") {
-  const auto port = PortFactory::makePort();
+  const auto port = PortFactory::get().makePort();
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
 #if !defined(_WIN32)
   SECTION("expected failure") {
-    TcpClient client(Address(port, family));
+    TcpClient<true> client(Address(port, family));
     CHECK_THROWS_AS(client.open(), Error);
     CHECK_FALSE(client.wasOpened());
   }
@@ -65,43 +65,40 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
 
   SECTION("expected success") {
     test::TcpPeers peers(port, family);
-    auto &server_side = peers.getServerSide();
-    auto &client_side = peers.getClientSide();
+    auto [server_side, client_side] = peers.get();
 
-    REQUIRE(client_side.wasOpened());
+    REQUIRE(client_side->wasOpened());
 
     const std::size_t cycles = 5;
-    const std::string request = "Hello";
-    const std::string response = "Welcome";
 
     SECTION("client send, server respond") {
-      send_response(makeSenderReceiver(client_side),
-                    makeSenderReceiver(server_side));
+      send_response(makeSenderReceiver(*client_side),
+                    makeSenderReceiver(*server_side));
     }
 
     SECTION("server send, client respond") {
-      send_response(makeSenderReceiver(server_side),
-                    makeSenderReceiver(client_side));
+      send_response(makeSenderReceiver(*server_side),
+                    makeSenderReceiver(*client_side));
     }
 
     SECTION("receive with timeout") {
       const auto timeout = Timeout{500};
 
       SECTION("expect fail within timeout") {
-        auto received_request = server_side.receive(request.size(), timeout);
+        auto received_request = server_side->receive(request.size(), timeout);
         CHECK(received_request.empty());
       }
 
       SECTION("expect success within timeout") {
         const auto wait = Timeout{250};
         ParallelSection::biSection(
-            [&](auto &) {
+            [&, client_side = client_side](auto &) {
               std::this_thread::sleep_for(wait);
-              client_side.send(request);
+              client_side->send(request);
             },
-            [&](auto &) {
+            [&, server_side = server_side](auto &) {
               auto received_request =
-                  server_side.receive(request.size(), timeout);
+                  server_side->receive(request.size(), timeout);
               CHECK(received_request == request);
             });
       }
@@ -110,17 +107,17 @@ TEST_CASE("Establish tcp connection", "[tcp]") {
 }
 
 TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
-  const auto port = PortFactory::makePort();
+  const auto port = PortFactory::get().makePort();
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-  TcpServer server(port, family);
+  TcpServer<true> server(port, family);
   server.open();
 
   const std::size_t clients_numb = 5;
 
   SECTION("sequencial connnections") {
-    std::list<TcpConnection> accepted_clients;
-    std::list<TcpClient> clients;
+    std::list<TcpConnectionBlocking> accepted_clients;
+    std::list<TcpClient<true>> clients;
     ParallelSection::biSection(
         [&](auto &) {
           for (std::size_t c = 0; c < clients_numb; ++c) {
@@ -143,7 +140,7 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
       }
     });
     Task ask_connection = [&](auto &) {
-      TcpClient client(Address(port, family));
+      TcpClient<true> client(Address(port, family));
       CHECK(client.open());
     };
     for (std::size_t c = 0; c < clients_numb; ++c) {
@@ -154,15 +151,15 @@ TEST_CASE("Establish many tcp connections to same server", "[tcp]") {
 }
 
 TEST_CASE("Open multiple times tcp clients", "[tcp]") {
-  const auto port = PortFactory::makePort();
+  const auto port = PortFactory::get().makePort();
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-  TcpServer server(port, family);
+  TcpServer<true> server(port, family);
   server.open();
 
   std::size_t cycles = 5;
 
-  TcpClient client(Address(port, family));
+  TcpClient<true> client(Address(port, family));
 
   for (std::size_t c = 0; c < cycles; ++c) {
     ParallelSection::biSection([&](auto &) { server.acceptNewClient(); },
@@ -175,33 +172,32 @@ TEST_CASE("Open multiple times tcp clients", "[tcp]") {
 }
 
 TEST_CASE("Open tcp client with timeout", "[tcp]") {
-  const auto port = PortFactory::makePort();
+  const auto port = PortFactory::get().makePort();
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   const auto timeout = Timeout{500};
 
-  TcpClient client(Address(port, family));
+  TcpClient<true> client(Address(port, family));
 
   SECTION("expect fail within timeout") {
 #ifdef _WIN32
     CHECK_FALSE(client.open(timeout));
 #else
-    CHECK_THROWS_AS(
-        client.open(timeout),
-        Error); // linux throw if no server tcp were previously created, while
-                // windows seems to does not have this check
+    // linux throw if no server tcp were previously created, while windows seems
+    // to does not have this check
+    CHECK_THROWS_AS(client.open(timeout), Error);
 #endif
     CHECK_FALSE(client.wasOpened());
   }
 
   SECTION("expect success within timeout") {
     const auto wait = Timeout{250};
-    TcpServer server(port, family);
+    TcpServer<true> server(port, family);
     REQUIRE(server.open());
     ParallelSection::biSection(
         [&](auto &) {
           std::this_thread::sleep_for(wait);
-          TcpConnection conn = server.acceptNewClient();
+          auto conn = server.acceptNewClient();
           auto received_request = conn.receive(request.size());
           CHECK(received_request == request);
         },
@@ -215,7 +211,7 @@ TEST_CASE("Open tcp client with timeout", "[tcp]") {
 TEST_CASE("Reserve random port for tcp server", "[tcp]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-  TcpServer server(ANY_PORT, family);
+  TcpServer<true> server(ANY_PORT, family);
   REQUIRE(server.open());
   const auto port = server.getPortToBind();
   REQUIRE(port != 0);
@@ -229,7 +225,7 @@ TEST_CASE("Reserve random port for tcp server", "[tcp]") {
       },
       [&](Barrier &br) {
         // client
-        TcpClient client(Address(port, family));
+        TcpClient<true> client(Address(port, family));
         br.arrive_and_wait();
         REQUIRE(client.open());
         REQUIRE(client.wasOpened());
@@ -237,109 +233,97 @@ TEST_CASE("Reserve random port for tcp server", "[tcp]") {
       });
 }
 
-TEST_CASE("Accept client with timeout", "[tcp]") {
-  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
-  const auto port = PortFactory::makePort();
-
-  TcpServer server(port, family);
-  REQUIRE(server.open());
-  const auto server_address = Address(port, family);
-
-  const auto timeout = Timeout{500};
-
-  SECTION("expect fail within timeout") {
-    // connect first client
-    TcpClient client_first = TcpClient{server_address};
-    std::unique_ptr<TcpConnection> server_side_first;
-    ParallelSection::biSection([&](auto &) { CHECK(client_first.open()); },
-                               [&](auto &) {
-                                 auto accepted = server.acceptNewClient();
-                                 server_side_first =
-                                     std::make_unique<TcpConnection>(
-                                         std::move(accepted));
-                               });
-
-    // expect second accept to fail
-    CHECK_FALSE(server.acceptNewClient(timeout));
-    CHECK(server.wasOpened());
-
-    // check first accepted connection is still valid
-    ParallelSection::biSection(
-        [&](auto &) {
-          auto received_request = server_side_first->receive(request.size());
-          CHECK(received_request == request);
-        },
-        [&](auto &) {
-          // client
-          client_first.send(request);
-        });
-
-    // connect second client after accept unsuccess and check they can exchange
-    // messages
-    ParallelSection::biSection(
-        [&](Barrier &br) {
-          TcpClient client_second = TcpClient{server_address};
-          br.arrive_and_wait();
-          CHECK(client_second.open());
-          client_second.send(request);
-        },
-        [&](Barrier &br) {
-          br.arrive_and_wait();
-          auto server_side_second = server.acceptNewClient();
-          auto received_request = server_side_second.receive(request.size());
-          CHECK(received_request == request);
-        });
-  }
-
-  SECTION("expect success within timeout") {
-    const auto wait = Timeout{250};
-    ParallelSection::biSection(
-        [&](Barrier &br) {
-          TcpClient client = TcpClient{server_address};
-          br.arrive_and_wait();
-          std::this_thread::sleep_for(wait);
-          CHECK(client.open());
-        },
-        [&](Barrier &br) {
-          br.arrive_and_wait();
-          CHECK(server.acceptNewClient(timeout));
-        });
-  }
-}
-
-#if !defined(__APPLE__)
 TEST_CASE("Send Receive messages split into multiple pieces (tcp)", "[tcp]") {
-  const auto port = PortFactory::makePort();
+  const auto port = PortFactory::get().makePort();
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   TcpPeers peers(port, family);
-  auto &server_side = peers.getServerSide();
-  auto &client_side = peers.getClientSide();
+  auto [server_side, client_side] = peers.get();
 
   const std::string request = "This is a simulated long message";
 
   const std::size_t delta = 4;
 
   SECTION("split receive") {
-    ParallelSection::biSection([&](auto &) { client_side.send(request); },
-                               [&](auto &) {
-                                 auto received_request = sliced_receive(
-                                     server_side, request.size(), 4);
-                                 CHECK(received_request == request);
-                               });
+    ParallelSection::biSection(
+        [&, client_side = client_side](auto &) { client_side->send(request); },
+        [&, server_side = server_side](auto &) {
+          auto received_request =
+              sliced_receive(*server_side, request.size(), 4);
+          CHECK(received_request == request);
+        });
   }
 
   SECTION("split send") {
     ParallelSection::biSection(
-        [&](Barrier &br) {
-          sliced_send(client_side, request, 4);
+        [&, client_side = client_side](Barrier &br) {
+          sliced_send(*client_side, request, 4);
           br.arrive_and_wait();
         },
-        [&](Barrier &br) {
+        [&, server_side = server_side](Barrier &br) {
           br.arrive_and_wait();
-          auto received_request = server_side.receive(request.size());
+          auto received_request = server_side->receive(request.size());
           CHECK(received_request == request);
         });
   }
 }
-#endif
+
+TEST_CASE("Establish tcp connection non blocking", "[tcp]") {
+  const auto port = PortFactory::get().makePort();
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
+
+  tcp::TcpServer<false> server{port, family};
+  REQUIRE(server.open());
+
+  ParallelSection::biSection(
+      [&](Barrier &br) {
+        CHECK_FALSE(server.acceptNewClient().has_value());
+        br.arrive_and_wait();
+        std::this_thread::sleep_for(std::chrono::milliseconds{500});
+        auto accepted = server.acceptNewClient();
+        REQUIRE(accepted.has_value());
+        auto received_request = accepted->receive(request.size());
+        CHECK(received_request == request);
+      },
+      [&](Barrier &br) {
+        br.arrive_and_wait();
+        TcpClient<true> client{ Address{port, family} };
+        client.open();
+        REQUIRE(client.wasOpened());
+        client.send(request);
+      });
+}
+
+TEST_CASE("Receive non blocking (tcp)", "[tcp]") {
+  const auto port = PortFactory::get().makePort();
+  const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
+
+  std::optional<tcp::TcpConnectionNonBlocking> server_side;
+  tcp::TcpClient<false> client_side{ Address{port, family} };
+  ParallelSection::biSection(
+      [&](Barrier &br) {
+        tcp::TcpServer<true> server{port, family};
+        REQUIRE(server.open());
+        br.arrive_and_wait();
+        auto accepted = server.acceptNewClient();
+        server_side.emplace(accepted.turnToNonBlocking());
+      },
+      [&](Barrier &br) {
+        br.arrive_and_wait();
+        REQUIRE(client_side.open());
+      });
+
+  SECTION("client side non blocking receive") {
+    CHECK(client_side.receive(request.size()).empty());
+    server_side->send(request);
+    auto received_request = client_side.receive(request.size());
+    CHECK(received_request == request);
+  }
+
+  SECTION("server side non blocking receive") {
+    CHECK(server_side->receive(request.size()).empty());
+    client_side.send(request);
+    auto received_request = server_side->receive(request.size());
+    CHECK(received_request == request);
+  }
+}

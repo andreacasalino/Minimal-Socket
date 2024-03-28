@@ -8,6 +8,7 @@
 #pragma once
 
 #include <MinimalSocket/core/Address.h>
+#include <MinimalSocket/core/Socket.h>
 
 #include <atomic>
 #include <mutex>
@@ -29,10 +30,6 @@ public:
   Address getRemoteAddress() const;
 
 protected:
-  /**
-   * @throw in case the passed address is invalid (i.e. address == nullptr is
-   * true).
-   */
   RemoteAddressAware(const Address &address);
 
 private:
@@ -52,16 +49,14 @@ public:
   }
 
   /**
-   * @return the port that will be reserved, in case the socket was not already
-   * opened, or the port actually reserved when the socket was opened.
+   * @return the port to reserve.
    */
   Port getPortToBind() const { return port_to_bind; }
 
   /**
-   * @brief Used to enforce the fact that this port should be not previously
-   * binded by anyone else when opening the socket. Beware that the default
-   * behaviour is the opposite: you don't call this function the port will be
-   * possibly re-used.
+   * @brief Used to specify that the port should be actually free when trying to
+   * open this socket. Beware that the default behaviour is the opposite: until
+   * you don't call this function the port will be re-used.
    */
   void mustBeFreePort() { must_be_free_port = true; };
   bool shallBeFreePort() const { return must_be_free_port; }
@@ -98,4 +93,5 @@ protected:
 private:
   std::atomic<AddressFamily> remote_address_family;
 };
+
 } // namespace MinimalSocket
