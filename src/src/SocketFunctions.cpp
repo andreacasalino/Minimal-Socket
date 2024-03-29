@@ -19,7 +19,7 @@ namespace MinimalSocket {
 namespace {
 #ifdef _WIN32
 #define REBIND_OPTION SO_REUSEADDR
-#else
+#elif defined(__unix__) || defined(__APPLE__)
 #define REBIND_OPTION SO_REUSEPORT
 #endif
 } // namespace
@@ -158,8 +158,10 @@ int isTimeoutErrorCode(int code) {
   return
 #ifdef _WIN32
       code == WSAETIMEDOUT || code == WSAEWOULDBLOCK;
-#else
+#elif defined(__unix__)
       code == EAGAIN || code == EWOULDBLOCK;
+#elif defined(__APPLE__)
+      code == EAGAIN;
 #endif
 }
 

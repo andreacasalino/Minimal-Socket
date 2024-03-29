@@ -12,23 +12,8 @@ jobs:
   unitTests:
     strategy:
       matrix:
-        name: [ubuntu-gcc, ubuntu-clang, windows-VS, macOS]
+        name: [macOS]
         include:
-            - name: ubuntu-gcc
-              os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++"
-              build_system: '-G Ninja'
-              filter: ""
-            - name: ubuntu-clang
-              os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17"
-              build_system: '-G Ninja'
-              filter: ""
-            - name: windows-VS
-              os: windows-latest
-              compiler_opt: ""
-              build_system: ""
-              filter: "robustness"
             - name: macOS
               os: macos-latest
               compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++"

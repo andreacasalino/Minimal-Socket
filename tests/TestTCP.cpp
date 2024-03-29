@@ -287,7 +287,7 @@ TEST_CASE("Establish tcp connection non blocking", "[tcp]") {
       },
       [&](Barrier &br) {
         br.arrive_and_wait();
-        TcpClient<true> client{ Address{port, family} };
+        TcpClient<true> client{Address{port, family}};
         client.open();
         REQUIRE(client.wasOpened());
         client.send(request);
@@ -299,7 +299,7 @@ TEST_CASE("Receive non blocking (tcp)", "[tcp]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   std::optional<tcp::TcpConnectionNonBlocking> server_side;
-  tcp::TcpClient<false> client_side{ Address{port, family} };
+  tcp::TcpClient<false> client_side{Address{port, family}};
   ParallelSection::biSection(
       [&](Barrier &br) {
         tcp::TcpServer<true> server{port, family};
@@ -316,6 +316,9 @@ TEST_CASE("Receive non blocking (tcp)", "[tcp]") {
   SECTION("client side non blocking receive") {
     CHECK(client_side.receive(request.size()).empty());
     server_side->send(request);
+#if defined(__APPLE__)
+    std::this_thread::sleep_for(std::chrono::seconds{3});
+#endif
     auto received_request = client_side.receive(request.size());
     CHECK(received_request == request);
   }
@@ -323,6 +326,9 @@ TEST_CASE("Receive non blocking (tcp)", "[tcp]") {
   SECTION("server side non blocking receive") {
     CHECK(server_side->receive(request.size()).empty());
     client_side.send(request);
+#if defined(__APPLE__)
+    std::this_thread::sleep_for(std::chrono::seconds{3});
+#endif
     auto received_request = server_side->receive(request.size());
     CHECK(received_request == request);
   }

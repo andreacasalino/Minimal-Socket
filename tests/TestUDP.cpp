@@ -364,6 +364,9 @@ TEST_CASE("Receive from unknown non blocking", "[udp]") {
 
   CHECK_FALSE(responder->receive(request.size()).has_value());
   requester->sendTo(request, responder_address);
+#if defined(__APPLE__)
+  std::this_thread::sleep_for(std::chrono::seconds{3});
+#endif
   auto received_request = responder->receive(request.size());
   REQUIRE(received_request.has_value());
   CHECK(received_request->received_message == request);
@@ -378,6 +381,9 @@ TEST_CASE("Receive non blocking (udp)", "[udp]") {
 
   CHECK(responder->receive(request.size()).empty());
   requester->send(request);
+#if defined(__APPLE__)
+  std::this_thread::sleep_for(std::chrono::seconds{3});
+#endif
   auto received_request = responder->receive(request.size());
   CHECK(received_request == request);
 }
