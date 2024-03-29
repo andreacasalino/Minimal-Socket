@@ -143,7 +143,7 @@ void turnToNonBlocking(SocketID socket_id) {
   // https://learn.microsoft.com/en-us/windows/win32/api/winsock/nf-winsock-ioctlsocket
   u_long iMode = 1;
   if (ioctlsocket(socket_id, FIONBIO, &iMode) != NO_ERROR) {
-      throw Error{ "Unable to set up the non blocking mode" };
+    throw Error{"Unable to set up the non blocking mode"};
   }
 #elif defined(__unix__) || defined(__APPLE__)
   // https://jameshfisher.com/2017/04/05/set_socket_nonblocking/
@@ -155,11 +155,11 @@ void turnToNonBlocking(SocketID socket_id) {
 }
 
 int isTimeoutErrorCode(int code) {
-    return
+  return
 #ifdef _WIN32
-        code == WSAETIMEDOUT || code == WSAEWOULDBLOCK;
+      code == WSAETIMEDOUT || code == WSAEWOULDBLOCK;
 #else
-        code == EAGAIN | EWOULDBLOCK;
+      code == EAGAIN || code == EWOULDBLOCK;
 #endif
 }
 
