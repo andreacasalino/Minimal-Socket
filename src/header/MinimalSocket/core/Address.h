@@ -21,23 +21,20 @@ enum class AddressFamily { IP_V4, IP_V6 };
 using Port = std::uint16_t;
 
 /**
- * @brief Passing this value as Port implies to ask the system to reserve a
- * random port.
+ * @brief Used to indicate a random port that can be assigned by the os.
  */
 static constexpr Port ANY_PORT = 0;
 
 class Address {
 public:
   /**
-   * @brief Internally the AddressFamily is deduced according to the
-   * hostIp content.
-   * In case of invalid host, the object is built but left empty (i.e. *this ==
-   * nullptr would be true)
+   * @brief The AddressFamily is deduced on the basis of the hostIp.
+   * @throw In case of an invalid hostIp
    */
   Address(const std::string &hostIp, Port port);
 
   /**
-   * @brief Local host address is asumed.
+   * @brief Local host on the specified port is assumed as address.
    */
   Address(Port port, AddressFamily family = AddressFamily::IP_V4);
 
@@ -46,12 +43,6 @@ public:
   AddressFamily getFamily() const { return this->family; };
 
   bool operator==(const Address &o) const;
-
-  Address(const Address &) = default;
-  Address &operator=(const Address &) = default;
-
-  Address(Address &&) = default;
-  Address &operator=(Address &&) = default;
 
 private:
   Address() = default;
@@ -62,20 +53,17 @@ private:
 };
 
 /**
- * @return "host:port" into a string.
+ * @return "host:port"
  */
 std::string to_string(const Address &subject);
 
 /**
  * @brief Tries to deduce the family from the host.
- * @return nullopt in case the host is invalid, otherwise the deduced family
- * value is returned.
+ * @return nullopt in case the host is invalid, otherwise the family
+ * conrresponding to the passed address
  */
 std::optional<AddressFamily>
 deduceAddressFamily(const std::string &host_address);
-
-bool operator==(std::nullptr_t, const Address &subject);
-bool operator==(const Address &subject, std::nullptr_t);
 
 bool isValidHost(const std::string &host_address);
 } // namespace MinimalSocket

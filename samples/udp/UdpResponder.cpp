@@ -22,13 +22,12 @@ int main(const int argc, const char **argv) {
        << endl;
   PARSE_ARGS
 
-  const auto port_this =
-      static_cast<MinimalSocket::Port>(options->getIntValue("port_this"));
-  const auto family =
-      MinimalSocket::samples::to_family(options->getValue("family", "v4"));
-  const bool connect = options->getValue("connect", "no") == "yes";
+  const auto port_this = options->getValue<MinimalSocket::Port>("port_this");
+  const auto family = options->getValue<MinimalSocket::AddressFamily>(
+      "family", MinimalSocket::AddressFamily::IP_V4);
+  const bool connect = options->getValue<bool>("connect", false);
 
-  MinimalSocket::udp::UdpBinded responder(port_this, family);
+  MinimalSocket::udp::Udp<true> responder(port_this, family);
 
   if (!responder.open()) {
     cerr << "Failed to reserve specified port" << endl;

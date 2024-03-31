@@ -8,6 +8,9 @@
 #include <MinimalSocket/Error.h>
 #include <MinimalSocket/core/SocketContext.h>
 
+#include "../SocketFunctions.h"
+#include "../SocketHandler.h"
+
 namespace MinimalSocket {
 Address RemoteAddressAware::getRemoteAddress() const {
   std::scoped_lock lock(remote_address_mtx);
@@ -15,10 +18,5 @@ Address RemoteAddressAware::getRemoteAddress() const {
 }
 
 RemoteAddressAware::RemoteAddressAware(const Address &address)
-    : remote_address(address) {
-  if (nullptr == getRemoteAddress()) {
-    throw Error{"Invalid address"};
-  }
-}
-
+    : remote_address(address) {}
 } // namespace MinimalSocket

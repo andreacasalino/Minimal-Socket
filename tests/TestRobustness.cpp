@@ -29,40 +29,59 @@ static const std::string MESSAGE = "A simple message";
 template <typename SocketT> void close(SocketT &subject) {
   SocketT{std::move(subject)};
 }
+
+struct ThrownOrReceivedNothing {
+  template <typename Pred> ThrownOrReceivedNothing(Pred pred) {
+    try {
+      received_nothing = pred();
+    } catch (const SocketError &) {
+      throwned = true;
+    }
+  }
+
+  operator bool() const { return throwned || received_nothing; }
+
+private:
+  bool throwned = false;
+  bool received_nothing = false;
+};
 } // namespace
 
 TEST_CASE("Thread safe d'tor tcp case", "[robustness]") {
-  const auto port = PortFactory::makePort();
+  const auto port = PortFactory::get().makePort();
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   SECTION("on connected sockets") {
     test::TcpPeers peers(port, family);
+    auto [server_side, client_side] = peers.get();
 
     SECTION("close client while receiving") {
       ParallelSection::biSection(
-          [&peers](auto &) {
-            CHECK(peers.getClientSide().receive(500).empty());
+          [&client_side = client_side](auto &) {
+            CHECK(ThrownOrReceivedNothing{
+                [&]() { return client_side->receive(500).empty(); }});
           },
-          [&peers](auto &) {
-            std::this_thread::sleep_for(std::chrono::milliseconds{50});
-            close(peers.getClientSide());
+          [&client_side = client_side](auto &) {
+            std::this_thread::sleep_for(std::chrono::milliseconds{200});
+            close(*client_side);
           });
     }
 
     SECTION("close server side while receiving") {
       ParallelSection::biSection(
-          [&peers](auto &) {
-            CHECK(peers.getClientSide().receive(500).empty());
+          [&server_side = server_side](auto &) {
+            CHECK(ThrownOrReceivedNothing{
+                [&]() { return server_side->receive(500).empty(); }});
           },
-          [&peers](auto &) {
-            std::this_thread::sleep_for(std::chrono::milliseconds{50});
-            close(peers.getServerSide());
+          [&server_side = server_side](auto &) {
+            std::this_thread::sleep_for(std::chrono::milliseconds{200});
+            close(*server_side);
           });
     }
   }
 
   SECTION("close while accepting client") {
-    tcp::TcpServer server(port, family);
+    tcp::TcpServer<true> server(port, family);
     REQUIRE(server.open());
     ParallelSection::biSection(
         [&server](auto &) {
@@ -76,21 +95,20 @@ TEST_CASE("Thread safe d'tor tcp case", "[robustness]") {
 }
 
 TEST_CASE("Receive from multiple threads tcp case", "[robustness]") {
-  const auto port = PortFactory::makePort();
+  const auto port = PortFactory::get().makePort();
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   test::TcpPeers peers(port, family);
-  auto &server_side = peers.getServerSide();
-  auto &client_side = peers.getClientSide();
+  auto [server_side, client_side] = peers.get();
 
   const std::size_t threads = 3;
   ParallelSection sections;
-  sections.add([&](auto &) {
-    client_side.send(make_repeated_message(MESSAGE, threads));
+  sections.add([&client_side = client_side](auto &) {
+    client_side->send(make_repeated_message(MESSAGE, threads));
   });
   for (std::size_t t = 0; t < threads; ++t) {
-    sections.add([&](auto &) {
-      const auto received_request = server_side.receive(MESSAGE.size());
+    sections.add([&server_side = server_side](auto &) {
+      const auto received_request = server_side->receive(MESSAGE.size());
       CHECK(received_request == MESSAGE);
     });
   }
@@ -98,21 +116,21 @@ TEST_CASE("Receive from multiple threads tcp case", "[robustness]") {
 }
 
 TEST_CASE("Send from multiple threads tcp case", "[robustness]") {
-  const auto port = PortFactory::makePort();
+  const auto port = PortFactory::get().makePort();
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   test::TcpPeers peers(port, family);
-  auto &server_side = peers.getServerSide();
-  auto &client_side = peers.getClientSide();
+  auto [server_side, client_side] = peers.get();
 
   const std::size_t threads = 3;
   ParallelSection sections;
   for (std::size_t t = 0; t < threads; ++t) {
-    sections.add([&](auto &) { client_side.send(MESSAGE); });
+    sections.add(
+        [&client_side = client_side](auto &) { client_side->send(MESSAGE); });
   }
-  sections.add([&](auto &) {
+  sections.add([&server_side = server_side](auto &) {
     for (std::size_t t = 0; t < threads; ++t) {
-      const auto received_request = server_side.receive(MESSAGE.size());
+      const auto received_request = server_side->receive(MESSAGE.size());
       CHECK(received_request == MESSAGE);
     }
   });
@@ -122,35 +140,41 @@ TEST_CASE("Send from multiple threads tcp case", "[robustness]") {
 TEST_CASE("Thread safe d'tor udp case", "[robustness]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-  udp::UdpBinded connection(PortFactory::makePort());
+  udp::Udp<true> connection(PortFactory::get().makePort());
 
   ParallelSection::biSection(
-      [&](auto &) { CHECK_THROWS_AS(connection.receive(500), Error); },
       [&](auto &) {
-        std::this_thread::sleep_for(std::chrono::milliseconds{50});
+        CHECK(ThrownOrReceivedNothing{[&]() {
+          auto res = connection.receive(500);
+          // if here it did not thrown, but 0 bytes are expected to have been
+          // actually received
+          REQUIRE(res.has_value());
+          return res->received_message.empty();
+        }});
+      },
+      [&](auto &) {
+        std::this_thread::sleep_for(std::chrono::milliseconds{200});
         close(connection);
       });
 }
 
-/*
-
 TEST_CASE("Receive from multiple threads udp case", "[robustness]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-  UDP_PEERS(PortFactory::makePort(), PortFactory::makePort(), family)
+  UDP_PEERS(udp::Udp<true>, family);
 
   const std::size_t threads = 3;
   ParallelSection sections;
   sections.add([&](Barrier &br) {
     for (std::size_t t = 0; t < threads; ++t) {
-      requester.sendTo(MESSAGE, responder_address);
+      requester->sendTo(MESSAGE, responder_address);
     }
     br.arrive_and_wait();
   });
   for (std::size_t t = 0; t < threads; ++t) {
     sections.add([&](Barrier &br) {
       br.arrive_and_wait();
-      const auto received_request = responder.receive(MESSAGE.size());
+      const auto received_request = responder->receive(MESSAGE.size());
       CHECK(received_request);
       CHECK(received_request->received_message == MESSAGE);
     });
@@ -161,39 +185,38 @@ TEST_CASE("Receive from multiple threads udp case", "[robustness]") {
 TEST_CASE("Send from multiple threads udp case", "[robustness]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-  UDP_PEERS(PortFactory::makePort(), PortFactory::makePort(), family)
+  UDP_PEERS(udp::Udp<true>, family);
 
   const std::size_t threads = 3;
   ParallelSection sections;
   for (std::size_t t = 0; t < threads; ++t) {
     sections.add([&](Barrier &br) {
-      requester.sendTo(MESSAGE, responder_address);
+      requester->sendTo(MESSAGE, responder_address);
       br.arrive_and_wait();
     });
   }
   sections.add([&](Barrier &br) {
     br.arrive_and_wait();
     for (std::size_t t = 0; t < threads; ++t) {
-      const auto received_request = responder.receive(MESSAGE.size());
+      const auto received_request = responder->receive(MESSAGE.size());
       CHECK(received_request);
       CHECK(received_request->received_message == MESSAGE);
     }
   });
   sections.run();
 }
-*/
 
 TEST_CASE("Use tcp socket before opening it", "[robustness]") {
-  const auto port = PortFactory::makePort();
+  const auto port = PortFactory::get().makePort();
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
   SECTION("server") {
-    tcp::TcpServer socket(port, family);
+    tcp::TcpServer<true> socket(port, family);
     CHECK_THROWS_AS(socket.acceptNewClient(), Error);
   }
 
   SECTION("client") {
-    tcp::TcpClient socket(Address{port, family});
+    tcp::TcpClient<true> socket(Address{port, family});
     CHECK_THROWS_AS(socket.receive(500), SocketError);
     CHECK_THROWS_AS(socket.send("dummy"), SocketError);
   }
@@ -202,10 +225,10 @@ TEST_CASE("Use tcp socket before opening it", "[robustness]") {
 TEST_CASE("Use udp socket before opening it", "[robustness]") {
   const auto family = GENERATE(AddressFamily::IP_V4, AddressFamily::IP_V6);
 
-  udp::UdpBinded socket(PortFactory::makePort(), family);
+  udp::Udp<true> socket(PortFactory::get().makePort(), family);
   CHECK_THROWS_AS(socket.receive(500), SocketError);
   CHECK_THROWS_AS(
-      socket.sendTo("dummy", Address{PortFactory::makePort(), family}),
+      socket.sendTo("dummy", Address{PortFactory::get().makePort(), family}),
       SocketError);
   CHECK_THROWS_AS(socket.connect(), SocketError);
 }
