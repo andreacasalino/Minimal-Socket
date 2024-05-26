@@ -17,6 +17,9 @@
 #include <Pollables.h>
 #include <Respond.h>
 #include <TimeOfDay.h>
+
+#include <vector>
+
 using namespace std;
 
 int main(const int argc, const char **argv) {
