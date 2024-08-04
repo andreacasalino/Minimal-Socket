@@ -27,11 +27,11 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio" OR BUILD_MinimalCppSocket_AVOID_CUST
 	-D CMD="${Python3_EXECUTABLE} ${SCRIPT_LOCATION} --cmd ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT}|${Python3_EXECUTABLE} ${SCRIPT_LOCATION} --location ${BIN_LOCATION} --cmd ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT} --dest ${CMAKE_CURRENT_BINARY_DIR}/report.html --sleep 0.5"
 	)
 else()
-	add_custom_target(${TARGET_NAME}-preamble ALL 
+	add_custom_target(${TARGET_NAME}-preamble 
 		COMMAND "${Python3_EXECUTABLE}" ${SCRIPT_LOCATION}
 		"--cmd" "${CMAKE_CURRENT_SOURCE_DIR}/${INPUT}"
 	)
-    add_custom_target(${TARGET_NAME} ALL 
+    add_custom_target(${TARGET_NAME}
         COMMAND "${Python3_EXECUTABLE}" ${SCRIPT_LOCATION}
         "--location" "${BIN_LOCATION}"
         "--cmd" "${CMAKE_CURRENT_SOURCE_DIR}/${INPUT}"
