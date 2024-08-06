@@ -89,6 +89,8 @@ public:
    */
   bool isBlocking() const { return isBlocking_; }
 
+  void shutDown() { resetHandler(); }
+
 protected:
   Socket();
 

@@ -26,10 +26,6 @@ std::string make_repeated_message(const std::string &to_repeat,
 
 static const std::string MESSAGE = "A simple message";
 
-template <typename SocketT> void close(SocketT &subject) {
-  SocketT{std::move(subject)};
-}
-
 struct ThrownOrReceivedNothing {
   template <typename Pred> ThrownOrReceivedNothing(Pred pred) {
     try {
@@ -63,7 +59,7 @@ TEST_CASE("Thread safe d'tor tcp case", "[robustness]") {
           },
           [&client_side = client_side](auto &) {
             std::this_thread::sleep_for(std::chrono::milliseconds{200});
-            close(*client_side);
+            client_side->shutDown();
           });
     }
 
@@ -75,7 +71,7 @@ TEST_CASE("Thread safe d'tor tcp case", "[robustness]") {
           },
           [&server_side = server_side](auto &) {
             std::this_thread::sleep_for(std::chrono::milliseconds{200});
-            close(*server_side);
+            server_side->shutDown();
           });
     }
   }
@@ -89,7 +85,7 @@ TEST_CASE("Thread safe d'tor tcp case", "[robustness]") {
         },
         [&server](auto &) {
           std::this_thread::sleep_for(std::chrono::milliseconds{50});
-          close(server);
+          server.shutDown();
         });
   }
 }
@@ -154,7 +150,7 @@ TEST_CASE("Thread safe d'tor udp case", "[robustness]") {
       },
       [&](auto &) {
         std::this_thread::sleep_for(std::chrono::milliseconds{200});
-        close(connection);
+        connection.shutDown();
       });
 }
 
