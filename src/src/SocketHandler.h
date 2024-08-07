@@ -63,9 +63,11 @@ public:
   SocketHandler() = default;
 
   /**
-   * @brief close and shutdown the current socket
+   * @brief internally calls shut down
    */
   ~SocketHandler();
+
+  void shutDown();
 
   /**
    * @brief regenerates the socket descriptor, i.e. creates a new socket

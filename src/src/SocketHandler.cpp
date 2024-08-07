@@ -89,7 +89,13 @@ void close(SocketID &socket_id) {
 }
 } // namespace
 
-SocketHandler::~SocketHandler() { MinimalSocket::close(socket_id); }
+SocketHandler::~SocketHandler() { 
+  MinimalSocket::close(socket_id); 
+}
+
+void SocketHandler::shutDown() {
+  MinimalSocket::close(socket_id); 
+}
 
 void SocketHandler::reset(SocketID hndl) {
   if (socket_id != SCK_INVALID_SOCKET) {
