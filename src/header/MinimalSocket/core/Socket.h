@@ -89,7 +89,11 @@ public:
    */
   bool isBlocking() const { return isBlocking_; }
 
-  void shutDown() { resetHandler(); }
+  /**
+   * @brief shutdown this socket. Any pending operation like blocking read or blocking client
+   * accept done from any other thread are consequently terminated.
+   */
+  void shutDown();
 
 protected:
   Socket();
