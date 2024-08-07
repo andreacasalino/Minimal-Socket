@@ -32,6 +32,8 @@ Socket::~Socket() = default;
 
 Socket::Socket() { resetHandler(); }
 
+void Socket::shutDown() { socket_id_wrapper->shutDown(); }
+
 int Socket::getSocketDescriptor() const {
   return static_cast<int>(getHandler().accessId());
 }
