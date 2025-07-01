@@ -62,7 +62,7 @@ jobs:
       run:  cmake --install ./build --config Release
     - name: Tests
       run: python .github/workflows/runTests.py --bin "./artifacts/bin/MinimalSocket-tests" --priority "open address" --filter "${{ matrix.filter }}"
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         path: artifacts
         name: ${{ matrix.name }}
