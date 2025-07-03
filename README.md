@@ -44,6 +44,25 @@ This table summarizes the differences between the blocking and the non blocking 
 
 Haven't left a **star** already? Do it now ;)!
 
+In your `flake.nix` file:
+
+```nix
+{
+  inputs.minimalSocket.url = "github:andreacasalino/Minimal-Socket";
+
+  outputs = { self, minimalSocket, ... }: {
+    ...
+  };
+}
+```
+
+In a shell:
+
+```sh
+# open a shell with Minimal-Socket
+$ nix shell 'github:andreacasalino/Minimal-Socket'
+```
+
 ### TCP
 
 #### SERVER
