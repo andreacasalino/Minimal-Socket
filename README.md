@@ -5,6 +5,7 @@
 - [Usage](#usage)
 - [Samples](#samples)
 - [CMake support](#cmake-support)
+- [Nix Package Manager](#nix-package-manager)
 
 ![Sockets](./sockets.png)
 
@@ -262,3 +263,24 @@ target_link_libraries(${TARGET_NAME}
 
 All the system specific modules are internally inlcluded and are not exposed.
 Moreover, under **Windows**, **wsock32** and **ws2_32** are privately linked and you don't need to link them again when consuming **MinimalSocket**.
+
+## NIX PACKAGE MANAGER
+
+In your `flake.nix` file:
+
+```nix
+{
+  inputs.minimalSocket.url = "github:andreacasalino/Minimal-Socket";
+
+  outputs = { self, minimalSocket, ... }: {
+    ...
+  };
+}
+```
+
+In a shell:
+
+```sh
+# open a shell with Minimal-Socket
+$ nix shell 'github:andreacasalino/Minimal-Socket'
+```
